@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SyntraceAI — Adversarial Mutation Testing for AI Systems</title>
+<style>
+  :root {
+    --bg: #0b1020; --panel: #121a30; --panel2: #0e1527; --line: #223052;
+    --text: #e6ecff; --dim: #8fa0c6; --accent: #6ea8ff; --good: #34d399;
+    --bad: #f87171; --warn: #fbbf24; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; color: var(--text); background: var(--bg);
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  nav { display: flex; align-items: center; gap: 10px; padding: 18px 0; }
+  nav .brand { font-weight: 700; font-size: 16px; letter-spacing: .2px; }
+  nav .links { margin-left: auto; display: flex; gap: 22px; font-size: 13.5px; }
+  nav .links a { color: var(--dim); }
+  nav .links a:hover { color: var(--text); }
+
+  .hero {
+    position: relative; overflow: hidden; padding: 84px 0 72px; text-align: center;
+    background:
+      radial-gradient(900px 420px at 50% -10%, #1b2a5c 0%, transparent 60%),
+      radial-gradient(700px 380px at 85% 20%, rgba(52, 211, 153, .07) 0%, transparent 60%),
+      radial-gradient(700px 380px at 15% 25%, rgba(248, 113, 113, .06) 0%, transparent 60%);
+  }
+  .eyebrow {
+    display: inline-block; font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--warn); border: 1px solid #4a3d14; background: #191d2e;
+    border-radius: 999px; padding: 5px 14px; margin-bottom: 22px;
+  }
+  h1 { font-size: clamp(30px, 5.4vw, 52px); line-height: 1.12; margin: 0 0 18px; letter-spacing: -.5px; }
+  h1 .strike { color: var(--dim); text-decoration: line-through; text-decoration-color: var(--bad); }
+  .lede { max-width: 680px; margin: 0 auto 34px; color: var(--dim); font-size: 17px; }
+  .lede b { color: var(--text); }
+
+  .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; border-radius: 11px; padding: 13px 26px; font-size: 15px;
+    font-weight: 700; border: 1px solid #2c3f74; color: var(--text); background: var(--panel);
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary {
+    background: linear-gradient(180deg, #2f62c4, #234a99); border-color: #3d6ccc;
+    box-shadow: 0 8px 30px rgba(61, 108, 204, .35);
+  }
+  .btn.primary:hover { filter: brightness(1.08); }
+
+  .termline {
+    margin: 40px auto 0; max-width: 620px; text-align: left; background: #070b16;
+    border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px;
+    font-family: var(--mono); font-size: 13px; color: #b8c6ea;
+  }
+  .termline .p { color: var(--good); }
+  .termline .c { color: var(--dim); }
+
+  section { padding: 64px 0; }
+  section h2 { font-size: 26px; margin: 0 0 8px; letter-spacing: -.3px; text-align: center; }
+  .sectionsub { text-align: center; color: var(--dim); margin: 0 auto 40px; max-width: 620px; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .stat {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px; text-align: center;
+  }
+  .stat .v { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .stat .v.good { color: var(--good); } .stat .v.accent { color: var(--accent); }
+  .stat .l { color: var(--dim); font-size: 12.5px; margin-top: 5px; }
+  .stats-note { text-align: center; color: var(--dim); font-size: 12px; margin-top: 12px; }
+
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; counter-reset: step; }
+  .step {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px;
+    position: relative;
+  }
+  .step::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero);
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+    border: 1px solid #2c3f74; border-radius: 7px; padding: 3px 8px;
+    display: inline-block; margin-bottom: 12px;
+  }
+  .step h3 { margin: 0 0 8px; font-size: 16px; }
+  .step p { margin: 0; color: var(--dim); font-size: 13.5px; }
+  .step .mono { font-family: var(--mono); font-size: 12px; color: var(--text); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  .feature { background: var(--panel2); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; }
+  .feature .ico { font-size: 22px; margin-bottom: 10px; }
+  .feature h3 { margin: 0 0 7px; font-size: 15.5px; }
+  .feature p { margin: 0; color: var(--dim); font-size: 13.5px; }
+
+  .compare { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .compare table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .compare th, .compare td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #1a2444; }
+  .compare tr:last-child td { border-bottom: none; }
+  .compare th { background: #0d1425; color: var(--dim); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; }
+  .compare td:first-child { color: var(--dim); width: 26%; }
+  .compare .no { color: var(--bad); } .compare .yes { color: var(--good); font-weight: 600; }
+
+  .finale { text-align: center; padding: 72px 0 84px; }
+  .finale h2 { font-size: 30px; }
+
+  footer {
+    border-top: 1px solid var(--line); padding: 26px 0 40px; color: var(--dim);
+    font-size: 13px; display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center;
+  }
+  footer .spacer { margin-left: auto; }
+  @media (max-width: 640px) { .hero { padding: 56px 0 48px; } section { padding: 44px 0; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <span>🧪</span><span class="brand">SyntraceAI</span>
+    <div class="links">
+      <a href="#how">How it works</a>
+      <a href="#features">Engine</a>
+      <a href="#compare">Why not coverage?</a>
+      <a href="/app">Mission Control</a>
+    </div>
+  </nav>
+</div>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="eyebrow">micro1 Frontier Engineering Challenge 2026</div>
+    <h1><span class="strike">Your tests pass.</span><br>Your AI still ships bugs.</h1>
+    <p class="lede">
+      <b>SyntraceAI</b> is an autonomous chaos agent that injects <b>50 adversarial bugs</b> —
+      subtle AST code mutations and prompt perturbations — into your AI application, then measures
+      what your test suite <i>actually</i> catches. Survivors don't get hidden;
+      they get <b>auto-healed</b> with synthesized assertion tests.
+    </p>
+    <div class="cta-row">
+      <a class="btn primary" href="/app">🚀 Launch App</a>
+      <a class="btn" href="#how">See how it works</a>
+    </div>
+    <div class="termline">
+      <div><span class="p">$</span> python main.py full</div>
+      <div class="c">→ injecting 38 AST mutants + 12 prompt perturbations…</div>
+      <div class="c">→ sandboxed evaluation · differential auto-heal · re-run</div>
+      <div id="termScore" class="c">→ Mutation Score: <span style="color:var(--good)">run the engine to print yours</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <section id="stats">
+    <div class="stats">
+      <div class="stat"><div id="sBank" class="v accent">50</div><div class="l">adversarial bugs per campaign</div></div>
+      <div class="stat"><div id="sScore" class="v good">—</div><div class="l">final mutation score (live)</div></div>
+      <div class="stat"><div id="sHealed" class="v accent">—</div><div class="l">auto-healed assertion tests (live)</div></div>
+      <div class="stat"><div class="v">$0</div><div class="l">API cost · fully deterministic · offline</div></div>
+    </div>
+    <div class="stats-note">Live tiles read the latest real campaign report — nothing on this page is a mock number.</div>
+  </section>
+
+  <section id="how">
+    <h2>An adversary in four moves</h2>
+    <p class="sectionsub">One command runs the whole campaign. Every number in the report comes from a real, seeded, reproducible run.</p>
+    <div class="steps">
+      <div class="step">
+        <h3>Inject</h3>
+        <p>Seven AST operator families flip <span class="mono">>=</span> to <span class="mono">></span>,
+        <span class="mono">+</span> to <span class="mono">-</span>, negate branches, nudge boundary constants.
+        Twelve prompt perturbations strip roles, rename schema keys, corrupt delimiters.</p>
+      </div>
+      <div class="step">
+        <h3>Isolate</h3>
+        <p>Every bug runs against your suite in its own sandboxed copy of the project —
+        parallel, timeout-guarded, resource-capped. Runaway mutants get killed, not your machine.</p>
+      </div>
+      <div class="step">
+        <h3>Score</h3>
+        <p>Killed vs. survived. The mutation score is the number your line-coverage report was hiding:
+        how many real behavior changes your assertions actually notice.</p>
+      </div>
+      <div class="step">
+        <h3>Heal</h3>
+        <p>For each survivor, differential input search finds an input where original and mutant disagree —
+        then synthesizes a hardened assertion test pinning the correct behavior. Verified, never guessed.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <h2>What's in the engine</h2>
+    <p class="sectionsub">Built as a dual-solution benchmark: the same 50-bug bank audits a standard coverage.py baseline and the SyntraceAI campaign.</p>
+    <div class="grid">
+      <div class="feature"><div class="ico">🧬</div><h3>AST Mutation Engine</h3>
+        <p>Arithmetic, comparison, boolean, condition-negation, constant, boundary and return-value operators.
+        Every mutant is compile-validated before it ships to a sandbox.</p></div>
+      <div class="feature"><div class="ico">🗣️</div><h3>Prompt Perturbation Fleet</h3>
+        <p>Twelve attacks on the system prompt — role stripping, JSON-only directive removal, schema key renames,
+        zero-width whitespace — surfacing silent hallucination paths your happy-path tests never touch.</p></div>
+      <div class="feature"><div class="ico">📦</div><h3>Sandboxed Execution</h3>
+        <p>Fresh project copy per mutant, parallel workers, hard timeouts. Exit codes map to
+        killed / survived / timeout / error — loud failures count as detections, silence never does.</p></div>
+      <div class="feature"><div class="ico">🩹</div><h3>Differential Auto-Healing</h3>
+        <p>Subprocess probes evaluate original vs. mutant over boundary-aware generated inputs.
+        Only a <i>verified</i> discriminating input becomes a test; equivalent mutants are reported honestly.</p></div>
+      <div class="feature"><div class="ico">🛰️</div><h3>Trajectory Logging</h3>
+        <p>Every campaign step — instructions, tool commands, outputs, human checkpoints — captured as
+        agent trajectory JSON, ready for evaluation platforms like micro1.</p></div>
+      <div class="feature"><div class="ico">🎛️</div><h3>Mission Control</h3>
+        <p>A local dashboard to launch campaigns, stream the engine log live, and explore scores,
+        survivors and healed tests — plus JSON and self-contained HTML reports for CI.</p></div>
+    </div>
+  </section>
+
+  <section id="compare">
+    <h2>Line coverage is a vanity metric</h2>
+    <p class="sectionsub">A suite can execute 90% of your lines while asserting almost nothing about them. SyntraceAI measures what your tests defend, not what they visit.</p>
+    <div class="compare">
+      <table>
+        <tr><th></th><th>coverage.py baseline</th><th>SyntraceAI</th></tr>
+        <tr><td>Measures</td><td class="no">lines executed</td><td class="yes">behavior changes detected</td></tr>
+        <tr><td>Prompt drift &amp; hallucinations</td><td class="no">invisible</td><td class="yes">12 perturbation attacks, scored</td></tr>
+        <tr><td>When tests are weak</td><td class="no">still reports green</td><td class="yes">survivors listed with exact locations</td></tr>
+        <tr><td>Fixing the gaps</td><td class="no">manual</td><td class="yes">auto-healed assertion suite, verified by re-run</td></tr>
+        <tr><td>Reproducibility</td><td class="no">—</td><td class="yes">seeded, deterministic, one command, $0</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="finale">
+    <h2>Watch your suite get hunted.</h2>
+    <p class="sectionsub">Launch Mission Control, run the campaign, and see the false-confidence gap on your own screen.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="/app">🚀 Launch App</a>
+    </div>
+  </section>
+</div>
+
+<div class="wrap">
+  <footer>
+    <span>🧪 SyntraceAI</span>
+    <span>Apache 2.0 Open Source</span>
+    <span class="spacer"></span>
+    <span>Built by Ifeanyichukwu Onwo (mrnetwork) · micro1 Frontier Engineering Challenge 2026</span>
+  </footer>
+</div>
+
+<script>
+'use strict';
+(async () => {
+  try {
+    const r = await (await fetch('/api/reports')).json();
+    const m = r.mutation;
+    if (!m) return;
+    const score = Number(m.score_final);
+    if (Number.isFinite(score)) {
+      document.getElementById('sScore').textContent = score.toFixed(1) + '%';
+      document.getElementById('termScore').innerHTML =
+        '→ Mutation Score: <span style="color:var(--good)">' + score.toFixed(1) + '%</span> · ' +
+        (m.detected_final ?? '—') + '/' + (m.total_bugs ?? '—') + ' bugs detected';
+    }
+    if (Number.isFinite(Number(m.total_bugs))) document.getElementById('sBank').textContent = m.total_bugs;
+    const healed = (m.healed_tests || []).length;
+    document.getElementById('sHealed').textContent = healed;
+  } catch (e) { /* engine not run yet — static copy stands */ }
+})();
+</script>
+</body>
+</html>
