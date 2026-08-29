@@ -1,0 +1,541 @@
+{
+  "report": "baseline",
+  "target": "targets/sample_app",
+  "seed": 1337,
+  "line_coverage_pct": 87.06,
+  "tests_passed": 48,
+  "total": 50,
+  "detected": 24,
+  "detection_pct": 48.0,
+  "per_kind": {
+    "code": {
+      "total": 38,
+      "detected": 18,
+      "detection_pct": 47.4
+    },
+    "prompt": {
+      "total": 12,
+      "detected": 6,
+      "detection_pct": 50.0
+    }
+  },
+  "per_operator": {
+    "ArithmeticOperatorSwap": {
+      "total": 6,
+      "detected": 5
+    },
+    "BooleanOperatorSwap": {
+      "total": 3,
+      "detected": 1
+    },
+    "BoundaryValueMutation": {
+      "total": 6,
+      "detected": 2
+    },
+    "ComparisonOperatorSwap": {
+      "total": 5,
+      "detected": 0
+    },
+    "ConditionNegation": {
+      "total": 6,
+      "detected": 5
+    },
+    "ConstantMutation": {
+      "total": 6,
+      "detected": 1
+    },
+    "FewShotDrop": {
+      "total": 1,
+      "detected": 0
+    },
+    "InstructionNegation": {
+      "total": 1,
+      "detected": 1
+    },
+    "JsonOnlyDirectiveRemoval": {
+      "total": 1,
+      "detected": 1
+    },
+    "RangeRuleRemoval": {
+      "total": 1,
+      "detected": 0
+    },
+    "ReturnValueMutation": {
+      "total": 6,
+      "detected": 4
+    },
+    "RoleStripping": {
+      "total": 1,
+      "detected": 0
+    },
+    "SchemaKeyRename": {
+      "total": 3,
+      "detected": 1
+    },
+    "SectionMarkerCorruption": {
+      "total": 2,
+      "detected": 2
+    },
+    "TypeRuleRemoval": {
+      "total": 1,
+      "detected": 1
+    },
+    "WhitespaceNoise": {
+      "total": 1,
+      "detected": 0
+    }
+  },
+  "results": [
+    {
+      "id": "M001",
+      "kind": "code",
+      "operator": "ArithmeticOperatorSwap",
+      "location": "app/llm_pipeline.py:137",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.27
+    },
+    {
+      "id": "M002",
+      "kind": "code",
+      "operator": "BooleanOperatorSwap",
+      "location": "app/llm_pipeline.py:157",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27
+    },
+    {
+      "id": "M003",
+      "kind": "code",
+      "operator": "BoundaryValueMutation",
+      "location": "app/llm_pipeline.py:115",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.27
+    },
+    {
+      "id": "M004",
+      "kind": "code",
+      "operator": "ComparisonOperatorSwap",
+      "location": "app/llm_pipeline.py:113",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.27
+    },
+    {
+      "id": "M005",
+      "kind": "code",
+      "operator": "ConditionNegation",
+      "location": "app/llm_pipeline.py:139",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.27
+    },
+    {
+      "id": "M006",
+      "kind": "code",
+      "operator": "ConstantMutation",
+      "location": "app/llm_pipeline.py:104",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.27
+    },
+    {
+      "id": "M007",
+      "kind": "code",
+      "operator": "ReturnValueMutation",
+      "location": "app/llm_pipeline.py:174",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.28
+    },
+    {
+      "id": "M008",
+      "kind": "code",
+      "operator": "ArithmeticOperatorSwap",
+      "location": "app/pricing.py:32",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27
+    },
+    {
+      "id": "M009",
+      "kind": "code",
+      "operator": "BoundaryValueMutation",
+      "location": "app/pricing.py:26",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.32
+    },
+    {
+      "id": "M010",
+      "kind": "code",
+      "operator": "ComparisonOperatorSwap",
+      "location": "app/pricing.py:71",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.34
+    },
+    {
+      "id": "M011",
+      "kind": "code",
+      "operator": "ConditionNegation",
+      "location": "app/pricing.py:16",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.33
+    },
+    {
+      "id": "M012",
+      "kind": "code",
+      "operator": "ConstantMutation",
+      "location": "app/pricing.py:60",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.33
+    },
+    {
+      "id": "M013",
+      "kind": "code",
+      "operator": "ReturnValueMutation",
+      "location": "app/pricing.py:72",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.35
+    },
+    {
+      "id": "M014",
+      "kind": "code",
+      "operator": "ArithmeticOperatorSwap",
+      "location": "app/scoring.py:28",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.34
+    },
+    {
+      "id": "M015",
+      "kind": "code",
+      "operator": "BooleanOperatorSwap",
+      "location": "app/scoring.py:29",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.33
+    },
+    {
+      "id": "M016",
+      "kind": "code",
+      "operator": "BoundaryValueMutation",
+      "location": "app/scoring.py:59",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.34
+    },
+    {
+      "id": "M017",
+      "kind": "code",
+      "operator": "ComparisonOperatorSwap",
+      "location": "app/scoring.py:50",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.26
+    },
+    {
+      "id": "M018",
+      "kind": "code",
+      "operator": "ConditionNegation",
+      "location": "app/scoring.py:55",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29
+    },
+    {
+      "id": "M019",
+      "kind": "code",
+      "operator": "ConstantMutation",
+      "location": "app/scoring.py:62",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.28
+    },
+    {
+      "id": "M020",
+      "kind": "code",
+      "operator": "ReturnValueMutation",
+      "location": "app/scoring.py:14",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29
+    },
+    {
+      "id": "M021",
+      "kind": "code",
+      "operator": "ConditionNegation",
+      "location": "app/validators.py:63",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3
+    },
+    {
+      "id": "M022",
+      "kind": "code",
+      "operator": "ConstantMutation",
+      "location": "app/validators.py:93",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29
+    },
+    {
+      "id": "M023",
+      "kind": "code",
+      "operator": "ReturnValueMutation",
+      "location": "app/validators.py:56",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29
+    },
+    {
+      "id": "M024",
+      "kind": "code",
+      "operator": "ArithmeticOperatorSwap",
+      "location": "app/llm_pipeline.py:83",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29
+    },
+    {
+      "id": "M025",
+      "kind": "code",
+      "operator": "BooleanOperatorSwap",
+      "location": "app/llm_pipeline.py:160",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.27
+    },
+    {
+      "id": "M026",
+      "kind": "code",
+      "operator": "BoundaryValueMutation",
+      "location": "app/llm_pipeline.py:111",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.29
+    },
+    {
+      "id": "M027",
+      "kind": "code",
+      "operator": "ComparisonOperatorSwap",
+      "location": "app/llm_pipeline.py:115",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.29
+    },
+    {
+      "id": "M028",
+      "kind": "code",
+      "operator": "ConditionNegation",
+      "location": "app/llm_pipeline.py:152",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3
+    },
+    {
+      "id": "M029",
+      "kind": "code",
+      "operator": "ConstantMutation",
+      "location": "app/llm_pipeline.py:85",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.29
+    },
+    {
+      "id": "M030",
+      "kind": "code",
+      "operator": "ReturnValueMutation",
+      "location": "app/llm_pipeline.py:114",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.3
+    },
+    {
+      "id": "M031",
+      "kind": "code",
+      "operator": "ArithmeticOperatorSwap",
+      "location": "app/pricing.py:76",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3
+    },
+    {
+      "id": "M032",
+      "kind": "code",
+      "operator": "BoundaryValueMutation",
+      "location": "app/pricing.py:30",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3
+    },
+    {
+      "id": "M033",
+      "kind": "code",
+      "operator": "ComparisonOperatorSwap",
+      "location": "app/pricing.py:28",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.32
+    },
+    {
+      "id": "M034",
+      "kind": "code",
+      "operator": "ConditionNegation",
+      "location": "app/pricing.py:71",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3
+    },
+    {
+      "id": "M035",
+      "kind": "code",
+      "operator": "ConstantMutation",
+      "location": "app/pricing.py:76",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.28
+    },
+    {
+      "id": "M036",
+      "kind": "code",
+      "operator": "ReturnValueMutation",
+      "location": "app/pricing.py:17",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3
+    },
+    {
+      "id": "M037",
+      "kind": "code",
+      "operator": "ArithmeticOperatorSwap",
+      "location": "app/scoring.py:28",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3
+    },
+    {
+      "id": "M038",
+      "kind": "code",
+      "operator": "BoundaryValueMutation",
+      "location": "app/scoring.py:61",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.29
+    },
+    {
+      "id": "P001",
+      "kind": "prompt",
+      "operator": "RoleStripping",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.29
+    },
+    {
+      "id": "P002",
+      "kind": "prompt",
+      "operator": "JsonOnlyDirectiveRemoval",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3
+    },
+    {
+      "id": "P003",
+      "kind": "prompt",
+      "operator": "InstructionNegation",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.26
+    },
+    {
+      "id": "P004",
+      "kind": "prompt",
+      "operator": "SchemaKeyRename",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.25
+    },
+    {
+      "id": "P005",
+      "kind": "prompt",
+      "operator": "SchemaKeyRename",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.25
+    },
+    {
+      "id": "P006",
+      "kind": "prompt",
+      "operator": "SchemaKeyRename",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29
+    },
+    {
+      "id": "P007",
+      "kind": "prompt",
+      "operator": "TypeRuleRemoval",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29
+    },
+    {
+      "id": "P008",
+      "kind": "prompt",
+      "operator": "RangeRuleRemoval",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.29
+    },
+    {
+      "id": "P009",
+      "kind": "prompt",
+      "operator": "SectionMarkerCorruption",
+      "location": "prompt:TICKET_TEMPLATE",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28
+    },
+    {
+      "id": "P010",
+      "kind": "prompt",
+      "operator": "SectionMarkerCorruption",
+      "location": "prompt:TICKET_TEMPLATE",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28
+    },
+    {
+      "id": "P011",
+      "kind": "prompt",
+      "operator": "WhitespaceNoise",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.25
+    },
+    {
+      "id": "P012",
+      "kind": "prompt",
+      "operator": "FewShotDrop",
+      "location": "prompt:FEW_SHOT_BLOCK",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.24
+    }
+  ],
+  "wall_time_s": 2.65
+}

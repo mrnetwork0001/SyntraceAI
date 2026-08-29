@@ -1,0 +1,1948 @@
+{
+  "target": "targets/sample_app",
+  "seed": 1337,
+  "line_coverage_pct": 87.1,
+  "total_bugs": 50,
+  "code_mutants": 38,
+  "prompt_perturbations": 12,
+  "original_results": [
+    {
+      "mutant_id": "M001",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/llm_pipeline.py:137",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.37,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '+' -> '-'"
+    },
+    {
+      "mutant_id": "M002",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "app/llm_pipeline.py:157",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.36,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_urgent_bug_gets_high_priority"
+      ],
+      "phase": "original_suite",
+      "description": "boolean swap: 'and' -> 'or'"
+    },
+    {
+      "mutant_id": "M003",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/llm_pipeline.py:115",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.36,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "boundary shift: 2 -> 1 in comparison"
+    },
+    {
+      "mutant_id": "M004",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/llm_pipeline.py:113",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.36,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "comparison swap: '==' -> '!='"
+    },
+    {
+      "mutant_id": "M005",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/llm_pipeline.py:139",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.35,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M006",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/llm_pipeline.py:104",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.37,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "constant 1 -> 2"
+    },
+    {
+      "mutant_id": "M007",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/llm_pipeline.py:174",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.36,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M008",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/pricing.py:32",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.36,
+      "failed_tests": [
+        "tests/test_pricing.py::TestTierDiscounts::test_plus_tier_small_order"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '-' -> '+'"
+    },
+    {
+      "mutant_id": "M009",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/pricing.py:26",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.27,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "boundary shift: 500.0 -> 501.0 in comparison"
+    },
+    {
+      "mutant_id": "M010",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/pricing.py:71",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.28,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "comparison swap: '<=' -> '<'"
+    },
+    {
+      "mutant_id": "M011",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/pricing.py:16",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_pricing.py::TestTierDiscounts::test_free_tier_pays_full_price"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M012",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/pricing.py:60",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.28,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "constant 250.0 -> 251.0"
+    },
+    {
+      "mutant_id": "M013",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/pricing.py:72",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_pricing.py::TestCoupons::test_no_coupon_leaves_amount_unchanged"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M014",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/scoring.py:28",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_scoring.py::TestPriorityScore::test_critical_with_high_confidence_maxes_out"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '*' -> '/'"
+    },
+    {
+      "mutant_id": "M015",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "app/scoring.py:29",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.28,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "boolean swap: 'and' -> 'or'"
+    },
+    {
+      "mutant_id": "M016",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/scoring.py:59",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_scoring.py::TestSlaHours::test_mid_priority_lane"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 3 -> 4 in comparison"
+    },
+    {
+      "mutant_id": "M017",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/scoring.py:50",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.26,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "comparison swap: '>=' -> '>'"
+    },
+    {
+      "mutant_id": "M018",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/scoring.py:55",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_scoring.py::TestSlaHours::test_critical_gets_one_hour"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M019",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/scoring.py:62",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.27,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "constant 48 -> 49"
+    },
+    {
+      "mutant_id": "M020",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/scoring.py:14",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_scoring.py::TestPriorityScore::test_critical_with_high_confidence_maxes_out"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M021",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/validators.py:63",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestTriageTicket::test_urgent_bug_escalates"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M022",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/validators.py:93",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestTriageTicket::test_returns_a_result"
+      ],
+      "phase": "original_suite",
+      "description": "constant 0 -> 1"
+    },
+    {
+      "mutant_id": "M023",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/validators.py:56",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestTriageTicket::test_vague_ticket_falls_back_to_general"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M024",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/llm_pipeline.py:83",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '+' -> '-'"
+    },
+    {
+      "mutant_id": "M025",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "app/llm_pipeline.py:160",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.25,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "boolean swap: 'and' -> 'or'"
+    },
+    {
+      "mutant_id": "M026",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/llm_pipeline.py:111",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.26,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "boundary shift: 4 -> 5 in comparison"
+    },
+    {
+      "mutant_id": "M027",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/llm_pipeline.py:115",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.27,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "comparison swap: '==' -> '!='"
+    },
+    {
+      "mutant_id": "M028",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/llm_pipeline.py:152",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.26,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M029",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/llm_pipeline.py:85",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.27,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "constant 1 -> 2"
+    },
+    {
+      "mutant_id": "M030",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/llm_pipeline.py:114",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.26,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M031",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/pricing.py:76",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_pricing.py::TestCoupons::test_typical_coupon"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '*' -> '/'"
+    },
+    {
+      "mutant_id": "M032",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/pricing.py:30",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.26,
+      "failed_tests": [
+        "tests/test_pricing.py::TestTierDiscounts::test_free_tier_pays_full_price"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 0.25 -> -0.75 in comparison"
+    },
+    {
+      "mutant_id": "M033",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/pricing.py:28",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.25,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "comparison swap: '>=' -> '>'"
+    },
+    {
+      "mutant_id": "M034",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/pricing.py:71",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_pricing.py::TestCoupons::test_typical_coupon"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M035",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/pricing.py:76",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.27,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "constant 2 -> 3"
+    },
+    {
+      "mutant_id": "M036",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/pricing.py:17",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_pricing.py::TestTierDiscounts::test_zero_subtotal_costs_nothing"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M037",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/scoring.py:28",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_scoring.py::TestPriorityScore::test_critical_with_high_confidence_maxes_out"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '+' -> '-'"
+    },
+    {
+      "mutant_id": "M038",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/scoring.py:61",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.26,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "boundary shift: 2 -> 3 in comparison"
+    },
+    {
+      "mutant_id": "P001",
+      "kind": "prompt",
+      "operator_name": "RoleStripping",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.26,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "Remove the 'You are TriageBot...' role line from SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P002",
+      "kind": "prompt",
+      "operator_name": "JsonOnlyDirectiveRemoval",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_returns_parseable_json"
+      ],
+      "phase": "original_suite",
+      "description": "Remove the 'Respond ONLY with a single valid JSON object' directive line from SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P003",
+      "kind": "prompt",
+      "operator_name": "InstructionNegation",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.26,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_returns_parseable_json"
+      ],
+      "phase": "original_suite",
+      "description": "Replace the JSON-only directive with explicit permission to add commentary around the JSON object."
+    },
+    {
+      "mutant_id": "P004",
+      "kind": "prompt",
+      "operator_name": "SchemaKeyRename",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.27,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "Rename required key \"confidence\" to \"certainty\" in the Required-keys line."
+    },
+    {
+      "mutant_id": "P005",
+      "kind": "prompt",
+      "operator_name": "SchemaKeyRename",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.26,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "Rename required key \"summary\" to \"synopsis\" in the Required-keys line."
+    },
+    {
+      "mutant_id": "P006",
+      "kind": "prompt",
+      "operator_name": "SchemaKeyRename",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
+      ],
+      "phase": "original_suite",
+      "description": "Rename required key \"category\" to \"topic\" in the Required-keys line."
+    },
+    {
+      "mutant_id": "P007",
+      "kind": "prompt",
+      "operator_name": "TypeRuleRemoval",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.26,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_urgent_bug_gets_high_priority"
+      ],
+      "phase": "original_suite",
+      "description": "Remove the 'Priority must be an integer...' type-rule line from SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P008",
+      "kind": "prompt",
+      "operator_name": "RangeRuleRemoval",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.26,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "Remove the 'Confidence must be a number...' range-rule line from SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P009",
+      "kind": "prompt",
+      "operator_name": "SectionMarkerCorruption",
+      "location": "prompt:TICKET_TEMPLATE",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
+      ],
+      "phase": "original_suite",
+      "description": "Corrupt the '### TICKET ###' section marker into '@@@ TICKET @@@' in TICKET_TEMPLATE."
+    },
+    {
+      "mutant_id": "P010",
+      "kind": "prompt",
+      "operator_name": "SectionMarkerCorruption",
+      "location": "prompt:TICKET_TEMPLATE",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.26,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_returns_parseable_json"
+      ],
+      "phase": "original_suite",
+      "description": "Remove the '### OUTPUT RULES ###' section from TICKET_TEMPLATE (all .format placeholders preserved)."
+    },
+    {
+      "mutant_id": "P011",
+      "kind": "prompt",
+      "operator_name": "WhitespaceNoise",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.22,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "Insert a zero-width space (U+200B) between 'JSON' and 'keys' in the Required-keys line of SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P012",
+      "kind": "prompt",
+      "operator_name": "FewShotDrop",
+      "location": "prompt:FEW_SHOT_BLOCK",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.19,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "Drop all few-shot worked examples: FEW_SHOT_BLOCK becomes the empty string."
+    }
+  ],
+  "healed_tests": [
+    {
+      "mutant_id": "M001",
+      "function_name": "mock_llm",
+      "module": "app.llm_pipeline",
+      "input_repr": "('### ROLE ###\\nYou are TriageBot, a senior support-ticket triage analyst.\\nYour job is to read one customer support ticket and classify it for the on-call team.\\nRespond ONLY with a single valid JSON object and nothing else.\\nRequired JSON keys: \"category\", \"priority\", \"confidence\", \"summary\".\\nValid categories are: billing, bug, account, performance, general.\\nPriority must be an integer from 1 (lowest) to 5 (critical).\\nConfidence must be a number between 0.0 and 1.0.\\nThe summary must restate the ticket in eight words or fewer.\\n\\n### EXAMPLES ###\\nExample 1\\nTicket: I was charged twice for my subscription this month, please refund one charge.\\nOutput: {\"category\": \"billing\", \"priority\": 3, \"confidence\": 0.95, \"summary\": \"Customer was charged twice and wants a refund\"}\\n\\nExample 2\\nTicket: The dashboard crashes with an error every time I open the reports tab.\\nOutput: {\"category\": \"bug\", \"priority\": 4, \"confidence\": 0.75, \"summary\": \"Dashboard crashes with an error on reports tab\"}\\n\\n### TICKET ###\\nRequired JSON keys:\\n\\n### OUTPUT RULES ###\\nReturn a single JSON object as the entire response, using exactly the required keys.\\nDo not add markdown fences, commentary, or any text before or after the JSON.',)",
+      "expected_repr": "'{\"category\":\"general\",\"priority\":1,\"confidence\":0.95,\"summary\":\"Required JSON keys:\"}'",
+      "test_name": "test_healed_M001_mock_llm",
+      "test_source": "# Mutant M001 | ArithmeticOperatorSwap | app/llm_pipeline.py:137\n# original: 0.6 + 0.05 * len(category)  |  mutated: 0.6 - 0.05 * len(category)\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M001_mock_llm() -> None:\n    assert app.llm_pipeline.mock_llm('### ROLE ###\\nYou are TriageBot, a senior support-ticket triage analyst.\\nYour job is to read one customer support ticket and classify it for the on-call team.\\nRespond ONLY with a single valid JSON object and nothing else.\\nRequired JSON keys: \"category\", \"priority\", \"confidence\", \"summary\".\\nValid categories are: billing, bug, account, performance, general.\\nPriority must be an integer from 1 (lowest) to 5 (critical).\\nConfidence must be a number between 0.0 and 1.0.\\nThe summary must restate the ticket in eight words or fewer.\\n\\n### EXAMPLES ###\\nExample 1\\nTicket: I was charged twice for my subscription this month, please refund one charge.\\nOutput: {\"category\": \"billing\", \"priority\": 3, \"confidence\": 0.95, \"summary\": \"Customer was charged twice and wants a refund\"}\\n\\nExample 2\\nTicket: The dashboard crashes with an error every time I open the reports tab.\\nOutput: {\"category\": \"bug\", \"priority\": 4, \"confidence\": 0.75, \"summary\": \"Dashboard crashes with an error on reports tab\"}\\n\\n### TICKET ###\\nRequired JSON keys:\\n\\n### OUTPUT RULES ###\\nReturn a single JSON object as the entire response, using exactly the required keys.\\nDo not add markdown fences, commentary, or any text before or after the JSON.') == '{\"category\":\"general\",\"priority\":1,\"confidence\":0.95,\"summary\":\"Required JSON keys:\"}'\n"
+    },
+    {
+      "mutant_id": "M003",
+      "function_name": "_priority_word",
+      "module": "app.llm_pipeline",
+      "input_repr": "(1,)",
+      "expected_repr": "'low'",
+      "test_name": "test_healed_M003__priority_word",
+      "test_source": "# Mutant M003 | BoundaryValueMutation | app/llm_pipeline.py:115\n# original: priority == 2  |  mutated: priority == 1\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M003__priority_word() -> None:\n    assert app.llm_pipeline._priority_word(1) == 'low'\n"
+    },
+    {
+      "mutant_id": "M004",
+      "function_name": "_priority_word",
+      "module": "app.llm_pipeline",
+      "input_repr": "(-3,)",
+      "expected_repr": "'low'",
+      "test_name": "test_healed_M004__priority_word",
+      "test_source": "# Mutant M004 | ComparisonOperatorSwap | app/llm_pipeline.py:113\n# original: priority == 3  |  mutated: priority != 3\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M004__priority_word() -> None:\n    assert app.llm_pipeline._priority_word(-3) == 'low'\n"
+    },
+    {
+      "mutant_id": "M005",
+      "function_name": "mock_llm",
+      "module": "app.llm_pipeline",
+      "input_repr": "('Example',)",
+      "expected_repr": "'Sure! Here is the triage you asked for:\\n```json\\n{\"category\":\"general\",\"priority\":\"low\",\"summary\":\"(no ticket text)\",\"extra_thoughts\":\"hallucinated:extra_thoughts\",\"note\":\"As an AI language model, I cannot be fully certain.\"}\\n\\nHope this helps! Reply if you need a deeper analysis.\\n```\\nLet me know if you need anything else!'",
+      "test_name": "test_healed_M005_mock_llm",
+      "test_source": "# Mutant M005 | ConditionNegation | app/llm_pipeline.py:139\n# original: if words:  |  mutated: if not words:\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M005_mock_llm() -> None:\n    assert app.llm_pipeline.mock_llm('Example') == 'Sure! Here is the triage you asked for:\\n```json\\n{\"category\":\"general\",\"priority\":\"low\",\"summary\":\"(no ticket text)\",\"extra_thoughts\":\"hallucinated:extra_thoughts\",\"note\":\"As an AI language model, I cannot be fully certain.\"}\\n\\nHope this helps! Reply if you need a deeper analysis.\\n```\\nLet me know if you need anything else!'\n"
+    },
+    {
+      "mutant_id": "M006",
+      "function_name": "_priority_for",
+      "module": "app.llm_pipeline",
+      "input_repr": "('billing', 'urgent')",
+      "expected_repr": "4",
+      "test_name": "test_healed_M006__priority_for",
+      "test_source": "# Mutant M006 | ConstantMutation | app/llm_pipeline.py:104\n# original: 1  |  mutated: 2\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M006__priority_for() -> None:\n    assert app.llm_pipeline._priority_for('billing', 'urgent') == 4\n"
+    },
+    {
+      "mutant_id": "M007",
+      "function_name": "mock_llm",
+      "module": "app.llm_pipeline",
+      "input_repr": "('Required JSON keys:',)",
+      "expected_repr": "'Sure! Here is the triage you asked for:\\n```json\\n{\"category\":\"general\",\"priority\":\"low\",\"extra_thoughts\":\"hallucinated:extra_thoughts\",\"note\":\"As an AI language model, I cannot be fully certain.\"}\\n\\nHope this helps! Reply if you need a deeper analysis.\\n```\\nLet me know if you need anything else!'",
+      "test_name": "test_healed_M007_mock_llm",
+      "test_source": "# Mutant M007 | ReturnValueMutation | app/llm_pipeline.py:174\n# original: return 'Sure! Here is the triage you asked for:\\n```json\\n' + body ...  |  mutated: return None\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M007_mock_llm() -> None:\n    assert app.llm_pipeline.mock_llm('Required JSON keys:') == 'Sure! Here is the triage you asked for:\\n```json\\n{\"category\":\"general\",\"priority\":\"low\",\"extra_thoughts\":\"hallucinated:extra_thoughts\",\"note\":\"As an AI language model, I cannot be fully certain.\"}\\n\\nHope this helps! Reply if you need a deeper analysis.\\n```\\nLet me know if you need anything else!'\n"
+    },
+    {
+      "mutant_id": "M009",
+      "function_name": "apply_tier_discount",
+      "module": "app.pricing",
+      "input_repr": "(500.0, 'plus')",
+      "expected_repr": "435.0",
+      "test_name": "test_healed_M009_apply_tier_discount",
+      "test_source": "# Mutant M009 | BoundaryValueMutation | app/pricing.py:26\n# original: subtotal >= 500.0  |  mutated: subtotal >= 501.0\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M009_apply_tier_discount() -> None:\n    assert app.pricing.apply_tier_discount(500.0, 'plus') == pytest.approx(435.0)\n"
+    },
+    {
+      "mutant_id": "M012",
+      "function_name": "compute_tax",
+      "module": "app.pricing",
+      "input_repr": "(5000.0, 'us')",
+      "expected_repr": "250.0",
+      "test_name": "test_healed_M012_compute_tax",
+      "test_source": "# Mutant M012 | ConstantMutation | app/pricing.py:60\n# original: 250.0  |  mutated: 251.0\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M012_compute_tax() -> None:\n    assert app.pricing.compute_tax(5000.0, 'us') == pytest.approx(250.0)\n"
+    },
+    {
+      "mutant_id": "M015",
+      "function_name": "priority_score",
+      "module": "app.scoring",
+      "input_repr": "(-3, 1.0)",
+      "expected_repr": "28.0",
+      "test_name": "test_healed_M015_priority_score",
+      "test_source": "# Mutant M015 | BooleanOperatorSwap | app/scoring.py:29\n# original: level >= 4.0 and trust >= 0.8  |  mutated: level >= 4.0 or trust >= 0.8\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M015_priority_score() -> None:\n    assert app.scoring.priority_score(-3, 1.0) == pytest.approx(28.0)\n"
+    },
+    {
+      "mutant_id": "M017",
+      "function_name": "escalation_required",
+      "module": "app.scoring",
+      "input_repr": "(60.0, 'bug')",
+      "expected_repr": "True",
+      "test_name": "test_healed_M017_escalation_required",
+      "test_source": "# Mutant M017 | ComparisonOperatorSwap | app/scoring.py:50\n# original: score >= threshold  |  mutated: score > threshold\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M017_escalation_required() -> None:\n    assert app.scoring.escalation_required(60.0, 'bug') is True\n"
+    },
+    {
+      "mutant_id": "M019",
+      "function_name": "sla_hours",
+      "module": "app.scoring",
+      "input_repr": "(2,)",
+      "expected_repr": "48",
+      "test_name": "test_healed_M019_sla_hours",
+      "test_source": "# Mutant M019 | ConstantMutation | app/scoring.py:62\n# original: 48  |  mutated: 49\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M019_sla_hours() -> None:\n    assert app.scoring.sla_hours(2) == 48\n"
+    },
+    {
+      "mutant_id": "M025",
+      "function_name": "mock_llm",
+      "module": "app.llm_pipeline",
+      "input_repr": "('You are TriageBot',)",
+      "expected_repr": "'Sure! Here is the triage you asked for:\\n```json\\n{\"category\":\"general\",\"priority\":\"low\",\"extra_thoughts\":\"hallucinated:extra_thoughts\"}\\n\\nHope this helps! Reply if you need a deeper analysis.\\n```\\nLet me know if you need anything else!'",
+      "test_name": "test_healed_M025_mock_llm",
+      "test_source": "# Mutant M025 | BooleanOperatorSwap | app/llm_pipeline.py:160\n# original: CONFIDENCE_RULE_MARKER not in prompt and 'confidence' in payload  |  mutated: CONFIDENCE_RULE_MARKER not in prompt or 'confidence' in payload\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M025_mock_llm() -> None:\n    assert app.llm_pipeline.mock_llm('You are TriageBot') == 'Sure! Here is the triage you asked for:\\n```json\\n{\"category\":\"general\",\"priority\":\"low\",\"extra_thoughts\":\"hallucinated:extra_thoughts\"}\\n\\nHope this helps! Reply if you need a deeper analysis.\\n```\\nLet me know if you need anything else!'\n"
+    },
+    {
+      "mutant_id": "M026",
+      "function_name": "_priority_word",
+      "module": "app.llm_pipeline",
+      "input_repr": "(4,)",
+      "expected_repr": "'critical'",
+      "test_name": "test_healed_M026__priority_word",
+      "test_source": "# Mutant M026 | BoundaryValueMutation | app/llm_pipeline.py:111\n# original: priority >= 4  |  mutated: priority >= 5\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M026__priority_word() -> None:\n    assert app.llm_pipeline._priority_word(4) == 'critical'\n"
+    },
+    {
+      "mutant_id": "M027",
+      "function_name": "_priority_word",
+      "module": "app.llm_pipeline",
+      "input_repr": "(-3,)",
+      "expected_repr": "'low'",
+      "test_name": "test_healed_M027__priority_word",
+      "test_source": "# Mutant M027 | ComparisonOperatorSwap | app/llm_pipeline.py:115\n# original: priority == 2  |  mutated: priority != 2\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M027__priority_word() -> None:\n    assert app.llm_pipeline._priority_word(-3) == 'low'\n"
+    },
+    {
+      "mutant_id": "M029",
+      "function_name": "_extract_ticket",
+      "module": "app.llm_pipeline",
+      "input_repr": "('### TICKET ###Required JSON keys:',)",
+      "expected_repr": "'Required JSON keys:'",
+      "test_name": "test_healed_M029__extract_ticket",
+      "test_source": "# Mutant M029 | ConstantMutation | app/llm_pipeline.py:85\n# original: 1  |  mutated: 2\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M029__extract_ticket() -> None:\n    assert app.llm_pipeline._extract_ticket('### TICKET ###Required JSON keys:') == 'Required JSON keys:'\n"
+    },
+    {
+      "mutant_id": "M030",
+      "function_name": "_priority_word",
+      "module": "app.llm_pipeline",
+      "input_repr": "(3,)",
+      "expected_repr": "'high'",
+      "test_name": "test_healed_M030__priority_word",
+      "test_source": "# Mutant M030 | ReturnValueMutation | app/llm_pipeline.py:114\n# original: return 'high'  |  mutated: return None\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M030__priority_word() -> None:\n    assert app.llm_pipeline._priority_word(3) == 'high'\n"
+    },
+    {
+      "mutant_id": "M033",
+      "function_name": "apply_tier_discount",
+      "module": "app.pricing",
+      "input_repr": "(100.0, 'plus')",
+      "expected_repr": "92.0",
+      "test_name": "test_healed_M033_apply_tier_discount",
+      "test_source": "# Mutant M033 | ComparisonOperatorSwap | app/pricing.py:28\n# original: subtotal >= 100.0  |  mutated: subtotal > 100.0\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M033_apply_tier_discount() -> None:\n    assert app.pricing.apply_tier_discount(100.0, 'plus') == pytest.approx(92.0)\n"
+    },
+    {
+      "mutant_id": "M035",
+      "function_name": "apply_coupon",
+      "module": "app.pricing",
+      "input_repr": "(0.07, 1.0)",
+      "expected_repr": "0.07",
+      "test_name": "test_healed_M035_apply_coupon",
+      "test_source": "# Mutant M035 | ConstantMutation | app/pricing.py:76\n# original: 2  |  mutated: 3\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M035_apply_coupon() -> None:\n    assert app.pricing.apply_coupon(0.07, 1.0) == pytest.approx(0.07)\n"
+    },
+    {
+      "mutant_id": "M038",
+      "function_name": "sla_hours",
+      "module": "app.scoring",
+      "input_repr": "(2,)",
+      "expected_repr": "48",
+      "test_name": "test_healed_M038_sla_hours",
+      "test_source": "# Mutant M038 | BoundaryValueMutation | app/scoring.py:61\n# original: priority == 2  |  mutated: priority == 3\n# Discriminating input found and re-verified by differential probing.\ndef test_healed_M038_sla_hours() -> None:\n    assert app.scoring.sla_hours(2) == 48\n"
+    },
+    {
+      "mutant_id": "PC01",
+      "function_name": "triage_ticket",
+      "module": "app.llm_pipeline",
+      "input_repr": "('Please refund the duplicate charge on my billing statement.', strict=True)",
+      "expected_repr": "strict triage contract: exact key set, types, ranges",
+      "test_name": "test_healed_prompt_contract_1",
+      "test_source": "# Prompt-contract hardening test 1/5 (billing ticket).\n# Targets surviving prompt perturbations: P001, P004, P005, P008, P011, P012.\n# Asserts the exact strict-mode triage contract (ARCHITECTURE.md section 5.3).\ndef test_healed_prompt_contract_1() -> None:\n    result = app.llm_pipeline.triage_ticket('Please refund the duplicate charge on my billing statement.', strict=True)\n    assert set(result) == {'category', 'priority', 'confidence', 'summary', 'priority_score', 'escalate'}\n    assert result['category'] == 'billing'\n    assert isinstance(result['priority'], int)\n    assert not isinstance(result['priority'], bool)\n    assert 1 <= result['priority'] <= 5\n    assert isinstance(result['confidence'], float)\n    assert 0.0 <= result['confidence'] <= 1.0\n    assert isinstance(result['summary'], str)\n    assert result['summary'] != ''\n    assert isinstance(result['priority_score'], (int, float))\n    assert not isinstance(result['priority_score'], bool)\n    assert isinstance(result['escalate'], bool)\n"
+    },
+    {
+      "mutant_id": "PC02",
+      "function_name": "triage_ticket",
+      "module": "app.llm_pipeline",
+      "input_repr": "('The app crashed with an error and the export button is broken.', strict=True)",
+      "expected_repr": "strict triage contract: exact key set, types, ranges",
+      "test_name": "test_healed_prompt_contract_2",
+      "test_source": "# Prompt-contract hardening test 2/5 (bug ticket).\n# Targets surviving prompt perturbations: P001, P004, P005, P008, P011, P012.\n# Asserts the exact strict-mode triage contract (ARCHITECTURE.md section 5.3).\ndef test_healed_prompt_contract_2() -> None:\n    result = app.llm_pipeline.triage_ticket('The app crashed with an error and the export button is broken.', strict=True)\n    assert set(result) == {'category', 'priority', 'confidence', 'summary', 'priority_score', 'escalate'}\n    assert result['category'] == 'bug'\n    assert isinstance(result['priority'], int)\n    assert not isinstance(result['priority'], bool)\n    assert 1 <= result['priority'] <= 5\n    assert isinstance(result['confidence'], float)\n    assert 0.0 <= result['confidence'] <= 1.0\n    assert isinstance(result['summary'], str)\n    assert result['summary'] != ''\n    assert isinstance(result['priority_score'], (int, float))\n    assert not isinstance(result['priority_score'], bool)\n    assert isinstance(result['escalate'], bool)\n"
+    },
+    {
+      "mutant_id": "PC03",
+      "function_name": "triage_ticket",
+      "module": "app.llm_pipeline",
+      "input_repr": "('I cannot login because my password and 2fa reset failed.', strict=True)",
+      "expected_repr": "strict triage contract: exact key set, types, ranges",
+      "test_name": "test_healed_prompt_contract_3",
+      "test_source": "# Prompt-contract hardening test 3/5 (account ticket).\n# Targets surviving prompt perturbations: P001, P004, P005, P008, P011, P012.\n# Asserts the exact strict-mode triage contract (ARCHITECTURE.md section 5.3).\ndef test_healed_prompt_contract_3() -> None:\n    result = app.llm_pipeline.triage_ticket('I cannot login because my password and 2fa reset failed.', strict=True)\n    assert set(result) == {'category', 'priority', 'confidence', 'summary', 'priority_score', 'escalate'}\n    assert result['category'] == 'account'\n    assert isinstance(result['priority'], int)\n    assert not isinstance(result['priority'], bool)\n    assert 1 <= result['priority'] <= 5\n    assert isinstance(result['confidence'], float)\n    assert 0.0 <= result['confidence'] <= 1.0\n    assert isinstance(result['summary'], str)\n    assert result['summary'] != ''\n    assert isinstance(result['priority_score'], (int, float))\n    assert not isinstance(result['priority_score'], bool)\n    assert isinstance(result['escalate'], bool)\n"
+    },
+    {
+      "mutant_id": "PC04",
+      "function_name": "triage_ticket",
+      "module": "app.llm_pipeline",
+      "input_repr": "('Dashboard pages are slow and every request hits a timeout.', strict=True)",
+      "expected_repr": "strict triage contract: exact key set, types, ranges",
+      "test_name": "test_healed_prompt_contract_4",
+      "test_source": "# Prompt-contract hardening test 4/5 (performance ticket).\n# Targets surviving prompt perturbations: P001, P004, P005, P008, P011, P012.\n# Asserts the exact strict-mode triage contract (ARCHITECTURE.md section 5.3).\ndef test_healed_prompt_contract_4() -> None:\n    result = app.llm_pipeline.triage_ticket('Dashboard pages are slow and every request hits a timeout.', strict=True)\n    assert set(result) == {'category', 'priority', 'confidence', 'summary', 'priority_score', 'escalate'}\n    assert result['category'] == 'performance'\n    assert isinstance(result['priority'], int)\n    assert not isinstance(result['priority'], bool)\n    assert 1 <= result['priority'] <= 5\n    assert isinstance(result['confidence'], float)\n    assert 0.0 <= result['confidence'] <= 1.0\n    assert isinstance(result['summary'], str)\n    assert result['summary'] != ''\n    assert isinstance(result['priority_score'], (int, float))\n    assert not isinstance(result['priority_score'], bool)\n    assert isinstance(result['escalate'], bool)\n"
+    },
+    {
+      "mutant_id": "PC05",
+      "function_name": "triage_ticket",
+      "module": "app.llm_pipeline",
+      "input_repr": "('How do I download my monthly usage summary as a spreadsheet?', strict=True)",
+      "expected_repr": "strict triage contract: exact key set, types, ranges",
+      "test_name": "test_healed_prompt_contract_5",
+      "test_source": "# Prompt-contract hardening test 5/5 (general ticket).\n# Targets surviving prompt perturbations: P001, P004, P005, P008, P011, P012.\n# Asserts the exact strict-mode triage contract (ARCHITECTURE.md section 5.3).\ndef test_healed_prompt_contract_5() -> None:\n    result = app.llm_pipeline.triage_ticket('How do I download my monthly usage summary as a spreadsheet?', strict=True)\n    assert set(result) == {'category', 'priority', 'confidence', 'summary', 'priority_score', 'escalate'}\n    assert result['category'] == 'general'\n    assert isinstance(result['priority'], int)\n    assert not isinstance(result['priority'], bool)\n    assert 1 <= result['priority'] <= 5\n    assert isinstance(result['confidence'], float)\n    assert 0.0 <= result['confidence'] <= 1.0\n    assert isinstance(result['summary'], str)\n    assert result['summary'] != ''\n    assert isinstance(result['priority_score'], (int, float))\n    assert not isinstance(result['priority_score'], bool)\n    assert isinstance(result['escalate'], bool)\n"
+    }
+  ],
+  "unhealable_mutant_ids": [
+    "M010"
+  ],
+  "rerun_results": [
+    {
+      "mutant_id": "M001",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/llm_pipeline.py:137",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M001_mock_llm"
+      ],
+      "phase": "healed_suite",
+      "description": "arithmetic swap: '+' -> '-'"
+    },
+    {
+      "mutant_id": "M003",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/llm_pipeline.py:115",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M003__priority_word"
+      ],
+      "phase": "healed_suite",
+      "description": "boundary shift: 2 -> 1 in comparison"
+    },
+    {
+      "mutant_id": "M004",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/llm_pipeline.py:113",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M003__priority_word"
+      ],
+      "phase": "healed_suite",
+      "description": "comparison swap: '==' -> '!='"
+    },
+    {
+      "mutant_id": "M005",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/llm_pipeline.py:139",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M001_mock_llm"
+      ],
+      "phase": "healed_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M006",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/llm_pipeline.py:104",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M006__priority_for"
+      ],
+      "phase": "healed_suite",
+      "description": "constant 1 -> 2"
+    },
+    {
+      "mutant_id": "M007",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/llm_pipeline.py:174",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M005_mock_llm"
+      ],
+      "phase": "healed_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M009",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/pricing.py:26",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M009_apply_tier_discount"
+      ],
+      "phase": "healed_suite",
+      "description": "boundary shift: 500.0 -> 501.0 in comparison"
+    },
+    {
+      "mutant_id": "M010",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/pricing.py:71",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.29,
+      "failed_tests": [],
+      "phase": "healed_suite",
+      "description": "comparison swap: '<=' -> '<'"
+    },
+    {
+      "mutant_id": "M012",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/pricing.py:60",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M012_compute_tax"
+      ],
+      "phase": "healed_suite",
+      "description": "constant 250.0 -> 251.0"
+    },
+    {
+      "mutant_id": "M015",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "app/scoring.py:29",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M015_priority_score"
+      ],
+      "phase": "healed_suite",
+      "description": "boolean swap: 'and' -> 'or'"
+    },
+    {
+      "mutant_id": "M017",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/scoring.py:50",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M017_escalation_required"
+      ],
+      "phase": "healed_suite",
+      "description": "comparison swap: '>=' -> '>'"
+    },
+    {
+      "mutant_id": "M019",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/scoring.py:62",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M019_sla_hours"
+      ],
+      "phase": "healed_suite",
+      "description": "constant 48 -> 49"
+    },
+    {
+      "mutant_id": "M025",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "app/llm_pipeline.py:160",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M001_mock_llm"
+      ],
+      "phase": "healed_suite",
+      "description": "boolean swap: 'and' -> 'or'"
+    },
+    {
+      "mutant_id": "M026",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/llm_pipeline.py:111",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M026__priority_word"
+      ],
+      "phase": "healed_suite",
+      "description": "boundary shift: 4 -> 5 in comparison"
+    },
+    {
+      "mutant_id": "M027",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/llm_pipeline.py:115",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M003__priority_word"
+      ],
+      "phase": "healed_suite",
+      "description": "comparison swap: '==' -> '!='"
+    },
+    {
+      "mutant_id": "M029",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/llm_pipeline.py:85",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M029__extract_ticket"
+      ],
+      "phase": "healed_suite",
+      "description": "constant 1 -> 2"
+    },
+    {
+      "mutant_id": "M030",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/llm_pipeline.py:114",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M030__priority_word"
+      ],
+      "phase": "healed_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M033",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/pricing.py:28",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M033_apply_tier_discount"
+      ],
+      "phase": "healed_suite",
+      "description": "comparison swap: '>=' -> '>'"
+    },
+    {
+      "mutant_id": "M035",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/pricing.py:76",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M035_apply_coupon"
+      ],
+      "phase": "healed_suite",
+      "description": "constant 2 -> 3"
+    },
+    {
+      "mutant_id": "M038",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/scoring.py:61",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M019_sla_hours"
+      ],
+      "phase": "healed_suite",
+      "description": "boundary shift: 2 -> 3 in comparison"
+    },
+    {
+      "mutant_id": "P001",
+      "kind": "prompt",
+      "operator_name": "RoleStripping",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
+      ],
+      "phase": "healed_suite",
+      "description": "Remove the 'You are TriageBot...' role line from SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P004",
+      "kind": "prompt",
+      "operator_name": "SchemaKeyRename",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
+      ],
+      "phase": "healed_suite",
+      "description": "Rename required key \"confidence\" to \"certainty\" in the Required-keys line."
+    },
+    {
+      "mutant_id": "P005",
+      "kind": "prompt",
+      "operator_name": "SchemaKeyRename",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
+      ],
+      "phase": "healed_suite",
+      "description": "Rename required key \"summary\" to \"synopsis\" in the Required-keys line."
+    },
+    {
+      "mutant_id": "P008",
+      "kind": "prompt",
+      "operator_name": "RangeRuleRemoval",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
+      ],
+      "phase": "healed_suite",
+      "description": "Remove the 'Confidence must be a number...' range-rule line from SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P011",
+      "kind": "prompt",
+      "operator_name": "WhitespaceNoise",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.23,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
+      ],
+      "phase": "healed_suite",
+      "description": "Insert a zero-width space (U+200B) between 'JSON' and 'keys' in the Required-keys line of SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P012",
+      "kind": "prompt",
+      "operator_name": "FewShotDrop",
+      "location": "prompt:FEW_SHOT_BLOCK",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.22,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
+      ],
+      "phase": "healed_suite",
+      "description": "Drop all few-shot worked examples: FEW_SHOT_BLOCK becomes the empty string."
+    }
+  ],
+  "wall_time_s": 7.9,
+  "detected_original": 24,
+  "score_original": 48.0,
+  "detected_final": 49,
+  "score_final": 98.0,
+  "final_results": [
+    {
+      "mutant_id": "M001",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/llm_pipeline.py:137",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M001_mock_llm"
+      ],
+      "phase": "healed_suite",
+      "description": "arithmetic swap: '+' -> '-'"
+    },
+    {
+      "mutant_id": "M002",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "app/llm_pipeline.py:157",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.36,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_urgent_bug_gets_high_priority"
+      ],
+      "phase": "original_suite",
+      "description": "boolean swap: 'and' -> 'or'"
+    },
+    {
+      "mutant_id": "M003",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/llm_pipeline.py:115",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M003__priority_word"
+      ],
+      "phase": "healed_suite",
+      "description": "boundary shift: 2 -> 1 in comparison"
+    },
+    {
+      "mutant_id": "M004",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/llm_pipeline.py:113",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M003__priority_word"
+      ],
+      "phase": "healed_suite",
+      "description": "comparison swap: '==' -> '!='"
+    },
+    {
+      "mutant_id": "M005",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/llm_pipeline.py:139",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M001_mock_llm"
+      ],
+      "phase": "healed_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M006",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/llm_pipeline.py:104",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M006__priority_for"
+      ],
+      "phase": "healed_suite",
+      "description": "constant 1 -> 2"
+    },
+    {
+      "mutant_id": "M007",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/llm_pipeline.py:174",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M005_mock_llm"
+      ],
+      "phase": "healed_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M008",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/pricing.py:32",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.36,
+      "failed_tests": [
+        "tests/test_pricing.py::TestTierDiscounts::test_plus_tier_small_order"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '-' -> '+'"
+    },
+    {
+      "mutant_id": "M009",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/pricing.py:26",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M009_apply_tier_discount"
+      ],
+      "phase": "healed_suite",
+      "description": "boundary shift: 500.0 -> 501.0 in comparison"
+    },
+    {
+      "mutant_id": "M010",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/pricing.py:71",
+      "outcome": "survived",
+      "detected": false,
+      "duration_s": 0.29,
+      "failed_tests": [],
+      "phase": "healed_suite",
+      "description": "comparison swap: '<=' -> '<'"
+    },
+    {
+      "mutant_id": "M011",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/pricing.py:16",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_pricing.py::TestTierDiscounts::test_free_tier_pays_full_price"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M012",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/pricing.py:60",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M012_compute_tax"
+      ],
+      "phase": "healed_suite",
+      "description": "constant 250.0 -> 251.0"
+    },
+    {
+      "mutant_id": "M013",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/pricing.py:72",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_pricing.py::TestCoupons::test_no_coupon_leaves_amount_unchanged"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M014",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/scoring.py:28",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_scoring.py::TestPriorityScore::test_critical_with_high_confidence_maxes_out"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '*' -> '/'"
+    },
+    {
+      "mutant_id": "M015",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "app/scoring.py:29",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M015_priority_score"
+      ],
+      "phase": "healed_suite",
+      "description": "boolean swap: 'and' -> 'or'"
+    },
+    {
+      "mutant_id": "M016",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/scoring.py:59",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_scoring.py::TestSlaHours::test_mid_priority_lane"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 3 -> 4 in comparison"
+    },
+    {
+      "mutant_id": "M017",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/scoring.py:50",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M017_escalation_required"
+      ],
+      "phase": "healed_suite",
+      "description": "comparison swap: '>=' -> '>'"
+    },
+    {
+      "mutant_id": "M018",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/scoring.py:55",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_scoring.py::TestSlaHours::test_critical_gets_one_hour"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M019",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/scoring.py:62",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M019_sla_hours"
+      ],
+      "phase": "healed_suite",
+      "description": "constant 48 -> 49"
+    },
+    {
+      "mutant_id": "M020",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/scoring.py:14",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_scoring.py::TestPriorityScore::test_critical_with_high_confidence_maxes_out"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M021",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/validators.py:63",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestTriageTicket::test_urgent_bug_escalates"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M022",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/validators.py:93",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestTriageTicket::test_returns_a_result"
+      ],
+      "phase": "original_suite",
+      "description": "constant 0 -> 1"
+    },
+    {
+      "mutant_id": "M023",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/validators.py:56",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestTriageTicket::test_vague_ticket_falls_back_to_general"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M024",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/llm_pipeline.py:83",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '+' -> '-'"
+    },
+    {
+      "mutant_id": "M025",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "app/llm_pipeline.py:160",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M001_mock_llm"
+      ],
+      "phase": "healed_suite",
+      "description": "boolean swap: 'and' -> 'or'"
+    },
+    {
+      "mutant_id": "M026",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/llm_pipeline.py:111",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M026__priority_word"
+      ],
+      "phase": "healed_suite",
+      "description": "boundary shift: 4 -> 5 in comparison"
+    },
+    {
+      "mutant_id": "M027",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/llm_pipeline.py:115",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M003__priority_word"
+      ],
+      "phase": "healed_suite",
+      "description": "comparison swap: '==' -> '!='"
+    },
+    {
+      "mutant_id": "M028",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/llm_pipeline.py:152",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.26,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M029",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/llm_pipeline.py:85",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.3,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M029__extract_ticket"
+      ],
+      "phase": "healed_suite",
+      "description": "constant 1 -> 2"
+    },
+    {
+      "mutant_id": "M030",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/llm_pipeline.py:114",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M030__priority_word"
+      ],
+      "phase": "healed_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M031",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/pricing.py:76",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_pricing.py::TestCoupons::test_typical_coupon"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '*' -> '/'"
+    },
+    {
+      "mutant_id": "M032",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/pricing.py:30",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.26,
+      "failed_tests": [
+        "tests/test_pricing.py::TestTierDiscounts::test_free_tier_pays_full_price"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 0.25 -> -0.75 in comparison"
+    },
+    {
+      "mutant_id": "M033",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "app/pricing.py:28",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M033_apply_tier_discount"
+      ],
+      "phase": "healed_suite",
+      "description": "comparison swap: '>=' -> '>'"
+    },
+    {
+      "mutant_id": "M034",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "app/pricing.py:71",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_pricing.py::TestCoupons::test_typical_coupon"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M035",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "app/pricing.py:76",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.28,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M035_apply_coupon"
+      ],
+      "phase": "healed_suite",
+      "description": "constant 2 -> 3"
+    },
+    {
+      "mutant_id": "M036",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "app/pricing.py:17",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_pricing.py::TestTierDiscounts::test_zero_subtotal_costs_nothing"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M037",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "app/scoring.py:28",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_scoring.py::TestPriorityScore::test_critical_with_high_confidence_maxes_out"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '+' -> '-'"
+    },
+    {
+      "mutant_id": "M038",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "app/scoring.py:61",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_M019_sla_hours"
+      ],
+      "phase": "healed_suite",
+      "description": "boundary shift: 2 -> 3 in comparison"
+    },
+    {
+      "mutant_id": "P001",
+      "kind": "prompt",
+      "operator_name": "RoleStripping",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
+      ],
+      "phase": "healed_suite",
+      "description": "Remove the 'You are TriageBot...' role line from SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P002",
+      "kind": "prompt",
+      "operator_name": "JsonOnlyDirectiveRemoval",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_returns_parseable_json"
+      ],
+      "phase": "original_suite",
+      "description": "Remove the 'Respond ONLY with a single valid JSON object' directive line from SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P003",
+      "kind": "prompt",
+      "operator_name": "InstructionNegation",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.26,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_returns_parseable_json"
+      ],
+      "phase": "original_suite",
+      "description": "Replace the JSON-only directive with explicit permission to add commentary around the JSON object."
+    },
+    {
+      "mutant_id": "P004",
+      "kind": "prompt",
+      "operator_name": "SchemaKeyRename",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
+      ],
+      "phase": "healed_suite",
+      "description": "Rename required key \"confidence\" to \"certainty\" in the Required-keys line."
+    },
+    {
+      "mutant_id": "P005",
+      "kind": "prompt",
+      "operator_name": "SchemaKeyRename",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
+      ],
+      "phase": "healed_suite",
+      "description": "Rename required key \"summary\" to \"synopsis\" in the Required-keys line."
+    },
+    {
+      "mutant_id": "P006",
+      "kind": "prompt",
+      "operator_name": "SchemaKeyRename",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
+      ],
+      "phase": "original_suite",
+      "description": "Rename required key \"category\" to \"topic\" in the Required-keys line."
+    },
+    {
+      "mutant_id": "P007",
+      "kind": "prompt",
+      "operator_name": "TypeRuleRemoval",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.26,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_urgent_bug_gets_high_priority"
+      ],
+      "phase": "original_suite",
+      "description": "Remove the 'Priority must be an integer...' type-rule line from SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P008",
+      "kind": "prompt",
+      "operator_name": "RangeRuleRemoval",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.29,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
+      ],
+      "phase": "healed_suite",
+      "description": "Remove the 'Confidence must be a number...' range-rule line from SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P009",
+      "kind": "prompt",
+      "operator_name": "SectionMarkerCorruption",
+      "location": "prompt:TICKET_TEMPLATE",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.27,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
+      ],
+      "phase": "original_suite",
+      "description": "Corrupt the '### TICKET ###' section marker into '@@@ TICKET @@@' in TICKET_TEMPLATE."
+    },
+    {
+      "mutant_id": "P010",
+      "kind": "prompt",
+      "operator_name": "SectionMarkerCorruption",
+      "location": "prompt:TICKET_TEMPLATE",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.26,
+      "failed_tests": [
+        "tests/test_pipeline.py::TestMockLlm::test_returns_parseable_json"
+      ],
+      "phase": "original_suite",
+      "description": "Remove the '### OUTPUT RULES ###' section from TICKET_TEMPLATE (all .format placeholders preserved)."
+    },
+    {
+      "mutant_id": "P011",
+      "kind": "prompt",
+      "operator_name": "WhitespaceNoise",
+      "location": "prompt:SYSTEM_PROMPT",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.23,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
+      ],
+      "phase": "healed_suite",
+      "description": "Insert a zero-width space (U+200B) between 'JSON' and 'keys' in the Required-keys line of SYSTEM_PROMPT."
+    },
+    {
+      "mutant_id": "P012",
+      "kind": "prompt",
+      "operator_name": "FewShotDrop",
+      "location": "prompt:FEW_SHOT_BLOCK",
+      "outcome": "killed",
+      "detected": true,
+      "duration_s": 0.22,
+      "failed_tests": [
+        "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
+      ],
+      "phase": "healed_suite",
+      "description": "Drop all few-shot worked examples: FEW_SHOT_BLOCK becomes the empty string."
+    }
+  ]
+}
