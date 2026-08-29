@@ -1,15 +1,14 @@
 {
   "task": "Adversarial mutation campaign against target application",
   "agent": "SyntraceAI Advanced Engine",
-  "timestamp": "2026-08-29T19:14:25Z",
+  "timestamp": "2026-08-29T19:38:49Z",
   "steps": [
     {
       "step_index": 1,
       "instruction": "Verify target suite is green and measure baseline line coverage",
       "action": "run_command",
       "command": "pytest -q && coverage run -m pytest",
-      "tool_output": "suite green; line coverage 87.1%",
-      "human_checkpoint": "Approved \u2014 proceeding to adversarial injection"
+      "tool_output": "suite green; line coverage 87.1%"
     },
     {
       "step_index": 2,
@@ -23,8 +22,7 @@
       "instruction": "Evaluate all injected bugs in isolated sandboxes with the original suite",
       "action": "run_command",
       "command": "sandbox_runner.evaluate_many(bank)",
-      "tool_output": "pre-heal detection 24/50 (48.0%)",
-      "human_checkpoint": "Approved \u2014 surviving bugs handed to auto-healer"
+      "tool_output": "pre-heal detection 24/50 (48.0%)"
     },
     {
       "step_index": 4,
@@ -38,8 +36,7 @@
       "instruction": "Re-run surviving bugs against the auto-healed assertion suite",
       "action": "run_command",
       "command": "sandbox_runner.evaluate_many(survivors, healed suite)",
-      "tool_output": "final mutation score 49/50 (98.0%)",
-      "human_checkpoint": "Final verification passed"
+      "tool_output": "final mutation score 49/50 (98.0%)"
     }
   ]
 }

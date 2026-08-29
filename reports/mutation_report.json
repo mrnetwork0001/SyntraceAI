@@ -13,7 +13,7 @@
       "location": "app/llm_pipeline.py:137",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.37,
+      "duration_s": 0.34,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "arithmetic swap: '+' -> '-'"
@@ -25,7 +25,7 @@
       "location": "app/llm_pipeline.py:157",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.36,
+      "duration_s": 0.33,
       "failed_tests": [
         "tests/test_pipeline.py::TestMockLlm::test_urgent_bug_gets_high_priority"
       ],
@@ -39,7 +39,7 @@
       "location": "app/llm_pipeline.py:115",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.36,
+      "duration_s": 0.34,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "boundary shift: 2 -> 1 in comparison"
@@ -51,7 +51,7 @@
       "location": "app/llm_pipeline.py:113",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.36,
+      "duration_s": 0.34,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "comparison swap: '==' -> '!='"
@@ -63,7 +63,7 @@
       "location": "app/llm_pipeline.py:139",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.35,
+      "duration_s": 0.34,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "negate if-condition"
@@ -75,7 +75,7 @@
       "location": "app/llm_pipeline.py:104",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.37,
+      "duration_s": 0.34,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "constant 1 -> 2"
@@ -87,7 +87,7 @@
       "location": "app/llm_pipeline.py:174",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.36,
+      "duration_s": 0.32,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "return value replaced with None"
@@ -99,7 +99,7 @@
       "location": "app/pricing.py:32",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.36,
+      "duration_s": 0.34,
       "failed_tests": [
         "tests/test_pricing.py::TestTierDiscounts::test_plus_tier_small_order"
       ],
@@ -113,7 +113,7 @@
       "location": "app/pricing.py:26",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.27,
+      "duration_s": 0.29,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "boundary shift: 500.0 -> 501.0 in comparison"
@@ -125,7 +125,7 @@
       "location": "app/pricing.py:71",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.28,
+      "duration_s": 0.3,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "comparison swap: '<=' -> '<'"
@@ -137,7 +137,7 @@
       "location": "app/pricing.py:16",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.3,
       "failed_tests": [
         "tests/test_pricing.py::TestTierDiscounts::test_free_tier_pays_full_price"
       ],
@@ -151,7 +151,7 @@
       "location": "app/pricing.py:60",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.28,
+      "duration_s": 0.3,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "constant 250.0 -> 251.0"
@@ -163,7 +163,7 @@
       "location": "app/pricing.py:72",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.3,
       "failed_tests": [
         "tests/test_pricing.py::TestCoupons::test_no_coupon_leaves_amount_unchanged"
       ],
@@ -177,7 +177,7 @@
       "location": "app/scoring.py:28",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.3,
       "failed_tests": [
         "tests/test_scoring.py::TestPriorityScore::test_critical_with_high_confidence_maxes_out"
       ],
@@ -191,7 +191,7 @@
       "location": "app/scoring.py:29",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.28,
+      "duration_s": 0.29,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "boolean swap: 'and' -> 'or'"
@@ -203,7 +203,7 @@
       "location": "app/scoring.py:59",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.31,
       "failed_tests": [
         "tests/test_scoring.py::TestSlaHours::test_mid_priority_lane"
       ],
@@ -217,7 +217,7 @@
       "location": "app/scoring.py:50",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.26,
+      "duration_s": 0.25,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "comparison swap: '>=' -> '>'"
@@ -243,7 +243,7 @@
       "location": "app/scoring.py:62",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.27,
+      "duration_s": 0.26,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "constant 48 -> 49"
@@ -255,7 +255,7 @@
       "location": "app/scoring.py:14",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_scoring.py::TestPriorityScore::test_critical_with_high_confidence_maxes_out"
       ],
@@ -269,7 +269,7 @@
       "location": "app/validators.py:63",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.27,
       "failed_tests": [
         "tests/test_pipeline.py::TestTriageTicket::test_urgent_bug_escalates"
       ],
@@ -283,7 +283,7 @@
       "location": "app/validators.py:93",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_pipeline.py::TestTriageTicket::test_returns_a_result"
       ],
@@ -311,7 +311,7 @@
       "location": "app/llm_pipeline.py:83",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.27,
       "failed_tests": [
         "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
       ],
@@ -325,7 +325,7 @@
       "location": "app/llm_pipeline.py:160",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.25,
+      "duration_s": 0.29,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "boolean swap: 'and' -> 'or'"
@@ -337,7 +337,7 @@
       "location": "app/llm_pipeline.py:111",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.26,
+      "duration_s": 0.31,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "boundary shift: 4 -> 5 in comparison"
@@ -349,7 +349,7 @@
       "location": "app/llm_pipeline.py:115",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.27,
+      "duration_s": 0.31,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "comparison swap: '==' -> '!='"
@@ -361,7 +361,7 @@
       "location": "app/llm_pipeline.py:152",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.26,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
       ],
@@ -375,7 +375,7 @@
       "location": "app/llm_pipeline.py:85",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.27,
+      "duration_s": 0.31,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "constant 1 -> 2"
@@ -387,7 +387,7 @@
       "location": "app/llm_pipeline.py:114",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.26,
+      "duration_s": 0.31,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "return value replaced with None"
@@ -399,7 +399,7 @@
       "location": "app/pricing.py:76",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.27,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_pricing.py::TestCoupons::test_typical_coupon"
       ],
@@ -413,7 +413,7 @@
       "location": "app/pricing.py:30",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.26,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_pricing.py::TestTierDiscounts::test_free_tier_pays_full_price"
       ],
@@ -427,7 +427,7 @@
       "location": "app/pricing.py:28",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.25,
+      "duration_s": 0.27,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "comparison swap: '>=' -> '>'"
@@ -439,7 +439,7 @@
       "location": "app/pricing.py:71",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.27,
       "failed_tests": [
         "tests/test_pricing.py::TestCoupons::test_typical_coupon"
       ],
@@ -479,7 +479,7 @@
       "location": "app/scoring.py:28",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.27,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_scoring.py::TestPriorityScore::test_critical_with_high_confidence_maxes_out"
       ],
@@ -493,7 +493,7 @@
       "location": "app/scoring.py:61",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.26,
+      "duration_s": 0.27,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "boundary shift: 2 -> 3 in comparison"
@@ -505,7 +505,7 @@
       "location": "prompt:SYSTEM_PROMPT",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.26,
+      "duration_s": 0.27,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "Remove the 'You are TriageBot...' role line from SYSTEM_PROMPT."
@@ -531,7 +531,7 @@
       "location": "prompt:SYSTEM_PROMPT",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.26,
+      "duration_s": 0.27,
       "failed_tests": [
         "tests/test_pipeline.py::TestMockLlm::test_returns_parseable_json"
       ],
@@ -569,7 +569,7 @@
       "location": "prompt:SYSTEM_PROMPT",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.27,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
       ],
@@ -609,7 +609,7 @@
       "location": "prompt:TICKET_TEMPLATE",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.27,
+      "duration_s": 0.26,
       "failed_tests": [
         "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
       ],
@@ -637,7 +637,7 @@
       "location": "prompt:SYSTEM_PROMPT",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.22,
+      "duration_s": 0.21,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "Insert a zero-width space (U+200B) between 'JSON' and 'keys' in the Required-keys line of SYSTEM_PROMPT."
@@ -649,7 +649,7 @@
       "location": "prompt:FEW_SHOT_BLOCK",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.19,
+      "duration_s": 0.2,
       "failed_tests": [],
       "phase": "original_suite",
       "description": "Drop all few-shot worked examples: FEW_SHOT_BLOCK becomes the empty string."
@@ -884,7 +884,7 @@
       "location": "app/llm_pipeline.py:137",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.31,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M001_mock_llm"
       ],
@@ -898,7 +898,7 @@
       "location": "app/llm_pipeline.py:115",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M003__priority_word"
       ],
@@ -912,7 +912,7 @@
       "location": "app/llm_pipeline.py:113",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M003__priority_word"
       ],
@@ -926,7 +926,7 @@
       "location": "app/llm_pipeline.py:139",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M001_mock_llm"
       ],
@@ -940,7 +940,7 @@
       "location": "app/llm_pipeline.py:104",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.33,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M006__priority_for"
       ],
@@ -954,7 +954,7 @@
       "location": "app/llm_pipeline.py:174",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.33,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M005_mock_llm"
       ],
@@ -968,7 +968,7 @@
       "location": "app/pricing.py:26",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M009_apply_tier_discount"
       ],
@@ -982,7 +982,7 @@
       "location": "app/pricing.py:71",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.29,
+      "duration_s": 0.33,
       "failed_tests": [],
       "phase": "healed_suite",
       "description": "comparison swap: '<=' -> '<'"
@@ -994,7 +994,7 @@
       "location": "app/pricing.py:60",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M012_compute_tax"
       ],
@@ -1008,7 +1008,7 @@
       "location": "app/scoring.py:29",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M015_priority_score"
       ],
@@ -1022,7 +1022,7 @@
       "location": "app/scoring.py:50",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.27,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M017_escalation_required"
       ],
@@ -1036,7 +1036,7 @@
       "location": "app/scoring.py:62",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M019_sla_hours"
       ],
@@ -1050,7 +1050,7 @@
       "location": "app/llm_pipeline.py:160",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M001_mock_llm"
       ],
@@ -1064,7 +1064,7 @@
       "location": "app/llm_pipeline.py:111",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M026__priority_word"
       ],
@@ -1078,7 +1078,7 @@
       "location": "app/llm_pipeline.py:115",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M003__priority_word"
       ],
@@ -1092,7 +1092,7 @@
       "location": "app/llm_pipeline.py:85",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M029__extract_ticket"
       ],
@@ -1106,7 +1106,7 @@
       "location": "app/llm_pipeline.py:114",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.3,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M030__priority_word"
       ],
@@ -1120,7 +1120,7 @@
       "location": "app/pricing.py:28",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.27,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M033_apply_tier_discount"
       ],
@@ -1134,7 +1134,7 @@
       "location": "app/pricing.py:76",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.3,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M035_apply_coupon"
       ],
@@ -1148,7 +1148,7 @@
       "location": "app/scoring.py:61",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M019_sla_hours"
       ],
@@ -1190,7 +1190,7 @@
       "location": "prompt:SYSTEM_PROMPT",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
       ],
@@ -1204,7 +1204,7 @@
       "location": "prompt:SYSTEM_PROMPT",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
       ],
@@ -1218,7 +1218,7 @@
       "location": "prompt:SYSTEM_PROMPT",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.23,
+      "duration_s": 0.22,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
       ],
@@ -1232,7 +1232,7 @@
       "location": "prompt:FEW_SHOT_BLOCK",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.22,
+      "duration_s": 0.21,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
       ],
@@ -1240,7 +1240,7 @@
       "description": "Drop all few-shot worked examples: FEW_SHOT_BLOCK becomes the empty string."
     }
   ],
-  "wall_time_s": 7.9,
+  "wall_time_s": 7.8,
   "detected_original": 24,
   "score_original": 48.0,
   "detected_final": 49,
@@ -1253,7 +1253,7 @@
       "location": "app/llm_pipeline.py:137",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.31,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M001_mock_llm"
       ],
@@ -1267,7 +1267,7 @@
       "location": "app/llm_pipeline.py:157",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.36,
+      "duration_s": 0.33,
       "failed_tests": [
         "tests/test_pipeline.py::TestMockLlm::test_urgent_bug_gets_high_priority"
       ],
@@ -1281,7 +1281,7 @@
       "location": "app/llm_pipeline.py:115",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M003__priority_word"
       ],
@@ -1295,7 +1295,7 @@
       "location": "app/llm_pipeline.py:113",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M003__priority_word"
       ],
@@ -1309,7 +1309,7 @@
       "location": "app/llm_pipeline.py:139",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M001_mock_llm"
       ],
@@ -1323,7 +1323,7 @@
       "location": "app/llm_pipeline.py:104",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.33,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M006__priority_for"
       ],
@@ -1337,7 +1337,7 @@
       "location": "app/llm_pipeline.py:174",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.33,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M005_mock_llm"
       ],
@@ -1351,7 +1351,7 @@
       "location": "app/pricing.py:32",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.36,
+      "duration_s": 0.34,
       "failed_tests": [
         "tests/test_pricing.py::TestTierDiscounts::test_plus_tier_small_order"
       ],
@@ -1365,7 +1365,7 @@
       "location": "app/pricing.py:26",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M009_apply_tier_discount"
       ],
@@ -1379,7 +1379,7 @@
       "location": "app/pricing.py:71",
       "outcome": "survived",
       "detected": false,
-      "duration_s": 0.29,
+      "duration_s": 0.33,
       "failed_tests": [],
       "phase": "healed_suite",
       "description": "comparison swap: '<=' -> '<'"
@@ -1391,7 +1391,7 @@
       "location": "app/pricing.py:16",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.3,
       "failed_tests": [
         "tests/test_pricing.py::TestTierDiscounts::test_free_tier_pays_full_price"
       ],
@@ -1405,7 +1405,7 @@
       "location": "app/pricing.py:60",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M012_compute_tax"
       ],
@@ -1419,7 +1419,7 @@
       "location": "app/pricing.py:72",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.3,
       "failed_tests": [
         "tests/test_pricing.py::TestCoupons::test_no_coupon_leaves_amount_unchanged"
       ],
@@ -1433,7 +1433,7 @@
       "location": "app/scoring.py:28",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.3,
       "failed_tests": [
         "tests/test_scoring.py::TestPriorityScore::test_critical_with_high_confidence_maxes_out"
       ],
@@ -1447,7 +1447,7 @@
       "location": "app/scoring.py:29",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M015_priority_score"
       ],
@@ -1461,7 +1461,7 @@
       "location": "app/scoring.py:59",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.31,
       "failed_tests": [
         "tests/test_scoring.py::TestSlaHours::test_mid_priority_lane"
       ],
@@ -1475,7 +1475,7 @@
       "location": "app/scoring.py:50",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.27,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M017_escalation_required"
       ],
@@ -1503,7 +1503,7 @@
       "location": "app/scoring.py:62",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M019_sla_hours"
       ],
@@ -1517,7 +1517,7 @@
       "location": "app/scoring.py:14",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_scoring.py::TestPriorityScore::test_critical_with_high_confidence_maxes_out"
       ],
@@ -1531,7 +1531,7 @@
       "location": "app/validators.py:63",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.27,
       "failed_tests": [
         "tests/test_pipeline.py::TestTriageTicket::test_urgent_bug_escalates"
       ],
@@ -1545,7 +1545,7 @@
       "location": "app/validators.py:93",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_pipeline.py::TestTriageTicket::test_returns_a_result"
       ],
@@ -1573,7 +1573,7 @@
       "location": "app/llm_pipeline.py:83",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.27,
       "failed_tests": [
         "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
       ],
@@ -1587,7 +1587,7 @@
       "location": "app/llm_pipeline.py:160",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M001_mock_llm"
       ],
@@ -1601,7 +1601,7 @@
       "location": "app/llm_pipeline.py:111",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M026__priority_word"
       ],
@@ -1615,7 +1615,7 @@
       "location": "app/llm_pipeline.py:115",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M003__priority_word"
       ],
@@ -1629,7 +1629,7 @@
       "location": "app/llm_pipeline.py:152",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.26,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
       ],
@@ -1643,7 +1643,7 @@
       "location": "app/llm_pipeline.py:85",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.3,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M029__extract_ticket"
       ],
@@ -1657,7 +1657,7 @@
       "location": "app/llm_pipeline.py:114",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.3,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M030__priority_word"
       ],
@@ -1671,7 +1671,7 @@
       "location": "app/pricing.py:76",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.27,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_pricing.py::TestCoupons::test_typical_coupon"
       ],
@@ -1685,7 +1685,7 @@
       "location": "app/pricing.py:30",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.26,
+      "duration_s": 0.32,
       "failed_tests": [
         "tests/test_pricing.py::TestTierDiscounts::test_free_tier_pays_full_price"
       ],
@@ -1699,7 +1699,7 @@
       "location": "app/pricing.py:28",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.27,
+      "duration_s": 0.29,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M033_apply_tier_discount"
       ],
@@ -1713,7 +1713,7 @@
       "location": "app/pricing.py:71",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.27,
       "failed_tests": [
         "tests/test_pricing.py::TestCoupons::test_typical_coupon"
       ],
@@ -1727,7 +1727,7 @@
       "location": "app/pricing.py:76",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.28,
+      "duration_s": 0.3,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M035_apply_coupon"
       ],
@@ -1755,7 +1755,7 @@
       "location": "app/scoring.py:28",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.27,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_scoring.py::TestPriorityScore::test_critical_with_high_confidence_maxes_out"
       ],
@@ -1769,7 +1769,7 @@
       "location": "app/scoring.py:61",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_M019_sla_hours"
       ],
@@ -1811,7 +1811,7 @@
       "location": "prompt:SYSTEM_PROMPT",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.26,
+      "duration_s": 0.27,
       "failed_tests": [
         "tests/test_pipeline.py::TestMockLlm::test_returns_parseable_json"
       ],
@@ -1839,7 +1839,7 @@
       "location": "prompt:SYSTEM_PROMPT",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
       ],
@@ -1853,7 +1853,7 @@
       "location": "prompt:SYSTEM_PROMPT",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.27,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
       ],
@@ -1881,7 +1881,7 @@
       "location": "prompt:SYSTEM_PROMPT",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.29,
+      "duration_s": 0.28,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
       ],
@@ -1895,7 +1895,7 @@
       "location": "prompt:TICKET_TEMPLATE",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.27,
+      "duration_s": 0.26,
       "failed_tests": [
         "tests/test_pipeline.py::TestMockLlm::test_billing_ticket_is_categorized"
       ],
@@ -1923,7 +1923,7 @@
       "location": "prompt:SYSTEM_PROMPT",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.23,
+      "duration_s": 0.22,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
       ],
@@ -1937,7 +1937,7 @@
       "location": "prompt:FEW_SHOT_BLOCK",
       "outcome": "killed",
       "detected": true,
-      "duration_s": 0.22,
+      "duration_s": 0.21,
       "failed_tests": [
         "tests/test_healed_assertions.py::test_healed_prompt_contract_1"
       ],
