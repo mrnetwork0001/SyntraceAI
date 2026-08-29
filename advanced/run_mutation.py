@@ -189,7 +189,6 @@ def main(argv: list[str] | None = None) -> int:
         "run_command",
         command="pytest -q && coverage run -m pytest",
         tool_output=f"suite green; line coverage {line_cov}%",
-        human_checkpoint="Approved — proceeding to adversarial injection",
     )
 
     # Step 2 — build the frozen bug bank.
@@ -239,7 +238,6 @@ def main(argv: list[str] | None = None) -> int:
             f"pre-heal detection {campaign.detected_original}/{campaign.total_bugs} "
             f"({campaign.score_original:.1f}%)"
         ),
-        human_checkpoint="Approved — surviving bugs handed to auto-healer",
     )
 
     survived_ids = {r.mutant_id for r in original_results if r.outcome is Outcome.SURVIVED}
@@ -299,7 +297,6 @@ def main(argv: list[str] | None = None) -> int:
                     f"final mutation score {campaign.detected_final}/{campaign.total_bugs} "
                     f"({campaign.score_final:.1f}%)"
                 ),
-                human_checkpoint="Final verification passed",
             )
 
     campaign.wall_time_s = round(time.monotonic() - started, 1)
@@ -307,14 +304,22 @@ def main(argv: list[str] | None = None) -> int:
     json_path = REPO_ROOT / args.json
     html_path = REPO_ROOT / args.html
     json_path.parent.mkdir(parents=True, exist_ok=True)
+    html_path.parent.mkdir(parents=True, exist_ok=True)
     report.write_json(campaign, json_path)
     report.write_html(campaign, html_path)
     traj.save()
     console.print()
     report.render_terminal(campaign)
+
+    def display(path: Path) -> str:
+        try:
+            return str(path.relative_to(REPO_ROOT))
+        except ValueError:
+            return str(path)  # --json/--html may point outside the repo
+
     console.print(
-        f"\nReports: [cyan]{json_path.relative_to(REPO_ROOT)}[/cyan], "
-        f"[cyan]{html_path.relative_to(REPO_ROOT)}[/cyan]  "
+        f"\nReports: [cyan]{display(json_path)}[/cyan], "
+        f"[cyan]{display(html_path)}[/cyan]  "
         f"Trajectory: [cyan]{args.trajectory}[/cyan]"
     )
 
