@@ -33,21 +33,25 @@ Measured on this repo's demo target:
 | | Baseline (`coverage.py` mindset) | Advanced (SyntraceAI) |
 | :--- | :--- | :--- |
 | Line coverage | **87.1%** — looks healthy | 87.1% — same suite, same code |
-| Injected bugs detected | **24/50 (48.0%)** | **49/50 (98.0%)** after auto-healing |
-| Prompt-drift detection | invisible | 12 perturbation attacks, all scored |
+| AST code mutants detected | **18/38 (47.4%)** | **37/38 (97.4%)** after auto-healing |
+| Prompt perturbations detected | **6/12** (invisible to coverage tooling) | **12/12** via strict-contract hardening |
+| Overall injected bugs | **24/50 (48.0%)** | **49/50 (98.0%)** |
 | Fixing the gaps | manual | **24 auto-healed assertion tests**, verified by re-run |
 
 That 39-point false-confidence gap — 87% coverage vs 48% detection — is the number line
-coverage was hiding.
+coverage was hiding. The **diagnosis** number is the 48% pre-heal detection; the 98% is
+what the suite looks like after SyntraceAI repairs it.
 
 ## How it works
 
 1. **Inject** — 7 AST operator families (arithmetic/comparison/boolean swaps, condition
    negation, constant & boundary shifts, return-value replacement) plus 12 prompt
    perturbations (role stripping, JSON-only directive removal, schema key renames,
-   zero-width whitespace, few-shot drop…). Every mutant is compile-validated; comparison
-   swaps inside clamp patterns are **proven equivalent and excluded** so the bank never
-   contains an unkillable bug.
+   zero-width whitespace, few-shot drop…). Every mutant is compile-validated, and
+   comparison swaps inside clamp patterns are **excluded as equivalent** (under
+   documented numeric assumptions) — an unkillable bug in the bank would misstate the
+   score. Equivalents the prover can't catch statically still surface honestly as
+   unhealable survivors (the shipped run has exactly one, M010).
 2. **Isolate** — each bug runs against the suite in its own sandboxed project copy,
    in parallel, timeout-guarded. Exit codes map to killed / survived / timeout / error;
    loud failures count as detections, silence never does.
@@ -71,11 +75,18 @@ pydantic contract validation with a deliberately lenient salvage path, and
 boundary-rich pricing/scoring logic. Its 48-test suite is green with 87.1% coverage and
 realistic blind spots — the suite a rushed team actually ships.
 
+## The value
+
+One command turns "we have 87% coverage" into "our tests catch 48% of real behavior
+changes, here are the 26 bugs that slipped through, and here are 24 generated tests —
+each proven to kill a specific one." The diagnosis, the evidence, and the repair ship
+together, deterministically, in seconds, for $0.
+
 ## Quickstart
 
 ```bash
 pip install -r requirements.txt
-python main.py full          # baseline audit, then the full campaign (~8s)
+python main.py full          # baseline audit (~3s) + full campaign (~8s)
 python dashboard/server.py   # Mission Control UI at http://127.0.0.1:8377
 ```
 
@@ -94,6 +105,35 @@ nothing rendered anywhere is a mock number.
   unhealable rather than silently capping the score.
 - **Fabricated healing:** the healer's honesty gate re-verifies every discriminating
   input in both project copies before a test is emitted; no verified input, no test.
+
+## Threats to validity & limitations
+
+Stated up front, because a benchmark you can't interrogate is a benchmark you can't
+trust:
+
+- **The demo target is self-authored, and the mock LLM's degradation rules are authored
+  couplings.** The mock keys off the same contract lines the perturbator attacks — by
+  design: it *simulates documented real-LLM failure modes* (prose-wrapped JSON, dropped
+  fields, hallucinated keys) deterministically at $0, so the prompt-side numbers
+  validate the harness mechanics, not model behavior. The load-bearing, least-gameable
+  numbers are the **code-mutation rows (18/38 → 37/38)**: plain AST mutations against a
+  plain pytest suite.
+- **Post-heal detection is high by construction** — every healed test is synthesized
+  from an input already verified to discriminate its mutant, so the re-run kill is
+  expected. The informative diagnosis is the 48% pre-heal detection; the post-heal
+  score measures that the healer's output is real and complete, not that healing is
+  hard.
+- **Loud breakage counts as detection.** Timeouts and collection errors map to
+  "detected" (the suite failed loudly). In the shipped run this channel is unexercised:
+  all 49 detections are genuine assertion failures (0 timeouts, 0 errors — check
+  `reports/mutation_report.json`).
+- **Generality limits.** The engine currently assumes an `app/` package with a `tests/`
+  suite, mutates top-level functions, heals only scalar-hinted signatures
+  (`int/float/bool/str`), and the prompt perturbator requires the documented template
+  contract (`docs/ARCHITECTURE.md` §5.1). The equivalence prover covers one clamp
+  pattern under documented numeric assumptions. Pointing SyntraceAI at an arbitrary
+  third-party repo would need a target adapter layer — that is the roadmap, not the
+  demo.
 
 ## Hot take
 

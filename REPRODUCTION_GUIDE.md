@@ -11,7 +11,7 @@ Requires Python 3.11+ (developed and verified on 3.14). No API keys, no network 
 $0 in model cost — the demo target uses a deterministic rule-based mock LLM.
 
 ```bash
-git clone https://github.com/mrnetwork/SyntraceAI.git
+git clone https://github.com/mrnetwork/SyntraceAI.git   # or unzip the submission archive
 cd SyntraceAI
 python3 -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
@@ -75,9 +75,12 @@ opens the dashboard at `/app` where you can trigger runs and watch the engine lo
 
 ## 7. Runtime & cost
 
-- **Runtime:** ~8 seconds for the full campaign on an 8-core laptop (measured 7.9s);
-  baseline audit ~6s.
+- **Runtime** (8-core laptop, hardware-dependent): campaign ~8s (measured 7.9s),
+  baseline audit ~3s, `python main.py full` ~12s end to end.
 - **API cost:** $0.00 — local AST parsing + deterministic mock LLM only.
 - **Repeatability note:** both `run_baseline.py` and `run_mutation.py` delete any
   previously generated `test_healed_assertions.py` before measuring, so every run
   starts from the original un-hardened suite and reproduces the same numbers.
+- **What "identical" means:** across repeated runs (any `--jobs`, any supported Python
+  version) every verdict, score, mutant ID, and healed test is identical; only the
+  timing fields (`wall_time_s` and per-bug `duration_s`) vary in the JSON reports.

@@ -51,6 +51,10 @@ SyntraceAI/
 │           ├── test_pricing.py
 │           ├── test_scoring.py
 │           └── test_pipeline.py
+├── dashboard/                       # optional Mission Control UI (FastAPI + SPA)
+│   ├── server.py                    # landing at /, dashboard at /app, JSON API
+│   ├── landing.html
+│   └── index.html
 ├── selftests/                       # SyntraceAI's OWN unit tests (pytest selftests/)
 │   └── conftest.py                  # sys.path bootstrap (already written)
 ├── trajectories/                    # real agent traces
@@ -61,7 +65,9 @@ SyntraceAI/
 ## 3. Global rules
 
 - Python 3.11+ (dev machine runs 3.14). Full type hints. Deterministic everywhere.
-- Dependencies: ONLY `pytest`, `coverage`, `pydantic>=2`, `rich`. Stdlib otherwise.
+- Engine dependencies: ONLY `pytest`, `coverage`, `pydantic>=2`, `rich`. Stdlib
+  otherwise. (The optional Mission Control dashboard under `dashboard/` additionally
+  uses `fastapi` + `uvicorn`; the engine never imports them.)
 - **No `random` without an explicit seed parameter (default `seed=1337`). No wall-clock
   dependence in any computed result.**
 - Scripts in `baseline/` and `advanced/` start with this bootstrap so
@@ -104,7 +110,8 @@ Module-level string constants ONLY (plain `NAME = "..."` assignments, no f-strin
   - `Required JSON keys: "category", "priority", "confidence", "summary".`
   - `Priority must be an integer from 1 (lowest) to 5 (critical).`
   - `Confidence must be a number between 0.0 and 1.0.`
-- `FEW_SHOT_BLOCK`: 2 worked examples (ticket → JSON), plain string.
+- `FEW_SHOT_BLOCK`: 2 worked examples (ticket → JSON), plain string; MUST contain the
+  substring `Example` (rule 12 keys off it).
 - `TICKET_TEMPLATE` MUST contain the section markers `### ROLE ###`, `### EXAMPLES ###`,
   `### TICKET ###`, `### OUTPUT RULES ###` and placeholders `{system}`, `{few_shot}`,
   `{ticket}`. The OUTPUT RULES section restates the JSON-only directive.
@@ -139,6 +146,13 @@ def triage_ticket(ticket_text: str, *, strict: bool = False) -> dict
 10. If `Respond ONLY with a single valid JSON object` absent from the prompt → wrap the
     JSON in prose: ``Sure! Here is the triage you asked for:\n```json\n<JSON>\n```\nLet me know if you need anything else!``
     Otherwise output the bare compact JSON only.
+11. If the `Confidence must be a number` line absent → confidence emitted as an integer
+    percentage (`int(round(confidence * 100))`) instead of a 0–1 float.
+12. If the substring `Example` absent from the prompt (few-shot examples dropped) → the
+    model forgets the `summary` field entirely.
+13. If `### OUTPUT RULES ###` absent → trailing commentary is appended after the JSON
+    body (before any rule-10 wrapping): `\n\nHope this helps! Reply if you need a deeper
+    analysis.` — every contract line in the prompt has a real behavioral consequence.
 
 `triage_ticket`: build prompt → mock_llm → `parse_strict` if strict else `parse_lenient`
 → merge `{"priority_score": scoring.priority_score(priority, confidence), "escalate":
@@ -210,6 +224,10 @@ def select_bank(mutants: list[Mutant], size: int = 38, seed: int = 1337) -> list
   AFTER selection, in selection order.
 - Every mutant MUST pass `compile(mutated_source, path, "exec")` — discard ones that
   don't (AST validation sandboxing).
+- Equivalent-mutant proof: an ordering-equality comparison swap inside a clamp pattern
+  (`if x > C: x = C` with no else, plain name, same constant) is provably a semantic
+  no-op and MUST be excluded from enumeration — an unkillable bug in the bank would
+  misstate every downstream score.
 - `select_bank`: seeded round-robin stratified across (file, operator) so the bank
   spans all files and operator types; deterministic for a given seed.
 - Record `function_name` (enclosing function qualname or `""`).
@@ -276,11 +294,21 @@ def write_healed_test_file(target_dir: Path, healed: list[HealedTest]) -> Path
 
 - For each surviving CODE mutant with a non-empty `function_name` referring to a
   top-level function in the mutated file: generate candidate inputs from type hints —
-  int pool `[-3, -1, 0, 1, 2, 3, 7, 10, 49, 50, 51, 99, 100, 101, 499, 500, 501]`,
+  int pool `[-3, -1, 0, 1, 2, 3, 7, 10, 49, 50, 51, 99, 100, 101, 499, 500, 501, 1000,
+  2500, 5000, 10000]` (large magnitudes push computed intermediates across caps),
   float = same as floats, bool `[True, False]`, str = string constants harvested from
-  the module AST plus `["", "zzz"]` — plus every numeric literal harvested from the
+  the module AST plus fallbacks (`""`, `"zzz"`, a ten-word sentence, and canonical
+  adversarial JSON contract payloads) — plus every numeric literal harvested from the
   function's AST and its ±1 neighbors. Cartesian product over params, deterministic
   order, capped at `max_inputs`.
+- Cross-function input synthesis: str-param pools are additionally enriched by running
+  the module's own top-level `str -> str` single-parameter functions (excluding the
+  function under probe) over harvested base strings in the PRISTINE copy — composed
+  inputs like fully rendered prompts reach code paths raw literals cannot. Synthesized
+  inputs feed both probe sides identically; synthesis failure degrades to no
+  enrichment, never to an error.
+- Raises-mode healing may reference exceptions defined in the probed module itself
+  (emitted as `<module>.<ExcName>`) in addition to builtins.
 - Probe protocol: write pristine copy and mutated copy of the target to two tmp dirs;
   in each, run a generated probe script that imports the function, applies the JSON
   list of candidate inputs, and prints JSON results (exceptions encoded

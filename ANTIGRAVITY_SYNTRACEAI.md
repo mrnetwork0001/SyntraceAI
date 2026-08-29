@@ -16,7 +16,8 @@
 2. **Technical Architecture Guidelines:**
    - **Baseline Solution:** Simple `coverage.py` line coverage runner in `baseline/`.
    - **Advanced Solution:** Autonomous AST code mutation + prompt perturbation engine in `advanced/`.
-   - **Agent Trajectories:** Save agent execution traces in `trajectories/agent_trace_01.json`.
+   - **Agent Trajectories:** Build-history trace in `trajectories/agent_trace_01.json`;
+     campaign traces regenerated into `trajectories/agent_trace_02.json` by the engine.
 
 3. **Submission Requirements Checklist:**
    - Public GitHub repository under Apache 2.0 / MIT License.

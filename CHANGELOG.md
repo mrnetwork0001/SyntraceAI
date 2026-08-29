@@ -18,6 +18,8 @@ from actual runs on the frozen 50-bug bank (seed 1337).
   run and pass your own selftests before reporting."
 - **Result:** First end-to-end campaign scored **39/50 (78.0%)** post-heal with 15
   healed tests — 8 code mutants unhealable, 3 prompt perturbations behaviorally inert.
+  (Intermediate measurement from the build session, superseded before the first engine
+  commit; the committed reports carry only the final numbers.)
 
 ### Iteration 3 — Equivalence proofs, healer input synthesis, behavioral prompt rules
 - **Goal:** Close the gap honestly: no bank padding, no hidden survivors.
