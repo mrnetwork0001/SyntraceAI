@@ -334,15 +334,21 @@ ALL_OPERATORS: tuple[type[MutationOperator], ...] = (
 
 
 def _equivalent_clamp_swap_sites(tree: ast.Module) -> frozenset[tuple[int, int]]:
-    """Coordinates of Compare nodes where an ordering-equality swap is provably a no-op.
+    """Coordinates of Compare nodes where an ordering-equality swap is a no-op.
 
     Pattern: ``if x >cmp C: x = C`` with no else branch, where ``cmp`` is one of
-    ``> >= < <=``, ``x`` is a plain name, and ``C`` is the same constant on both
-    lines. Swapping ``>`` <-> ``>=`` (or ``<`` <-> ``<=``) only changes behavior
-    at ``x == C`` — where the body assigns the very same value — so the mutant
-    is semantically identical to the original. Emitting it would put an
-    unkillable bug in the bank and misstate the mutation score, so these sites
-    are proven equivalent and excluded up front.
+    ``> >= < <=``, ``x`` is a plain name, and ``C`` is the same non-zero constant
+    on both lines. Swapping ``>`` <-> ``>=`` (or ``<`` <-> ``<=``) only changes
+    behavior at ``x == C`` — where the body assigns the very same value — so
+    the mutant is equivalent under the documented assumptions: ``x`` holds a
+    standard numeric of the same type as ``C`` (an int-valued float crossing an
+    int constant, or vice versa, would make the boundary assignment a type
+    change), no custom rich-comparison objects, and no signed-zero observation
+    (zero constants are excluded outright). Those assumptions hold for ordinary
+    clamp code; sites that cannot satisfy them simply stay in the bank and are
+    judged empirically like any other mutant. Excluding the provable cases
+    keeps unkillable bugs out of the bank, which would otherwise misstate the
+    mutation score.
     """
     sites: set[tuple[int, int]] = set()
     for node in ast.walk(tree):
@@ -358,6 +364,8 @@ def _equivalent_clamp_swap_sites(tree: ast.Module) -> frozenset[tuple[int, int]]
         ):
             continue
         bound = test.comparators[0].value
+        if not isinstance(bound, (int, float)) or isinstance(bound, bool) or bound == 0:
+            continue  # zero constants excluded: signed-zero makes the swap observable
         if (
             isinstance(body, ast.Assign)
             and len(body.targets) == 1
