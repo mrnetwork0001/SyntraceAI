@@ -67,9 +67,10 @@ FLOAT_EXTRAS: tuple[float, ...] = (0.07, 0.1, 0.5, 2.5, 19.99)
 #: A ten-word sentence so word-boundary logic (truncation, summarization)
 #: has a long-enough input to discriminate off-by-one word counts.
 LONG_SENTENCE: str = "the quick brown fox jumps over the lazy dog today"
-#: Canonical adversarial JSON contract payloads: one in-contract, one with an
-#: out-of-range confidence, one with a wrong type. Generic probes for any
-#: target that parses/validates LLM-style JSON completions.
+#: Adversarial JSON contract payloads: one in-contract, one with an
+#: out-of-range confidence, one with a wrong type. Shaped after the demo
+#: target's triage schema — useful for any target parsing LLM-style JSON
+#: completions with a similar contract, but not schema-agnostic.
 CONTRACT_PAYLOADS: tuple[str, ...] = (
     '{"category": "bug", "priority": 3, "confidence": 0.5, "summary": "checkout crash"}',
     '{"category": "bug", "priority": 3, "confidence": 1.5, "summary": "checkout crash"}',
@@ -124,13 +125,15 @@ _CONTRACT_KEYS: tuple[str, ...] = (
 #: ``__FUNC__`` are substituted per mutant. It guards every call and prints a
 #: single JSON line of results (exceptions encoded ``{"__exc__": "TypeName"}``).
 _PROBE_TEMPLATE = '''"""SyntraceAI differential probe (auto-generated) — do not edit."""
+import importlib
 import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from __MODULE__ import __FUNC__ as _target
+_module = importlib.import_module("__MODULE__")
+_target = getattr(_module, "__FUNC__")
 
 _SCALARS = (bool, int, float, str)
 
@@ -149,7 +152,15 @@ def main():
             results.append(_encode(_target(*args)))
         except BaseException as exc:
             results.append(
-                {"__exc__": type(exc).__name__, "__exc_module__": type(exc).__module__}
+                {
+                    "__exc__": type(exc).__name__,
+                    "__exc_module__": type(exc).__module__,
+                    # A same-module exception is only referenceable from the
+                    # emitted test as <module>.<Name> if it is a module
+                    # attribute (a class nested inside a class is not).
+                    "__exc_is_module_attr__":
+                        getattr(_module, type(exc).__name__, None) is type(exc),
+                }
             )
     print(json.dumps(results))
 
@@ -387,12 +398,13 @@ def _heal_one(
 
     if synth_cache is None:
         synth_cache = {}
-    if module_name not in synth_cache:
-        synth_cache[module_name] = _synthesized_strings(
+    synth_key = f"{module_name}::{func_name}"  # exclusion differs per probed function
+    if synth_key not in synth_cache:
+        synth_cache[synth_key] = _synthesized_strings(
             pristine, module_name, orig_tree, exclude_function=func_name
         )
     pools = _candidate_pools(
-        fn_orig, mutant, orig_tree, extra_strings=synth_cache[module_name]
+        fn_orig, mutant, orig_tree, extra_strings=synth_cache[synth_key]
     )
     candidates = _interleaved_product(pools, max_inputs, seed)
     if not candidates:
@@ -922,6 +934,7 @@ def _raises_assertion_kills(
     referenceable = _is_builtin_exception(exc_name) or (
         module_name is not None
         and orig.get("__exc_module__") == module_name
+        and orig.get("__exc_is_module_attr__") is True
         and exc_name.isidentifier()
     )
     if not referenceable:
