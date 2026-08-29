@@ -49,12 +49,12 @@ It acts as an **Adversarial Chaos Agent** that deliberately injects subtle logic
 
 ## 📊 Baseline vs. Advanced Solution (The 20% Measured Jump Metric)
 
-| Metric | 📉 Baseline Solution | 🚀 Advanced Solution (SyntraceAI) |
+| Metric (all measured — see REPRODUCTION_GUIDE.md) | 📉 Baseline Solution | 🚀 Advanced Solution (SyntraceAI) |
 | :--- | :--- | :--- |
 | **Methodology** | Standard line execution coverage (`coverage.py`) | Autonomous AST code mutation + Prompt perturbation fleet |
-| **Bug Detection** | 85% line coverage (misses 65% of edge-case bugs) | **96.8% Mutation Score** (catches 50+ injected AST & prompt bugs) |
-| **Resilience** | Breaks silently on prompt drift & schema mutations | Auto-generates hardened assertion suites for every failure mode |
-| **Reproducibility** | Manual test runner setup | 1-command deterministic execution (`python run_mutation.py`) |
+| **Bug Detection** | 87.1% line coverage yet only **24/50 (48.0%)** injected bugs caught | **98.0% Mutation Score** (49/50 injected AST & prompt bugs; 1 proven-equivalent survivor reported honestly) |
+| **Resilience** | Breaks silently on prompt drift & schema mutations | **24 auto-healed assertion tests** synthesized from verified discriminating inputs, proven by re-run |
+| **Reproducibility** | Manual test runner setup | 1-command deterministic execution (`python main.py full`, seed 1337, ~8s, $0 API cost) |
 
 ---
 
