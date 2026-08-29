@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SyntraceAI Mission Control</title>
+<style>
+  :root {
+    --bg: #0b1020; --panel: #121a30; --panel2: #0e1527; --line: #223052;
+    --text: #e6ecff; --dim: #8fa0c6; --accent: #6ea8ff; --good: #34d399;
+    --bad: #f87171; --warn: #fbbf24; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: radial-gradient(1200px 600px at 70% -10%, #16224a 0%, var(--bg) 55%);
+    color: var(--text); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 28px 24px 64px; }
+  header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
+  .logo { font-size: 26px; }
+  h1 { font-size: 20px; margin: 0; letter-spacing: .2px; }
+  .sub { color: var(--dim); font-size: 12.5px; margin-top: 2px; }
+  .pill {
+    margin-left: auto; padding: 5px 12px; border-radius: 999px; font-size: 12px;
+    border: 1px solid var(--line); background: var(--panel); color: var(--dim);
+  }
+  .pill.running { color: var(--warn); border-color: #5a4a17; animation: pulse 1.2s infinite; }
+  .pill.ok { color: var(--good); border-color: #1d4a3a; }
+  .pill.fail { color: var(--bad); border-color: #5a2626; }
+  @keyframes pulse { 50% { opacity: .55; } }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  button {
+    background: linear-gradient(180deg, #1c2b55, #16224a); color: var(--text);
+    border: 1px solid #2c3f74; border-radius: 9px; padding: 9px 16px; font-size: 13.5px;
+    cursor: pointer; font-weight: 600;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.primary { background: linear-gradient(180deg, #2b57b0, #234a99); border-color: #3d6ccc; }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px 20px; margin-bottom: 18px;
+  }
+  .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; color: var(--dim); margin: 0 0 14px; }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .tile { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .tile .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tile .l { color: var(--dim); font-size: 12px; margin-top: 3px; }
+  .v.good { color: var(--good); } .v.bad { color: var(--bad); } .v.accent { color: var(--accent); }
+
+  .gap-callout {
+    border-left: 3px solid var(--warn); background: #191d2e; padding: 12px 16px;
+    border-radius: 0 10px 10px 0; margin-top: 14px; color: #ffe9b8; font-size: 13.5px;
+  }
+
+  .bars .row { display: grid; grid-template-columns: 220px 1fr 90px; gap: 12px; align-items: center; margin-bottom: 9px; }
+  .bars .name { color: var(--dim); font-size: 12.5px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar { display: flex; height: 16px; border-radius: 5px; overflow: hidden; background: #1a2340; }
+  .bar .k { background: var(--good); } .bar .s { background: var(--bad); }
+  .bars .n { font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--dim); font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em;
+       padding: 7px 10px; border-bottom: 1px solid var(--line); }
+  td { padding: 7px 10px; border-bottom: 1px solid #1a2444; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .mono { font-family: var(--mono); font-size: 12px; }
+  .tag { display: inline-block; padding: 1.5px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .tag.survived { background: #3a1a1e; color: var(--bad); }
+  .tag.detected { background: #123328; color: var(--good); }
+  .tag.kind { background: #1a2547; color: var(--accent); }
+
+  .scroll { overflow-x: auto; }
+  #log {
+    background: #070b16; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    font-family: var(--mono); font-size: 12px; color: #b8c6ea; max-height: 320px; overflow-y: auto;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .empty { color: var(--dim); text-align: center; padding: 34px 0; font-size: 13.5px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+  .footnote { color: var(--dim); font-size: 12px; margin-top: 6px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🧪</div>
+    <div>
+      <h1>SyntraceAI — Mission Control</h1>
+      <div class="sub">Autonomous Agentic Mutation Testing &amp; Hallucination Stress-Tester</div>
+    </div>
+    <div id="statusPill" class="pill">idle</div>
+    <a href="/" class="pill" style="text-decoration:none">← Landing</a>
+  </header>
+
+  <div class="actions">
+    <button id="btnBaseline" onclick="launch('baseline')">▶ Run Baseline Audit</button>
+    <button id="btnMutate" class="primary" onclick="launch('mutate')">⚡ Run Mutation Campaign</button>
+    <button id="btnFull" onclick="launch('full')">⛓ Run Full (Baseline + Campaign)</button>
+    <button id="btnLog" onclick="toggleLog()">📜 Log</button>
+  </div>
+
+  <div class="card" id="logCard" hidden>
+    <h2>Live engine log</h2>
+    <div id="log"></div>
+  </div>
+
+  <div class="card">
+    <h2>Campaign scoreboard</h2>
+    <div id="tiles" class="tiles"></div>
+    <div id="gap" class="gap-callout" hidden></div>
+    <div id="emptyMain" class="empty" hidden>
+      No campaign data yet — run the mutation engine to populate the scoreboard.
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="card">
+      <h2>Detection by mutation operator</h2>
+      <div id="bars" class="bars"></div>
+      <div class="footnote"><span style="color:var(--good)">■</span> detected &nbsp;
+        <span style="color:var(--bad)">■</span> survived</div>
+    </div>
+    <div class="card">
+      <h2>Baseline audit (coverage.py mindset)</h2>
+      <div id="baseline"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Surviving bugs (pre-heal)</h2>
+    <div class="scroll"><div id="survivors"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Auto-healed assertion tests</h2>
+    <div class="scroll"><div id="healed"></div></div>
+    <div id="unhealable" class="footnote"></div>
+  </div>
+
+  <div class="card">
+    <h2>Agent trajectories</h2>
+    <div id="trajectories" class="footnote">—</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+let polling = null;
+let logVisible = false;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function outcomeOf(r) {
+  if (typeof r.detected === 'boolean') return r.detected ? 'detected' : 'survived';
+  const o = String(r.outcome ?? '').toLowerCase();
+  return o.includes('surv') ? 'survived' : 'detected';
+}
+const num = v => (v === null || v === undefined || Number.isNaN(Number(v))) ? null : Number(v);
+
+function tile(value, label, cls) {
+  return `<div class="tile"><div class="v ${cls || ''}">${value}</div><div class="l">${label}</div></div>`;
+}
+
+function renderMutation(m) {
+  const tiles = $('tiles'), gap = $('gap'), empty = $('emptyMain');
+  if (!m) { tiles.innerHTML = ''; gap.hidden = true; empty.hidden = false;
+            $('bars').innerHTML = '<div class="empty">—</div>';
+            $('survivors').innerHTML = '<div class="empty">—</div>';
+            $('healed').innerHTML = '<div class="empty">—</div>'; return; }
+  empty.hidden = true;
+
+  const cov = num(m.line_coverage_pct);
+  const pre = num(m.score_original), fin = num(m.score_final);
+  const healedCount = (m.healed_tests || []).length;
+  tiles.innerHTML =
+    tile(cov !== null ? cov.toFixed(1) + '%' : '—', 'line coverage (before SyntraceAI)') +
+    tile(pre !== null ? pre.toFixed(1) + '%' : '—',
+         `pre-heal detection (${m.detected_original}/${m.total_bugs})`, pre !== null && pre < 60 ? 'bad' : '') +
+    tile(fin !== null ? fin.toFixed(1) + '%' : '—',
+         `final mutation score (${m.detected_final}/${m.total_bugs})`, 'good') +
+    tile(healedCount, 'auto-healed assertion tests', 'accent') +
+    tile(num(m.wall_time_s) !== null ? m.wall_time_s + 's' : '—', 'campaign wall time');
+
+  if (cov !== null && pre !== null) {
+    gap.hidden = false;
+    gap.innerHTML = `<b>False-confidence gap:</b> ${cov.toFixed(1)}% line coverage suggested a healthy
+      suite, yet only ${pre.toFixed(1)}% of injected bugs were caught before auto-healing
+      (${fin !== null ? fin.toFixed(1) : '—'}% after).`;
+  } else { gap.hidden = true; }
+
+  const finals = m.final_results || m.original_results || [];
+  const ops = {};
+  for (const r of finals) {
+    const k = r.operator_name || 'unknown';
+    ops[k] = ops[k] || { d: 0, s: 0 };
+    outcomeOf(r) === 'survived' ? ops[k].s++ : ops[k].d++;
+  }
+  $('bars').innerHTML = Object.entries(ops).sort((a, b) => (b[1].d + b[1].s) - (a[1].d + a[1].s))
+    .map(([name, c]) => {
+      const t = c.d + c.s, dp = t ? (100 * c.d / t) : 0;
+      return `<div class="row"><div class="name" title="${esc(name)}">${esc(name)}</div>
+        <div class="bar"><div class="k" style="width:${dp}%"></div><div class="s" style="width:${100 - dp}%"></div></div>
+        <div class="n">${c.d}/${t} caught</div></div>`;
+    }).join('') || '<div class="empty">—</div>';
+
+  const survivorsPre = (m.original_results || []).filter(r => outcomeOf(r) === 'survived');
+  $('survivors').innerHTML = survivorsPre.length ? `<table>
+    <tr><th>id</th><th>kind</th><th>operator</th><th>location</th><th>description</th><th>final</th></tr>` +
+    survivorsPre.map(r => {
+      const fin = finals.find(f => f.mutant_id === r.mutant_id) || r;
+      const finTag = outcomeOf(fin) === 'survived'
+        ? '<span class="tag survived">still surviving</span>'
+        : '<span class="tag detected">killed by healed suite</span>';
+      return `<tr><td class="mono">${esc(r.mutant_id)}</td>
+        <td><span class="tag kind">${esc(r.kind || '')}</span></td>
+        <td>${esc(r.operator_name)}</td><td class="mono">${esc(r.location)}</td>
+        <td>${esc(r.description || '')}</td><td>${finTag}</td></tr>`;
+    }).join('') + '</table>'
+    : '<div class="empty">No survivors — every injected bug was detected by the original suite.</div>';
+
+  const healed = m.healed_tests || [];
+  $('healed').innerHTML = healed.length ? `<table>
+    <tr><th>kills</th><th>function</th><th>input</th><th>expected (original behavior)</th></tr>` +
+    healed.map(h => `<tr><td class="mono">${esc(h.mutant_id)}</td>
+      <td class="mono">${esc(h.module ? h.module + '.' : '')}${esc(h.function_name)}</td>
+      <td class="mono">${esc(h.input_repr)}</td><td class="mono">${esc(h.expected_repr)}</td></tr>`).join('') +
+    '</table>' : '<div class="empty">—</div>';
+
+  const un = m.unhealable_mutant_ids || [];
+  $('unhealable').textContent = un.length
+    ? `Likely-equivalent / unhealable mutants (reported honestly, not hidden): ${un.join(', ')}` : '';
+}
+
+function renderBaseline(b) {
+  if (!b) { $('baseline').innerHTML = '<div class="empty">Run the baseline audit to populate.</div>'; return; }
+  const cov = num(b.line_coverage_pct ?? b.coverage_pct ?? b.line_coverage);
+  const det = num(b.detected), tot = num(b.total);
+  const pct = det !== null && tot ? (100 * det / tot) : null;
+  let html = '<div class="tiles">' +
+    tile(cov !== null ? cov.toFixed(1) + '%' : '—', 'line coverage') +
+    tile(det !== null && tot !== null ? `${det}/${tot}` : '—',
+         `bugs detected${pct !== null ? ' (' + pct.toFixed(0) + '%)' : ''}`, 'bad') +
+    '</div>';
+  if (cov !== null && pct !== null) {
+    html += `<div class="gap-callout" style="margin-top:12px">The baseline suite reports
+      <b>${cov.toFixed(1)}%</b> coverage yet catches only <b>${pct.toFixed(0)}%</b> of injected bugs —
+      line coverage is a vanity metric.</div>`;
+  }
+  $('baseline').innerHTML = html;
+}
+
+async function refreshReports() {
+  try {
+    const r = await (await fetch('/api/reports')).json();
+    renderMutation(r.mutation);
+    renderBaseline(r.baseline);
+    $('trajectories').innerHTML = (r.trajectories || []).map(t => `<span class="mono">${esc(t)}</span>`)
+      .join(' &nbsp;·&nbsp; ') || '—';
+  } catch (e) { /* server restarting; next poll wins */ }
+}
+
+function setButtons(disabled) {
+  for (const id of ['btnBaseline', 'btnMutate', 'btnFull']) $(id).disabled = disabled;
+}
+
+async function poll() {
+  try {
+    const s = await (await fetch('/api/status')).json();
+    const pill = $('statusPill');
+    const logEl = $('log');
+    logEl.textContent = (s.log_tail || []).join('\n');
+    if (logVisible) logEl.scrollTop = logEl.scrollHeight;
+    if (s.running) {
+      pill.className = 'pill running'; pill.textContent = `running: ${s.kind}…`; setButtons(true);
+      if (!logVisible) toggleLog(true);
+    } else {
+      setButtons(false);
+      if (s.returncode === null || s.returncode === undefined) { pill.className = 'pill'; pill.textContent = 'idle'; }
+      else if (s.returncode === 0) { pill.className = 'pill ok'; pill.textContent = `last run: ${s.kind} ✓`; }
+      else { pill.className = 'pill fail'; pill.textContent = `last run: ${s.kind} failed (${s.returncode})`; }
+      if (polling) { clearInterval(polling); polling = null; await refreshReports(); }
+    }
+  } catch (e) { /* ignore */ }
+}
+
+async function launch(kind) {
+  const res = await fetch('/api/run/' + kind, { method: 'POST' });
+  if (!res.ok) { const j = await res.json().catch(() => ({})); alert(j.error || 'failed to start'); return; }
+  toggleLog(true);
+  if (!polling) polling = setInterval(poll, 1200);
+  poll();
+}
+
+function toggleLog(force) {
+  logVisible = force === undefined ? !logVisible : force;
+  $('logCard').hidden = !logVisible;
+}
+
+refreshReports();
+poll();
+</script>
+</body>
+</html>
