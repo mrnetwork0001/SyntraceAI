@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ```bash
 python -m pytest selftests/ -q
 ```
-*Expected:* `125 passed`
+*Expected:* `135 passed`
 
 ## 3. Baseline solution (standard line-coverage mindset)
 
@@ -109,6 +109,13 @@ opens the dashboard at `/app`. There, **Run against** takes the path of any loca
 project (the demo and humanize are one-click presets), and **Run Mutation Campaign**
 streams the engine log live. Each project writes its own report set, selectable from the
 dropdown in the header.
+
+**Reset** (the arrow button in the header) offers two things: *Clear the view* blanks the
+screen without touching disk - remembered per report set, so it survives a reload and
+lifts when you restore it or run a campaign - and *Delete saved reports* removes a
+report set's files along with the healed-test file that campaign wrote. The demo and humanize sets are the
+report files committed to this repo, so Reset refuses to delete them - only report sets
+from your own projects can be cleared.
 
 ## 5b. Run it on your own project
 

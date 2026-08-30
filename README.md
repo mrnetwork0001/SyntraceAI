@@ -255,7 +255,7 @@ targets/sample_app/      demo AI triage pipeline + deliberately blind-spotted su
 targets/humanize/        third-party validation target (humanize 4.16.0, vendored)
 dashboard/               FastAPI Mission Control (landing page + live dashboard)
 .github/workflows/       CI: selftests + mutation-score gates on both targets
-selftests/               the engine's own test suite (125 tests)
+selftests/               the engine's own test suite (135 tests)
 docs/ARCHITECTURE.md     frozen module contract the engine is built against
 trajectories/            agent execution traces (real runs)
 reports/                 generated JSON/HTML reports (committed as evidence)
