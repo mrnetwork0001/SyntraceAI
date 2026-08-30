@@ -108,6 +108,12 @@ def _read_report(path: Path) -> dict | None:
     data = _read_json(path)
     if data is None:
         return None
+    if PUBLIC_MODE:
+        # A deployed instance serves files unpacked by the build, which stamps
+        # them with a fixed mtime - Vercel uses 2018-10-20. Reporting that as
+        # the measurement time told visitors the results were eight years old.
+        # No honest age is available here, so none is claimed.
+        return data
     try:
         stamped = dict(data)
         stamped["generated_at"] = (

@@ -67,3 +67,20 @@ def test_local_mode_does_not_refuse(local) -> None:
 
 def test_run_endpoint_rejects_unknown_kind_before_doing_anything(local) -> None:
     assert server.run("rm-rf", target="targets/sample_app").status_code == 400
+
+
+def test_public_mode_claims_no_measurement_time(public) -> None:
+    """A deployed build's file mtimes are stamped by the packer, not by a run.
+
+    Vercel uses a fixed 2018-10-20, which the dashboard rendered as "2872 days
+    ago" - telling visitors the committed results were eight years old. No
+    honest age is available on a deployed instance, so none is reported.
+    """
+    mutation = _payload(server.reports(target=""))["mutation"]
+    assert "generated_at" not in mutation
+    assert mutation["score_final"] == 98.0   # the result itself still shows
+
+
+def test_local_mode_does_report_a_measurement_time(local) -> None:
+    mutation = _payload(server.reports(target=""))["mutation"]
+    assert "generated_at" in mutation

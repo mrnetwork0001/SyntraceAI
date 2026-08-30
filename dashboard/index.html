@@ -476,6 +476,7 @@
   .shell.collapsed { grid-template-columns: 64px minmax(0, 1fr); }
   .shell.collapsed .sidebar { padding: 18px 10px 26px; gap: 16px; }
   .shell.collapsed .side-label,
+  .shell.collapsed .ro-note,
   .shell.collapsed .side-group .hint,
   .shell.collapsed #targetPath,
   .shell.collapsed #presets,
@@ -557,6 +558,7 @@
     .shell.navopen .scrim { opacity: 1; pointer-events: auto; }
 
     /* The rail-collapse state is a desktop idea; the drawer replaces it. */
+    .shell.collapsed .ro-note { display: revert; }
     .shell.collapsed .side-label, .shell.collapsed .side-group .hint,
     .shell.collapsed #targetPath, .shell.collapsed #presets,
     .shell.collapsed .btn-row, .shell.collapsed .navlabel,
@@ -854,7 +856,9 @@ function renderProvenance(m) {
     ? 'a new campaign is running - these are the previous results.'
     : fresh
       ? 'measured in this session.'
-      : 'a stored result from an earlier run, not a live reading.';
+      : readOnly
+        ? 'the result committed to the repository, reproducible with one command.'
+        : 'a stored result from an earlier run, not a live reading.';
   host.innerHTML =
     `<span class="chip${fresh ? ' fresh' : ''}">${running ? 'superseded' : fresh ? 'just ran' : 'saved run'}</span>` +
     `<span>Results for <span class="what">${esc(target)}</span>` +
