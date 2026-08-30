@@ -20,7 +20,8 @@
   html { scroll-behavior: smooth; }
   body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
   a { color: inherit; text-decoration: none; }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  /* side margins are 75% of a fixed 1120px container's: width = 100vw - 0.75 * (100vw - 1120px) */
+  .wrap { max-width: calc(25vw + 840px); margin: 0 auto; padding: 0 24px; }
   .mono { font-family: var(--mono); }
   .label { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
 
