@@ -380,6 +380,43 @@
     background: linear-gradient(120deg, var(--g-mint), var(--g-sky) 30%, var(--g-lilac) 55%, var(--g-blush) 78%, var(--g-peach)); }
   .modal > * { position: relative; z-index: 1; }
 
+  /* ---------- run progress and completion ----------
+     A spinner would say "wait". The engine already announces five named steps,
+     so the bar says where it actually is - which is also the argument for the
+     method. */
+  .runbar { margin-bottom: 20px; padding: 15px 18px; border: 1px solid var(--line);
+    border-radius: var(--radius-sm); background: var(--paper); }
+  .runbar-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 11px; }
+  .runbar-title { display: inline-flex; align-items: center; gap: 8px; font-size: 14px;
+    font-weight: 600; color: var(--text); }
+  .runbar-title .live { color: var(--warn); }
+  .runbar-step { margin-left: auto; font-size: 12.5px; color: var(--text-muted); }
+  .runbar-track { height: 5px; border-radius: 999px; background: var(--paper-3); overflow: hidden; }
+  .runbar-track > i { display: block; height: 100%; width: 0; border-radius: 999px;
+    background: var(--warn); transition: width .45s cubic-bezier(.16,1,.3,1); }
+  /* Indeterminate until the first step line is parsed out of the log. */
+  .runbar-track > i.pending { width: 28%; animation: creep 1.9s ease-in-out infinite; }
+  @keyframes creep { 0%, to { opacity: .45; } 50% { opacity: 1; } }
+
+  /* Superseded results: still readable, visibly not current. */
+  .kpis.superseded #tiles, .kpis.superseded #gap { opacity: .38; }
+  .kpis.superseded #tiles { transition: opacity .2s ease; }
+
+  .summary { margin-bottom: 20px; padding: 16px 18px; border-radius: var(--radius-sm);
+    border: 1px solid var(--good); background: var(--good-soft); }
+  .summary.bad { border-color: var(--bad); background: var(--bad-soft); }
+  .summary-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 10px; font-size: 14px; font-weight: 600; color: var(--text); }
+  .summary-head .tick { color: var(--good); }
+  .summary.bad .summary-head { color: var(--bad); }
+  .summary-close { margin-left: auto; padding: 5px 12px; font-size: 12.5px; }
+  .summary-rows { display: flex; flex-wrap: wrap; gap: 10px 28px; }
+  .summary-rows div { font-size: 13.5px; color: var(--text-muted); }
+  .summary-rows b { color: var(--text); font-family: var(--mono); font-size: 13px; }
+  .summary-delta { color: var(--good); font-family: var(--mono); font-size: 12.5px; }
+  .summary-note { margin: 10px 0 0; font-size: 12.5px; color: var(--text-muted); }
+
   /* ---------- reset dialog ----------
      Reset is two different actions wearing one word, so the dialog makes the
      user pick: blank the screen, or delete files. The destructive one names
@@ -676,6 +713,18 @@
 
   <main class="main">
     <section class="kpis">
+      <!-- While a campaign runs, the numbers below belong to the PREVIOUS one.
+           This bar says what is happening now; the tiles are dimmed and their
+           provenance line relabelled so a stale result is never presented as
+           the current one. -->
+      <div id="runProgress" class="runbar" hidden aria-live="polite">
+        <div class="runbar-head">
+          <span class="runbar-title"><span class="live"></span> <span id="runKind">Campaign</span> running</span>
+          <span class="runbar-step mono" id="runStep">starting…</span>
+        </div>
+        <div class="runbar-track"><i id="runFill"></i></div>
+      </div>
+      <div id="runSummary" class="summary" hidden aria-live="polite"></div>
       <div id="provenance" class="provenance" hidden></div>
       <div id="tiles" class="tiles"></div>
       <div id="gap" class="gap-callout" hidden></div>
@@ -778,14 +827,17 @@ function relativeAge(iso) {
 // project, not a live reading of anything the visitor just did.
 function renderProvenance(m) {
   const host = $('provenance');
+  const running = document.querySelector('.kpis').classList.contains('superseded');
   const age = relativeAge(m.generated_at);
-  const fresh = age === 'just now';
+  const fresh = age === 'just now' && !running;
   const target = m.target || 'unknown target';
-  const provenance = fresh
-    ? 'measured in this session.'
-    : 'a stored result from an earlier run, not a live reading.';
+  const provenance = running
+    ? 'a new campaign is running - these are the previous results.'
+    : fresh
+      ? 'measured in this session.'
+      : 'a stored result from an earlier run, not a live reading.';
   host.innerHTML =
-    `<span class="chip${fresh ? ' fresh' : ''}">${fresh ? 'just ran' : 'saved run'}</span>` +
+    `<span class="chip${fresh ? ' fresh' : ''}">${running ? 'superseded' : fresh ? 'just ran' : 'saved run'}</span>` +
     `<span>Results for <span class="what">${esc(target)}</span>` +
     `${m.seed !== undefined ? ` · seed ${esc(m.seed)}` : ''}` +
     `${age ? ` · ${esc(age)}` : ''} - ${provenance}</span>` +
@@ -929,6 +981,7 @@ async function refreshReports() {
   try {
     const target = $('targetSelect').value || '';
     const r = await (await fetch('/api/reports?target=' + encodeURIComponent(target))).json();
+    lastReports = r;
     if (isCleared(target)) { showClearedState(r); return; }
     $('emptyCleared').hidden = true;
     renderMutation(r.mutation);
@@ -966,6 +1019,7 @@ async function poll() {
     if (logVisible) logEl.scrollTop = logEl.scrollHeight;
     if (s.running) {
       pill.className = 'pill running'; pill.innerHTML = `<span class="live"></span> running: ${esc(s.kind)}…`; setButtons(true);
+      showProgress(s.kind, s.log_tail || []);
       if (!logVisible) toggleLog(true);
     } else {
       setButtons(false);
@@ -976,6 +1030,7 @@ async function poll() {
       else { pill.className = 'pill fail'; pill.innerHTML = `<span class="live"></span> last run: ${esc(s.kind)} failed (${s.returncode})`; }
       if (polling) {
         clearInterval(polling); polling = null;
+        hideProgress();
         await loadTargets();
         if (pendingReportId !== null) {
           const sel = $('targetSelect');
@@ -983,6 +1038,10 @@ async function poll() {
           pendingReportId = null;
         }
         await refreshReports();
+        // Say what the run changed, then put the reader back on the results.
+        renderRunSummary(runKind ?? s.kind, s.returncode, runBefore, lastReports);
+        runBefore = null; runKind = null;
+        if (s.returncode === 0) showView('overview');
       }
     }
   } catch (e) { /* ignore */ }
@@ -1001,9 +1060,22 @@ async function launch(kind) {
   setCleared($('targetSelect').value || '', false);
   if (pendingReportId !== null) setCleared(pendingReportId, false);
   $('emptyCleared').hidden = true;
+
+  // Feedback before the first poll returns, so the click never lands on a
+  // screen that looks unchanged.
+  runKind = kind;
+  dismissSummary();
+  setButtons(true);
+  showProgress(kind, []);
+  const pill = $('statusPill');
+  pill.className = 'pill running';
+  pill.innerHTML = `<span class="live"></span> starting ${esc(kind)}…`;
+
   toggleLog(true);
   if (!polling) polling = setInterval(poll, 1200);
   poll();
+  // Fetched after the UI is already responsive; it only matters at the end.
+  runBefore = await snapshotReports(pendingReportId);
 }
 
 function dismissIntro() {
@@ -1015,6 +1087,138 @@ function showIntro() {
   $('introCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   try { localStorage.removeItem('syntrace.intro'); } catch (e) { /* private mode */ }
 }
+
+// ---------------------------------------------------------------- run feedback
+//
+// Three things a run has to communicate: that it started, where it has got to,
+// and what it changed. The engine already prints five named steps, so the
+// progress bar reports the real phase rather than spinning.
+
+let lastReports = null;      // whatever /api/reports last returned
+let runBefore = null;        // the report set's state BEFORE the current run
+let runKind = null;
+
+const RUN_STEPS = 5;         // the campaign's five announced steps
+const STEP_RE = /^Step\s+(\d+)\s*[-\u2013]\s*(.+?)\s*$/;
+
+function latestStep(logTail) {
+  for (let i = logTail.length - 1; i >= 0; i--) {
+    const m = STEP_RE.exec(logTail[i]);
+    if (m) return { n: Number(m[1]), label: m[2] };
+  }
+  return null;
+}
+
+function showProgress(kind, logTail) {
+  const bar = $('runProgress'), fill = $('runFill');
+  $('runKind').textContent = kind === 'baseline' ? 'Baseline audit'
+    : kind === 'full' ? 'Baseline + campaign' : 'Campaign';
+  const step = latestStep(logTail || []);
+  if (step) {
+    fill.classList.remove('pending');
+    fill.style.width = Math.min(100, (step.n / RUN_STEPS) * 100) + '%';
+    $('runStep').textContent = `step ${step.n} of ${RUN_STEPS} - ${step.label}`;
+  } else {
+    // The baseline audit prints no step lines, and a campaign prints none for
+    // its first second - say what is true rather than inventing a percentage.
+    fill.classList.add('pending');
+    fill.style.width = '';
+    const tail = (logTail || []).filter(l => l.trim()).pop();
+    $('runStep').textContent = tail ? tail.slice(0, 78) : 'starting…';
+  }
+  bar.hidden = false;
+  const kpis = document.querySelector('.kpis');
+  if (!kpis.classList.contains('superseded')) {
+    kpis.classList.add('superseded');
+    relabelProvenance();
+  }
+}
+
+function hideProgress() {
+  $('runProgress').hidden = true;
+  const kpis = document.querySelector('.kpis');
+  if (kpis.classList.contains('superseded')) {
+    kpis.classList.remove('superseded');
+    relabelProvenance();
+  }
+}
+
+function relabelProvenance() {
+  if (lastReports && lastReports.mutation && !$('provenance').hidden) {
+    renderProvenance(lastReports.mutation);
+  }
+}
+
+// Snapshot the report set this run will write, so the summary compares like
+// with like even when the run targets a different project than the one shown.
+async function snapshotReports(target) {
+  try {
+    const r = await (await fetch('/api/reports?target=' + encodeURIComponent(target ?? ''))).json();
+    return r && !r.error ? r : null;
+  } catch (e) { return null; }
+}
+
+const pts = (a, b) => {
+  const x = num(a), y = num(b);
+  if (x === null || y === null) return '';
+  const d = y - x;
+  if (Math.abs(d) < 0.05) return ' (unchanged)';
+  return ` (${d > 0 ? '+' : ''}${d.toFixed(1)} pts vs previous run)`;
+};
+
+function renderRunSummary(kind, returncode, before, after) {
+  const host = $('runSummary');
+  if (returncode !== 0) {
+    host.className = 'summary bad';
+    host.innerHTML = `<div class="summary-head">${esc(kind)} failed - exit code ${esc(returncode)}` +
+      `<button class="summary-close" onclick="dismissSummary()">Dismiss</button></div>` +
+      `<p class="summary-note">The engine log above has the full output.</p>`;
+    host.hidden = false;
+    return;
+  }
+
+  const m = after && after.mutation, b = after && after.baseline;
+  const pm = before && before.mutation, pb = before && before.baseline;
+  let rows = '';
+
+  if (kind === 'baseline') {
+    if (!b) { host.hidden = true; return; }
+    const det = num(b.detected), tot = num(b.total);
+    rows =
+      `<div>line coverage <b>${num(b.line_coverage_pct) !== null ? num(b.line_coverage_pct).toFixed(1) + '%' : '-'}</b></div>` +
+      `<div>bugs the suite caught <b>${det ?? '-'}/${tot ?? '-'}</b></div>` +
+      (pb ? `<div class="summary-delta">${pts(pb.line_coverage_pct, b.line_coverage_pct).trim() || 'coverage unchanged'}</div>` : '');
+  } else {
+    if (!m) { host.hidden = true; return; }
+    const healed = (m.healed_tests || []).length;
+    rows =
+      `<div>caught before healing <b>${m.detected_original}/${m.total_bugs}</b> ` +
+      `(${num(m.score_original) !== null ? num(m.score_original).toFixed(1) : '-'}%)</div>` +
+      `<div>after healing <b>${m.detected_final}/${m.total_bugs}</b> ` +
+      `(${num(m.score_final) !== null ? num(m.score_final).toFixed(1) : '-'}%)` +
+      `<span class="summary-delta">${pm ? pts(pm.score_final, m.score_final) : ''}</span></div>` +
+      `<div>tests written <b>${healed}</b></div>` +
+      `<div>wall time <b>${m.wall_time_s ?? '-'}s</b></div>`;
+  }
+
+  const target = (m && m.target) || (b && b.target) || 'the target';
+  const healedCount = m ? (m.healed_tests || []).length : 0;
+  host.className = 'summary';
+  host.innerHTML =
+    `<div class="summary-head">` +
+    `<svg class="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" ` +
+    `stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 6.3 12 13 4.5"/></svg>` +
+    `${kind === 'baseline' ? 'Baseline audit' : 'Campaign'} complete` +
+    `<button class="summary-close" onclick="dismissSummary()">Dismiss</button></div>` +
+    `<div class="summary-rows">${rows}</div>` +
+    (healedCount
+      ? `<p class="summary-note">${healedCount} generated test${healedCount === 1 ? '' : 's'} written into ` +
+        `<span class="mono">${esc(target)}</span>'s tests folder - review them before committing.</p>`
+      : '');
+  host.hidden = false;
+}
+
+function dismissSummary() { $('runSummary').hidden = true; }
 
 // Cleared views persist per report set. Clearing is a display choice, and a
 // display choice that silently undoes itself on the next reload is just a
