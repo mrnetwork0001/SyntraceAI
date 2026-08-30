@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SyntraceAI report — targets/humanize</title><style>
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7f9; --card: #ffffff; --ink: #1c2330; --muted: #5a6472;
+  --line: #d9dee6; --good: #1f9d55; --bad: #d64545; --accent: #3563c4;
+  --bar-track: #e6e9ef;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14181f; --card: #1d232d; --ink: #e8ecf2; --muted: #9aa5b3;
+    --line: #323b48; --good: #3fbf74; --bad: #e06666; --accent: #6d94e8;
+    --bar-track: #2a3240;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 2rem 1.25rem; background: var(--bg); color: var(--ink);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+main { max-width: 960px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.05rem; margin: 0 0 .75rem; }
+.sub { color: var(--muted); margin: 0 0 1.5rem; }
+section {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 1.25rem; margin-bottom: 1.25rem;
+}
+.tiles { display: flex; flex-wrap: wrap; gap: 1rem; }
+.tile { flex: 1 1 130px; }
+.tile .num { font-size: 1.6rem; font-weight: 700; }
+.tile .lbl { color: var(--muted); font-size: .8rem; }
+.gap-note { margin-top: .75rem; color: var(--muted); }
+.gap-note strong { color: var(--bad); }
+.barrow { display: grid; grid-template-columns: 220px 1fr 70px; gap: .6rem; align-items: center; margin: .45rem 0; }
+.barrow .lbl { text-align: right; color: var(--muted); overflow-wrap: anywhere; }
+.track { background: var(--bar-track); border-radius: 5px; height: 16px; overflow: hidden; display: flex; }
+.seg { height: 100%; }
+.seg.good { background: var(--good); }
+.seg.bad { background: var(--bad); }
+.seg.cov { background: var(--accent); }
+.val { font-variant-numeric: tabular-nums; }
+.legend { color: var(--muted); font-size: .8rem; margin-top: .6rem; }
+.dot { display: inline-block; width: .65em; height: .65em; border-radius: 50%; margin-right: .3em; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+code { background: var(--bar-track); border-radius: 4px; padding: .1rem .35rem; font-size: .85em; overflow-wrap: anywhere; }
+.scroll { overflow-x: auto; }
+.ok { color: var(--good); font-weight: 600; }
+.warn { color: var(--bad); font-weight: 600; }
+footer { color: var(--muted); text-align: center; font-size: .8rem; }
+</style></head><body><main><h1>SyntraceAI mutation campaign</h1><p class="sub">Target <code>targets/humanize</code> · seed 1337 · 36/38 bugs detected after healing</p><section><div class="tiles"><div class="tile"><div class="num">38</div><div class="lbl">injected bugs</div></div><div class="tile"><div class="num">38</div><div class="lbl">code mutants</div></div><div class="tile"><div class="num">0</div><div class="lbl">prompt perturbations</div></div><div class="tile"><div class="num">98.1%</div><div class="lbl">line coverage</div></div><div class="tile"><div class="num">94.7%</div><div class="lbl">detection, original suite</div></div><div class="tile"><div class="num">94.7%</div><div class="lbl">mutation score, healed suite</div></div></div></section><section><h2>Coverage vs. detection</h2><div class="barrow"><span class="lbl">Line coverage (original suite)</span><span class="track"><span class="seg cov" style="width:98.1%"></span></span><span class="val">98.1%</span></div><div class="barrow"><span class="lbl">Bug detection (original suite)</span><span class="track"><span class="seg bad" style="width:94.7%"></span></span><span class="val">94.7%</span></div><div class="barrow"><span class="lbl">Mutation score (healed suite)</span><span class="track"><span class="seg good" style="width:94.7%"></span></span><span class="val">94.7%</span></div><p class="gap-note">The original suite’s coverage overstates its bug-finding power by <strong>3.4 points</strong> — the false-confidence gap.</p></section><section><h2>Per-operator breakdown (post-heal)</h2><div class="barrow"><span class="lbl">ArithmeticOperatorSwap (code)</span><span class="track"><span class="seg good" style="width:100.0%"></span><span class="seg bad" style="width:0.0%"></span></span><span class="val">5/5</span></div><div class="barrow"><span class="lbl">BooleanOperatorSwap (code)</span><span class="track"><span class="seg good" style="width:100.0%"></span><span class="seg bad" style="width:0.0%"></span></span><span class="val">4/4</span></div><div class="barrow"><span class="lbl">BoundaryValueMutation (code)</span><span class="track"><span class="seg good" style="width:83.3%"></span><span class="seg bad" style="width:16.7%"></span></span><span class="val">5/6 · 1 live</span></div><div class="barrow"><span class="lbl">ComparisonOperatorSwap (code)</span><span class="track"><span class="seg good" style="width:83.3%"></span><span class="seg bad" style="width:16.7%"></span></span><span class="val">5/6 · 1 live</span></div><div class="barrow"><span class="lbl">ConditionNegation (code)</span><span class="track"><span class="seg good" style="width:100.0%"></span><span class="seg bad" style="width:0.0%"></span></span><span class="val">6/6</span></div><div class="barrow"><span class="lbl">ConstantMutation (code)</span><span class="track"><span class="seg good" style="width:100.0%"></span><span class="seg bad" style="width:0.0%"></span></span><span class="val">6/6</span></div><div class="barrow"><span class="lbl">ReturnValueMutation (code)</span><span class="track"><span class="seg good" style="width:100.0%"></span><span class="seg bad" style="width:0.0%"></span></span><span class="val">5/5</span></div><p class="legend"><span class="dot" style="background:var(--good)"></span>detected &nbsp;<span class="dot" style="background:var(--bad)"></span>survived</p></section><section><h2>Surviving bugs <span class="warn">(2)</span></h2><div class="scroll"><table><thead><tr><th>Id</th><th>Operator</th><th>Location</th><th>Snippet / description</th><th>Phase</th></tr></thead><tbody><tr><td>M016</td><td>BoundaryValueMutation</td><td><code>humanize/number.py:61</code></td><td><code>boundary shift: 0 -&gt; -1 in comparison</code></td><td>original_suite</td></tr><tr><td>M036</td><td>ComparisonOperatorSwap</td><td><code>humanize/number.py:59</code></td><td><code>comparison swap: &#x27;&lt;&#x27; -&gt; &#x27;&lt;=&#x27;</code></td><td>original_suite</td></tr></tbody></table></div></section><section><h2>Auto-healed tests</h2><p>No healed tests were generated in this campaign.</p><p class="gap-note">Unhealable (no discriminating input found — likely equivalent mutants, reported honestly): M016, M036</p></section><footer>Deterministic run · seed 1337 · wall time 4.0s</footer></main></body></html>

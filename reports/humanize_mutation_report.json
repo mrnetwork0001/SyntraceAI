@@ -1,0 +1,1003 @@
+{
+  "target": "targets/humanize",
+  "seed": 1337,
+  "line_coverage_pct": 98.1,
+  "total_bugs": 38,
+  "code_mutants": 38,
+  "prompt_perturbations": 0,
+  "original_results": [
+    {
+      "mutant_id": "M001",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "humanize/filesize.py:96",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args57-1"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '%' -> '*'"
+    },
+    {
+      "mutant_id": "M002",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "humanize/filesize.py:91",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args23-31.0"
+      ],
+      "phase": "original_suite",
+      "description": "boolean swap: 'or' -> 'and'"
+    },
+    {
+      "mutant_id": "M003",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "humanize/filesize.py:95",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args57-1"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 1 -> 0 in comparison"
+    },
+    {
+      "mutant_id": "M004",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "humanize/filesize.py:106",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args70-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "comparison swap: '>=' -> '>'"
+    },
+    {
+      "mutant_id": "M005",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "humanize/filesize.py:106",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M006",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "humanize/filesize.py:43",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args0-300"
+      ],
+      "phase": "original_suite",
+      "description": "constant False -> True"
+    },
+    {
+      "mutant_id": "M007",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "humanize/filesize.py:110",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M008",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "humanize/lists.py:38",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '+' -> '-'"
+    },
+    {
+      "mutant_id": "M009",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "humanize/lists.py:33",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args3-one]"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 1 -> 0 in comparison"
+    },
+    {
+      "mutant_id": "M010",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "humanize/lists.py:33",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "comparison swap: '==' -> '!='"
+    },
+    {
+      "mutant_id": "M011",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "humanize/lists.py:31",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M012",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "humanize/lists.py:36",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args2-one"
+      ],
+      "phase": "original_suite",
+      "description": "constant 0 -> 1"
+    },
+    {
+      "mutant_id": "M013",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "humanize/lists.py:36",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args2-one"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M014",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "humanize/number.py:553",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_metric[[999.9,"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '*' -> '/'"
+    },
+    {
+      "mutant_id": "M015",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "humanize/number.py:258",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_intword[test_args3-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "boolean swap: 'and' -> 'or'"
+    },
+    {
+      "mutant_id": "M016",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "humanize/number.py:61",
+      "outcome": "survived",
+      "detected": false,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "boundary shift: 0 -> -1 in comparison"
+    },
+    {
+      "mutant_id": "M017",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "humanize/number.py:240",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_intword[test_args0-0]"
+      ],
+      "phase": "original_suite",
+      "description": "comparison swap: '<' -> '<='"
+    },
+    {
+      "mutant_id": "M018",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "humanize/number.py:301",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_apnumber[0-zero]"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M019",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "humanize/number.py:241",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_intword[test_args2--100]"
+      ],
+      "phase": "original_suite",
+      "description": "constant 1 -> 2"
+    },
+    {
+      "mutant_id": "M020",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "humanize/number.py:158",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_intcomma[test_args32-NaN]"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M021",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "humanize/filesize.py:106",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '/' -> '*'"
+    },
+    {
+      "mutant_id": "M022",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "humanize/filesize.py:106",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "boolean swap: 'and' -> 'or'"
+    },
+    {
+      "mutant_id": "M023",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "humanize/filesize.py:95",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args57-1"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 1 -> 2 in comparison"
+    },
+    {
+      "mutant_id": "M024",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "humanize/filesize.py:98",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "comparison swap: '<' -> '<='"
+    },
+    {
+      "mutant_id": "M025",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "humanize/filesize.py:86",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M026",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "humanize/filesize.py:42",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "constant False -> True"
+    },
+    {
+      "mutant_id": "M027",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "humanize/filesize.py:96",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args57-1"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M028",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "humanize/lists.py:35",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 2 -> 3 in comparison"
+    },
+    {
+      "mutant_id": "M029",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "humanize/lists.py:35",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "comparison swap: '==' -> '!='"
+    },
+    {
+      "mutant_id": "M030",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "humanize/lists.py:33",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M031",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "humanize/lists.py:38",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "constant 1 -> 2"
+    },
+    {
+      "mutant_id": "M032",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "humanize/lists.py:34",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args3-one]"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M033",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "humanize/number.py:548",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_metric[[1234.56]-1.23"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '*' -> '/'"
+    },
+    {
+      "mutant_id": "M034",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "humanize/number.py:564",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_metric[[1,"
+      ],
+      "phase": "original_suite",
+      "description": "boolean swap: 'or' -> 'and'"
+    },
+    {
+      "mutant_id": "M035",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "humanize/number.py:559",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_metric[[0.12]-120"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 0 -> -1 in comparison"
+    },
+    {
+      "mutant_id": "M036",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "humanize/number.py:59",
+      "outcome": "survived",
+      "detected": false,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "comparison swap: '<' -> '<='"
+    },
+    {
+      "mutant_id": "M037",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "humanize/number.py:479",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_clamp[test_args0-1]"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M038",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "humanize/number.py:550",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_metric[[1234.56]-1.23"
+      ],
+      "phase": "original_suite",
+      "description": "constant 3 -> 4"
+    }
+  ],
+  "healed_tests": [],
+  "unhealable_mutant_ids": [
+    "M016",
+    "M036"
+  ],
+  "rerun_results": [],
+  "wall_time_s": 4.0,
+  "detected_original": 36,
+  "score_original": 94.7,
+  "detected_final": 36,
+  "score_final": 94.7,
+  "final_results": [
+    {
+      "mutant_id": "M001",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "humanize/filesize.py:96",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args57-1"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '%' -> '*'"
+    },
+    {
+      "mutant_id": "M002",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "humanize/filesize.py:91",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args23-31.0"
+      ],
+      "phase": "original_suite",
+      "description": "boolean swap: 'or' -> 'and'"
+    },
+    {
+      "mutant_id": "M003",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "humanize/filesize.py:95",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args57-1"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 1 -> 0 in comparison"
+    },
+    {
+      "mutant_id": "M004",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "humanize/filesize.py:106",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args70-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "comparison swap: '>=' -> '>'"
+    },
+    {
+      "mutant_id": "M005",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "humanize/filesize.py:106",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M006",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "humanize/filesize.py:43",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args0-300"
+      ],
+      "phase": "original_suite",
+      "description": "constant False -> True"
+    },
+    {
+      "mutant_id": "M007",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "humanize/filesize.py:110",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M008",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "humanize/lists.py:38",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '+' -> '-'"
+    },
+    {
+      "mutant_id": "M009",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "humanize/lists.py:33",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args3-one]"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 1 -> 0 in comparison"
+    },
+    {
+      "mutant_id": "M010",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "humanize/lists.py:33",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "comparison swap: '==' -> '!='"
+    },
+    {
+      "mutant_id": "M011",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "humanize/lists.py:31",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M012",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "humanize/lists.py:36",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args2-one"
+      ],
+      "phase": "original_suite",
+      "description": "constant 0 -> 1"
+    },
+    {
+      "mutant_id": "M013",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "humanize/lists.py:36",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args2-one"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M014",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "humanize/number.py:553",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_metric[[999.9,"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '*' -> '/'"
+    },
+    {
+      "mutant_id": "M015",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "humanize/number.py:258",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_intword[test_args3-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "boolean swap: 'and' -> 'or'"
+    },
+    {
+      "mutant_id": "M016",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "humanize/number.py:61",
+      "outcome": "survived",
+      "detected": false,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "boundary shift: 0 -> -1 in comparison"
+    },
+    {
+      "mutant_id": "M017",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "humanize/number.py:240",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_intword[test_args0-0]"
+      ],
+      "phase": "original_suite",
+      "description": "comparison swap: '<' -> '<='"
+    },
+    {
+      "mutant_id": "M018",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "humanize/number.py:301",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_apnumber[0-zero]"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M019",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "humanize/number.py:241",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_intword[test_args2--100]"
+      ],
+      "phase": "original_suite",
+      "description": "constant 1 -> 2"
+    },
+    {
+      "mutant_id": "M020",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "humanize/number.py:158",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_intcomma[test_args32-NaN]"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M021",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "humanize/filesize.py:106",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '/' -> '*'"
+    },
+    {
+      "mutant_id": "M022",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "humanize/filesize.py:106",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "boolean swap: 'and' -> 'or'"
+    },
+    {
+      "mutant_id": "M023",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "humanize/filesize.py:95",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args57-1"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 1 -> 2 in comparison"
+    },
+    {
+      "mutant_id": "M024",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "humanize/filesize.py:98",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "comparison swap: '<' -> '<='"
+    },
+    {
+      "mutant_id": "M025",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "humanize/filesize.py:86",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M026",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "humanize/filesize.py:42",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args1-1.0"
+      ],
+      "phase": "original_suite",
+      "description": "constant False -> True"
+    },
+    {
+      "mutant_id": "M027",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "humanize/filesize.py:96",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_filesize.py::test_naturalsize[test_args57-1"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M028",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "humanize/lists.py:35",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 2 -> 3 in comparison"
+    },
+    {
+      "mutant_id": "M029",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "humanize/lists.py:35",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "comparison swap: '==' -> '!='"
+    },
+    {
+      "mutant_id": "M030",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "humanize/lists.py:33",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M031",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "humanize/lists.py:38",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args0-1,"
+      ],
+      "phase": "original_suite",
+      "description": "constant 1 -> 2"
+    },
+    {
+      "mutant_id": "M032",
+      "kind": "code",
+      "operator_name": "ReturnValueMutation",
+      "location": "humanize/lists.py:34",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_lists.py::test_natural_list[test_args3-one]"
+      ],
+      "phase": "original_suite",
+      "description": "return value replaced with None"
+    },
+    {
+      "mutant_id": "M033",
+      "kind": "code",
+      "operator_name": "ArithmeticOperatorSwap",
+      "location": "humanize/number.py:548",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_metric[[1234.56]-1.23"
+      ],
+      "phase": "original_suite",
+      "description": "arithmetic swap: '*' -> '/'"
+    },
+    {
+      "mutant_id": "M034",
+      "kind": "code",
+      "operator_name": "BooleanOperatorSwap",
+      "location": "humanize/number.py:564",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_metric[[1,"
+      ],
+      "phase": "original_suite",
+      "description": "boolean swap: 'or' -> 'and'"
+    },
+    {
+      "mutant_id": "M035",
+      "kind": "code",
+      "operator_name": "BoundaryValueMutation",
+      "location": "humanize/number.py:559",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_metric[[0.12]-120"
+      ],
+      "phase": "original_suite",
+      "description": "boundary shift: 0 -> -1 in comparison"
+    },
+    {
+      "mutant_id": "M036",
+      "kind": "code",
+      "operator_name": "ComparisonOperatorSwap",
+      "location": "humanize/number.py:59",
+      "outcome": "survived",
+      "detected": false,
+      "failed_tests": [],
+      "phase": "original_suite",
+      "description": "comparison swap: '<' -> '<='"
+    },
+    {
+      "mutant_id": "M037",
+      "kind": "code",
+      "operator_name": "ConditionNegation",
+      "location": "humanize/number.py:479",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_clamp[test_args0-1]"
+      ],
+      "phase": "original_suite",
+      "description": "negate if-condition"
+    },
+    {
+      "mutant_id": "M038",
+      "kind": "code",
+      "operator_name": "ConstantMutation",
+      "location": "humanize/number.py:550",
+      "outcome": "killed",
+      "detected": true,
+      "failed_tests": [
+        "tests/test_number.py::test_metric[[1234.56]-1.23"
+      ],
+      "phase": "original_suite",
+      "description": "constant 3 -> 4"
+    }
+  ]
+}
