@@ -1164,7 +1164,7 @@
       "description": "Drop all few-shot worked examples: FEW_SHOT_BLOCK becomes the empty string."
     }
   ],
-  "wall_time_s": 10.4,
+  "wall_time_s": 10.5,
   "detected_original": 24,
   "score_original": 48.0,
   "detected_final": 49,

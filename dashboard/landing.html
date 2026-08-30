@@ -6,266 +6,499 @@
 <title>SyntraceAI - Autonomous Mutation Testing & Hallucination Stress-Tester</title>
 <meta name="description" content="SyntraceAI breaks your code faster than your tests notice. Adversarial AST mutation, prompt perturbation, sandboxed scoring and differential auto-healing - deterministic, $0, one command.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #05060c; --bg-900: #0a0c16; --bg-700: #1e2338;
-    --text: #e2e8f0; --muted: #94a3b8; --dim: #64748b;
-    --volt: #7c5cff; --volt-bright: #9d85ff; --arc: #22d3ee; --up: #34d399; --down: #fb7185;
-    --line: rgba(255,255,255,.06); --line2: rgba(255,255,255,.1); --card: rgba(255,255,255,.04);
-    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-    --sans: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    /* surfaces, light to dark */
+    --paper:      #ffffff;
+    --paper-2:    #f7f7f5;
+    --paper-3:    #efefec;
+    --ink:        #0c0c0d;
+    --ink-2:      #17181b;
+    --ink-3:      #232529;
+
+    /* text */
+    --text:       #121316;
+    --text-muted: #63666e;
+    --text-faint: #8b8e96;
+    --on-dark:        #f4f4f2;
+    --on-dark-muted:  #a2a5ad;
+    --on-dark-faint:  #71747c;
+
+    /* hairlines */
+    --line:       #e3e3df;
+    --line-dark:  rgba(255,255,255,.12);
+
+    /* semantic data colours (meaning only - never decoration) */
+    --good:  #1c8a52;   --good-soft:  #e4f4ea;
+    --bad:   #c8453c;   --bad-soft:   #fbe9e7;
+    --info:  #3b5bdb;   --info-soft:  #e8ecfd;
+    --warn:  #a8730a;   --warn-soft:  #fdf3e0;
+
+    /* the same semantics, legible on --ink / --ink-2 */
+    --good-d: #5fcf95;  --bad-d: #ef8a80;  --info-d: #93a9f7;  --warn-d: #e0b463;
+
+    /* pastel gradient stops */
+    --g-mint:   #c9e9d2;
+    --g-sky:    #cfe2f5;
+    --g-lilac:  #dcd4f2;
+    --g-blush:  #f7d4dd;
+    --g-peach:  #fbdcc2;
+    --g-cream:  #f6efd8;
+
+    --radius-lg: 28px;
+    --radius:    18px;
+    --radius-sm: 12px;
+    --radius-pill: 999px;
+
+    --sans: "Inter Tight", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --maxw: 1180px;
+    --gutter: clamp(20px, 4vw, 48px);
   }
+
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  [hidden] { display: none !important; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--paper-2); color: var(--text);
+    font: 400 16px/1.65 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    /* operators must read literally: no `>=` -> ligature in the mono face */
+    font-feature-settings: "calt" 0; font-variant-ligatures: none; }
   a { color: inherit; text-decoration: none; }
-  /* side margins are 50% of a fixed 1120px container's: width = 100vw - 0.5 * (100vw - 1120px) */
-  .wrap { max-width: calc(50vw + 560px); margin: 0 auto; padding: 0 24px; }
-  .mono { font-family: var(--mono); }
-  .label { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+  img, svg { max-width: 100%; }
+  :focus-visible { outline: 2px solid var(--info); outline-offset: 3px; border-radius: 3px; }
+  .on-dark :focus-visible { outline-color: #a9bcff; }
 
-  /* ---------- effects ---------- */
-  .grid-bg {
-    position: absolute; inset: 0; pointer-events: none;
-    background-image:
-      linear-gradient(rgba(124,92,255,.06) 1px, transparent 0),
-      linear-gradient(90deg, rgba(124,92,255,.06) 1px, transparent 0);
-    background-size: 44px 44px;
-    -webkit-mask-image: radial-gradient(ellipse at top, #000 10%, transparent 70%);
-            mask-image: radial-gradient(ellipse at top, #000 10%, transparent 70%);
-  }
-  .wash-top { position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(ellipse at top, rgba(124,92,255,.16), transparent 65%); }
-  .wash-center { position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(ellipse at center, rgba(124,92,255,.12), transparent 70%); }
-  .blob { position: absolute; width: 380px; height: 380px; border-radius: 999px; filter: blur(64px); opacity: .35; pointer-events: none; }
-  .blob.arc { background: var(--arc); right: -80px; top: 40px; opacity: .14; }
-  .blob.volt { background: var(--volt); left: -120px; bottom: -80px; opacity: .22; }
-  .glow { box-shadow: 0 0 24px -4px rgba(124,92,255,.45); }
-  .glow-arc { box-shadow: 0 0 24px -4px rgba(34,211,238,.4); }
-  .gradient-text { background: linear-gradient(90deg, var(--volt-bright), var(--arc)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .wrap { max-width: calc(50vw + 590px); margin: 0 auto; padding: 0 var(--gutter); }
+  .mono { font-family: var(--mono); font-size: .92em; }
 
-  @keyframes rise { 0% { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes bolt { 0%, to { opacity: .45; filter: drop-shadow(0 0 0 transparent); } 45% { opacity: 1; filter: drop-shadow(0 0 6px rgba(157,133,255,.9)); } }
-  @keyframes ping-slow { 0% { transform: scale(1); opacity: .7; } 70%, to { transform: scale(1.9); opacity: 0; } }
-  @keyframes sweep { 0% { transform: translateX(-100%); } to { transform: translateX(400%); } }
-  .rise { animation: rise .55s cubic-bezier(.16,1,.3,1) both; }
-  .rise.d1 { animation-delay: .08s; } .rise.d2 { animation-delay: .16s; } .rise.d3 { animation-delay: .24s; } .rise.d4 { animation-delay: .32s; }
-  .bolt { animation: bolt 2.2s ease-in-out infinite; }
-  .live { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 999px; background: var(--up); }
-  .live::after { content: ""; position: absolute; inset: 0; border-radius: 999px; background: var(--up); animation: ping-slow 2.6s cubic-bezier(0,0,.2,1) infinite; }
-  .scanline { position: relative; overflow: hidden; }
-  .scanline::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 25%;
-    background: linear-gradient(to right, transparent, rgba(34,211,238,.08), transparent);
-    animation: sweep 2.4s linear infinite; pointer-events: none; }
+  /* ---------- type scale ---------- */
+  .display { font-size: clamp(40px, 6.2vw, 74px); font-weight: 500; line-height: 1.03;
+    letter-spacing: -.035em; margin: 0; }
+  h2, .h2 { font-size: clamp(30px, 4vw, 46px); font-weight: 500; line-height: 1.08;
+    letter-spacing: -.03em; margin: 0; }
+  h3, .h3 { font-size: 20px; font-weight: 500; letter-spacing: -.01em; margin: 0; }
+  .lede { font-size: clamp(17px, 1.5vw, 20px); font-weight: 400; color: var(--text-muted);
+    max-width: 60ch; line-height: 1.55; margin: 0; }
+  .label { font-family: var(--mono); font-size: 11px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: .16em; color: var(--text-faint); }
+  .num { font-variant-numeric: tabular-nums; }
+  .soft { color: var(--text-muted); }
+  .on-dark .lede { color: var(--on-dark-muted); }
+  .on-dark .label { color: var(--on-dark-faint); }
+  .on-dark .soft { color: var(--on-dark-muted); }
+
+  /* ---------- surfaces ---------- */
+  section { position: relative; padding: clamp(72px, 9vw, 128px) 0; }
+  section[id] { scroll-margin-top: 78px; }
+  .s-paper { background: var(--paper); }
+  .s-paper2 { background: var(--paper-2); }
+  .s-ink, .on-dark { background: var(--ink); color: var(--on-dark); }
+  .s-cream { background: var(--g-cream); }
+  .hairline-top { border-top: 1px solid var(--line); }
+  .sec-head { max-width: 780px; margin: 0 0 clamp(36px, 4.6vw, 62px); }
+  .sec-head .label { display: block; margin-bottom: 20px; }
+  .sec-head h2 { margin: 0 0 18px; }
+  .sec-head h2 .clause { color: var(--text-muted); }
+  .on-dark .sec-head h2 .clause { color: var(--on-dark-muted); }
+
+  /* ---------- buttons / pills ---------- */
+  .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: var(--radius-pill);
+    padding: 12px 22px; font: 500 15px/1.2 var(--sans); border: 1px solid transparent;
+    cursor: pointer; transition: background .2s, color .2s, border-color .2s, transform .2s; }
+  .btn.primary { background: var(--ink); color: var(--on-dark); }
+  .btn.primary:hover { background: #2a2c31; }
+  .btn.secondary { background: transparent; color: var(--text); border-color: var(--line); }
+  .btn.secondary:hover { border-color: #c8c8c2; background: rgba(0,0,0,.02); }
+  .on-dark .btn.primary { background: var(--on-dark); color: var(--ink); }
+  .on-dark .btn.primary:hover { background: #ffffff; }
+  .on-dark .btn.secondary { color: var(--on-dark); border-color: var(--line-dark); }
+  .on-dark .btn.secondary:hover { border-color: rgba(255,255,255,.3); background: rgba(255,255,255,.05); }
+  .btn.sm { padding: 9px 17px; font-size: 13.5px; }
+
+  .pill { display: inline-flex; align-items: center; gap: 8px; border-radius: var(--radius-pill);
+    padding: 5px 12px; font: 500 11px/1.5 var(--mono); text-transform: uppercase; letter-spacing: .1em;
+    background: rgba(255,255,255,.06); border: 1px solid var(--line-dark); color: var(--on-dark-muted); }
+  .pill.arc  { color: var(--info-d); border-color: rgba(147,169,247,.3); background: rgba(147,169,247,.1); }
+  .pill.up   { color: var(--good-d); border-color: rgba(95,207,149,.3); background: rgba(95,207,149,.1); }
+  .pill.down { color: var(--bad-d);  border-color: rgba(239,138,128,.32); background: rgba(239,138,128,.1); }
+  .tag { display: inline-flex; align-items: center; gap: 7px; border-radius: var(--radius-pill);
+    padding: 5px 12px; font: 500 11px/1.5 var(--mono); text-transform: uppercase; letter-spacing: .1em; }
+  .tag-good { background: var(--good-soft); color: var(--good); }
+  .tag-bad  { background: var(--bad-soft);  color: var(--bad); }
+  .tag-info { background: var(--info-soft); color: var(--info); }
+  .tag-warn { background: var(--warn-soft); color: var(--warn); }
+
+  .live { position: relative; display: inline-block; width: 7px; height: 7px; border-radius: 999px;
+    background: var(--good-d); flex: none; }
+  .live::after { content: ""; position: absolute; inset: 0; border-radius: 999px; background: var(--good-d);
+    animation: ping 2.8s cubic-bezier(0,0,.2,1) infinite; }
+  @keyframes ping { 0% { transform: scale(1); opacity: .6; } 70%, to { transform: scale(2.1); opacity: 0; } }
+
+  /* ---------- cards ---------- */
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 28px; min-width: 0; }
+  .on-dark .card { background: var(--ink-2); border-color: var(--line-dark); }
+  .card h3 { margin: 0 0 10px; }
+  .card p { margin: 0; color: var(--text-muted); font-size: 15px; }
+  .on-dark .card p { color: var(--on-dark-muted); }
+
+  /* ---------- scroll fade-up ---------- */
+  .js [data-fade] { opacity: 0; transform: translateY(10px);
+    transition: opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1); }
+  .js [data-fade].in { opacity: 1; transform: none; }
 
   /* ---------- nav ---------- */
-  header.nav { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; position: relative; z-index: 2; }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.01em; }
-  .brand svg { width: 26px; height: 26px; }
-  .nav-links { display: flex; align-items: center; gap: 22px; font-size: 13px; color: var(--muted); }
-  .nav-links a:hover { color: var(--text); }
-  .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 12px; padding: 10px 18px; font-size: 13.5px; font-weight: 600;
-    border: 1px solid var(--line2); background: rgba(255,255,255,.05); color: var(--text); transition: border-color .2s, transform .2s, background .2s; }
-  .btn:hover { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.08); }
-  .btn.primary { background: linear-gradient(90deg, var(--volt), #6a4de6); border-color: rgba(124,92,255,.4); box-shadow: 0 0 24px -4px rgba(124,92,255,.45); }
-  .btn.primary:hover { transform: translateY(-1px); filter: brightness(1.08); }
-  .btn.sm { padding: 8px 14px; font-size: 12.5px; border-radius: 10px; }
-  .pill { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 5px 12px; font-family: var(--mono); font-size: 11px;
-    letter-spacing: .08em; text-transform: uppercase; border: 1px solid rgba(124,92,255,.25); background: rgba(124,92,255,.1); color: var(--volt-bright); }
-  .pill.arc { border-color: rgba(34,211,238,.3); background: rgba(34,211,238,.05); color: var(--arc); }
-  .pill.up { border-color: rgba(52,211,153,.4); background: rgba(52,211,153,.1); color: var(--up); }
-  .pill.down { border-color: rgba(251,113,133,.4); background: rgba(251,113,133,.1); color: var(--down); }
+  header.nav { position: sticky; top: 0; z-index: 60; background: var(--ink);
+    border-bottom: 1px solid var(--line-dark); color: var(--on-dark); }
+  header.nav .bar { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 15px 0; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 17px;
+    letter-spacing: -.02em; }
+  .brand svg { width: 22px; height: 22px; flex: none; }
+  .nav-links { display: flex; align-items: center; gap: clamp(14px, 2vw, 28px); font-size: 14px;
+    color: var(--on-dark-muted); }
+  .nav-links a:hover { color: var(--on-dark); }
+  @media (max-width: 620px) { .nav-links .opt { display: none; } }
 
   /* ---------- hero ---------- */
-  .hero-wrap { position: relative; overflow: hidden; }
-  .hero { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 40px; padding: 48px 0 72px; align-items: center; }
-  .hero > * { min-width: 0; }
-  @media (min-width: 980px) { .hero { grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 56px; padding: 72px 0 96px; } }
-  .diff, .mut { min-width: 0; overflow-wrap: anywhere; }
-  h1 { font-size: clamp(36px, 5.6vw, 60px); line-height: 1.04; letter-spacing: -.03em; margin: 18px 0 18px; font-weight: 800; }
-  .lede { color: var(--muted); font-size: 17px; max-width: 560px; margin: 0 0 28px; }
-  .lede b { color: var(--text); font-weight: 600; }
+  .hero { padding: clamp(56px, 7vw, 104px) 0 clamp(72px, 9vw, 124px); overflow: hidden; }
+  .hero::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(900px 520px at 82% -10%, rgba(255,255,255,.07), transparent 68%); }
+  .hero .wrap { position: relative; z-index: 1; }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(44px, 5vw, 68px);
+    align-items: center; }
+  .hero-grid > * { min-width: 0; }
+  @media (min-width: 1000px) { .hero-grid { grid-template-columns: minmax(0, 1.03fr) minmax(0, .97fr); } }
+  .hero h1 { margin: 26px 0 24px; }
+  .hero h1 .clause { color: var(--on-dark-muted); }
+  .hero .lede { margin-bottom: 34px; }
+  .hero .lede b { color: var(--on-dark); font-weight: 500; }
   .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
-  .stats { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--line); }
-  .stat .v { font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--text); }
-  .stat .v span { color: var(--arc); }
-  .stat .l { margin-top: 2px; }
+  .hstats { display: flex; gap: clamp(26px, 4vw, 52px); flex-wrap: wrap; margin-top: 42px;
+    padding-top: 24px; border-top: 1px solid var(--line-dark); }
+  .hstat .v { font: 500 21px/1 var(--mono); color: var(--on-dark-faint); font-variant-numeric: tabular-nums; }
+  .hstat .v span { color: var(--on-dark); }
+  .hstat .l { margin-top: 9px; display: block; }
 
-  /* ---------- terminal card ---------- */
-  .term { border-radius: 16px; border: 1px solid var(--line2); background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); box-shadow: 0 0 24px -4px rgba(124,92,255,.35), inset 0 1px 0 rgba(255,255,255,.06); }
-  .term-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-  .term-head .t { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-  .term-body { padding: 16px; display: grid; gap: 14px; }
-  .mut { border-radius: 12px; border: 1px solid var(--line); background: rgba(5,6,12,.6); padding: 12px 14px; }
-  .mut .meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-  .mut .meta .id { font-family: var(--mono); font-size: 12px; color: var(--volt-bright); }
-  .mut .meta .loc { font-family: var(--mono); font-size: 11px; color: var(--dim); }
-  .diff { font-family: var(--mono); font-size: 12.5px; line-height: 1.7; }
-  .diff .del { color: var(--down); } .diff .add { color: var(--up); }
-  .diff .k { color: var(--dim); }
-  .gauge { display: grid; gap: 8px; }
-  .gauge .row { display: grid; grid-template-columns: 118px 1fr 56px; align-items: center; gap: 12px; font-size: 12.5px; }
-  .gauge .row .n { font-family: var(--mono); color: var(--muted); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
-  .bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,.06); overflow: hidden; }
-  .bar > i { display: block; height: 100%; border-radius: 999px; width: 0; transition: width 1.1s cubic-bezier(.16,1,.3,1); }
-  .bar > i.cov { background: linear-gradient(90deg, var(--volt), var(--volt-bright)); }
-  .bar > i.det { background: linear-gradient(90deg, #d84c68, var(--down)); }
-  .bar > i.fin { background: linear-gradient(90deg, #1f9d6d, var(--up)); }
-  .gauge .row .pct { font-family: var(--mono); font-size: 12px; text-align: right; color: var(--text); }
-  .edge { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-  .edge .msg { font-size: 12.5px; color: var(--muted); }
-  .action { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-radius: 12px; padding: 11px 14px;
-    background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.4); color: var(--up); font-family: var(--mono); font-size: 12.5px; font-weight: 600; }
-  .action .chain { color: var(--dim); font-weight: 400; font-size: 11px; }
-  .term-foot { padding: 10px 16px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  /* ---------- terminal instrument panel ---------- */
+  .term { background: var(--ink-2); border: 1px solid var(--line-dark); border-radius: var(--radius-lg);
+    overflow: hidden; }
+  .term-head { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    flex-wrap: wrap; padding: 15px 20px; border-bottom: 1px solid var(--line-dark); }
+  .term-head .t { display: flex; align-items: center; gap: 9px; font: 500 11px/1.4 var(--mono);
+    text-transform: uppercase; letter-spacing: .16em; color: var(--on-dark-muted); }
+  .term-body { padding: 20px; display: grid; gap: 16px; }
+  .mut { border: 1px solid var(--line-dark); border-radius: var(--radius-sm); background: var(--ink);
+    padding: 14px 16px; min-width: 0; overflow-wrap: anywhere; }
+  .mut .meta { display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+    flex-wrap: wrap; margin-bottom: 10px; }
+  .mut .meta .id { font: 500 12px var(--mono); color: var(--info-d); }
+  .mut .meta .loc { font: 400 11px var(--mono); color: var(--on-dark-faint); }
+  .diff { font: 400 12.5px/1.75 var(--mono); min-width: 0; overflow-wrap: anywhere; }
+  .diff .del { color: var(--bad-d); } .diff .add { color: var(--good-d); }
+  .diff .k { color: var(--on-dark-faint); }
+  .gauge { display: grid; gap: 11px; }
+  .gauge .row { display: grid; grid-template-columns: clamp(92px, 30%, 122px) minmax(0, 1fr) 54px;
+    align-items: center; gap: 12px; }
+  .gauge .row .n { font: 400 10.5px/1.4 var(--mono); text-transform: uppercase; letter-spacing: .12em;
+    color: var(--on-dark-muted); }
+  .bar { height: 6px; border-radius: 999px; background: rgba(255,255,255,.09); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 999px; width: 0;
+    transition: width 1.1s cubic-bezier(.16,1,.3,1); }
+  .bar > i.cov { background: var(--info-d); }
+  .bar > i.det { background: var(--bad-d); }
+  .bar > i.fin { background: var(--good-d); }
+  .gauge .row .pct { font: 500 12px var(--mono); text-align: right; color: var(--on-dark);
+    font-variant-numeric: tabular-nums; }
+  .edge { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    padding-top: 2px; }
+  .edge .msg { font-size: 13px; color: var(--on-dark-muted); }
+  .action { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    border-radius: var(--radius-sm); padding: 12px 14px; background: rgba(95,207,149,.07);
+    border: 1px solid rgba(95,207,149,.28); color: var(--good-d); font: 500 12.5px var(--mono); }
+  .action .chain { color: var(--on-dark-faint); font-weight: 400; font-size: 11px; }
+  .term-foot { padding: 12px 20px; border-top: 1px solid var(--line-dark); display: flex;
+    justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 
-  /* ---------- sections ---------- */
-  section { border-top: 1px solid var(--line); padding: 64px 0; }
-  @media (min-width: 980px) { section { padding: 96px 0; } }
-  .sec-head { display: grid; gap: 8px; margin-bottom: 36px; }
-  .sec-head h2 { font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -.025em; margin: 0; font-weight: 700; }
-  .sec-head p { margin: 0; color: var(--muted); max-width: 620px; }
-  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
-  .card { border-radius: 14px; border: 1px solid var(--line); background: var(--card); padding: 22px; transition: border-color .2s, transform .2s; }
-  .card:hover { border-color: rgba(124,92,255,.25); transform: translateY(-2px); }
-  .card .num { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; color: var(--arc); margin-bottom: 14px; }
-  .card h3 { margin: 0 0 8px; font-size: 16px; letter-spacing: -.01em; }
-  .card p { margin: 0; color: var(--muted); font-size: 13.5px; }
-  .svc { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
-  .svc .card .fn { font-family: var(--mono); font-size: 12.5px; color: var(--volt-bright); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .quals { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-top: 14px; }
-  .quals .card { display: flex; gap: 12px; align-items: flex-start; }
-  .quals .dot { width: 10px; height: 10px; border-radius: 999px; margin-top: 6px; flex: none; }
+  /* ---------- 2. numbered stepper ---------- */
+  .stepper { display: grid; grid-template-columns: minmax(0, 310px) minmax(0, 1fr);
+    gap: clamp(28px, 4vw, 60px); align-items: start; }
+  @media (max-width: 900px) { .stepper { grid-template-columns: minmax(0, 1fr); } }
+  .rail { display: grid; gap: 0; border-left: 1px solid var(--line); }
+  .rail button { position: relative; appearance: none; -webkit-appearance: none; background: none;
+    border: 0; border-left: 2px solid transparent; margin-left: -1px; width: 100%; text-align: left;
+    padding: 21px 18px 23px; cursor: pointer; font: inherit; color: var(--text-faint);
+    display: flex; align-items: baseline; gap: 14px; transition: color .3s, border-color .3s; }
+  .rail button .n { font: 500 11px/1 var(--mono); letter-spacing: .14em; color: var(--text-faint);
+    transition: color .3s; }
+  .rail button .t { font-size: 19px; font-weight: 500; letter-spacing: -.015em; }
+  .rail button:hover { color: var(--text-muted); }
+  .rail button[aria-selected="true"] { border-left-color: var(--ink); color: var(--text); }
+  .rail button[aria-selected="true"] .n { color: var(--info); }
+  .rail .prog { position: absolute; left: -1px; bottom: 0; height: 1px; width: 100%; background: var(--line); }
+  .rail .prog i { display: block; height: 100%; width: 0; background: var(--ink); }
+  .rail button[aria-selected="true"] .prog i { animation: fill 4s linear forwards; }
+  .stepper:hover .rail button[aria-selected="true"] .prog i { animation-play-state: paused; }
+  @keyframes fill { from { width: 0; } to { width: 100%; } }
+  .step-panel { position: relative; background: var(--paper); border: 1px solid var(--line);
+    border-radius: var(--radius-lg); padding: clamp(28px, 3.6vw, 46px); min-width: 0; }
+  .step-ghost { position: absolute; top: clamp(18px, 2.2vw, 30px); right: clamp(22px, 2.8vw, 40px);
+    font: 600 clamp(52px, 7vw, 96px)/1 var(--sans); letter-spacing: -.05em; color: var(--paper-3);
+    pointer-events: none; }
+  .step-pane { max-width: 62ch; min-height: 200px; }
+  .step-pane h3 { font-size: clamp(24px, 2.6vw, 32px); font-weight: 500; letter-spacing: -.025em;
+    margin: 0 0 16px; }
+  .step-pane p { margin: 0; font-size: clamp(16px, 1.35vw, 18px); line-height: 1.6; color: var(--text-muted); }
+  .step-pane .mono { color: var(--text); background: var(--paper-3); border-radius: 5px; padding: 1px 6px; }
+  @media (max-width: 680px) { .step-ghost { display: none; } .step-pane { min-height: 0; } }
 
-  /* ---------- engine pipeline ---------- */
-  .pipeline { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr); grid-template-rows: 1fr 1fr; gap: 26px 64px; padding: 10px 0 4px; }
-  .pipeline .grid-bg { -webkit-mask-image: radial-gradient(ellipse at center, #000 15%, transparent 72%); mask-image: radial-gradient(ellipse at center, #000 15%, transparent 72%); }
-  .wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: visible; }
-  .wires path.wire { fill: none; stroke: rgba(255,255,255,.25); stroke-width: 1.75; stroke-dasharray: 5 7; opacity: .55; animation: dash 1.4s linear infinite; }
+  /* ---------- 3. engine pipeline ---------- */
+  .pipeline { position: relative; display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr) minmax(0, 1fr);
+    grid-template-rows: 1fr 1fr; gap: 24px 70px; }
+  .wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
+    overflow: visible; }
+  /* the wire colour is retuned to a hairline; the travelling particles keep their meaning colours */
+  .wires path.wire { fill: none; stroke: rgba(255,255,255,.22) !important; stroke-width: 1.5;
+    stroke-dasharray: 5 7; animation: dash 1.4s linear infinite; }
   .wires path.wire.back { animation-direction: reverse; }
   @keyframes dash { to { stroke-dashoffset: -24; } }
-  .wires circle { filter: drop-shadow(0 0 6px currentColor); }
-  .node { position: relative; z-index: 1; min-width: 0; border-radius: 16px; border: 1px solid var(--line); padding: 20px 22px;
-    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)), var(--bg-900);
-    transition: border-color .25s, transform .25s, box-shadow .25s; }
-  .node:hover { border-color: rgba(124,92,255,.35); transform: translateY(-2px); box-shadow: 0 0 24px -4px rgba(124,92,255,.35); }
-  .node .fn { font-family: var(--mono); font-size: 12.5px; color: var(--volt-bright); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .node h3 { margin: 0 0 8px; font-size: 16px; letter-spacing: -.01em; }
-  .node p { margin: 0; color: var(--muted); font-size: 13.5px; }
+  .wires circle { filter: drop-shadow(0 0 5px currentColor); }
+  .node { position: relative; z-index: 1; min-width: 0; background: var(--ink-2);
+    border: 1px solid var(--line-dark); border-radius: var(--radius); padding: 24px;
+    transition: border-color .25s; }
+  .node:hover { border-color: rgba(255,255,255,.24); }
+  .node .fn { display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    flex-wrap: wrap; font: 400 12.5px var(--mono); color: var(--info-d); margin-bottom: 12px; }
+  .node h3 { margin: 0 0 10px; }
+  .node p { margin: 0; color: var(--on-dark-muted); font-size: 14.5px; line-height: 1.6; }
   .node.src-mut { grid-column: 1; grid-row: 1; }
   .node.src-pert { grid-column: 1; grid-row: 2; }
-  .node.core { grid-column: 2; grid-row: 1 / 3; display: flex; flex-direction: column; justify-content: center; text-align: center; border-color: rgba(34,211,238,.25); }
-  .node.core:hover { border-color: rgba(34,211,238,.5); box-shadow: 0 0 24px -4px rgba(34,211,238,.4); }
+  .node.core { grid-column: 2; grid-row: 1 / 3; display: flex; flex-direction: column;
+    justify-content: center; text-align: center; }
   .node.core .fn { justify-content: center; }
   .node.heal { grid-column: 3; grid-row: 1 / 3; display: flex; flex-direction: column; justify-content: center; }
-  .ticker { display: block; min-width: 0; max-width: 100%; margin-top: 12px; padding: 8px 10px; border-radius: 10px; background: rgba(5,6,12,.7); border: 1px solid var(--line);
-    font-family: var(--mono); font-size: 11.5px; color: var(--arc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ticker { display: block; min-width: 0; max-width: 100%; margin-top: 14px; padding: 9px 11px;
+    border-radius: 10px; background: var(--ink); border: 1px solid var(--line-dark);
+    font: 400 11.5px var(--mono); color: var(--on-dark-muted); white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; }
   .ticker.swap { animation: tick .45s ease; }
-  @keyframes tick { 0% { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  .emit { display: flex; gap: 4px; margin-top: 10px; height: 14px; align-items: flex-end; }
-  .emit i { flex: 1; border-radius: 2px; height: 30%; background: linear-gradient(180deg, var(--volt-bright), rgba(124,92,255,.25));
-    animation: emit 1.5s ease-in-out infinite; animation-delay: calc(var(--i) * .09s); }
-  .src-pert .emit i { background: linear-gradient(180deg, var(--arc), rgba(34,211,238,.25)); }
-  @keyframes emit { 0%, 100% { height: 25%; opacity: .45; } 50% { height: 100%; opacity: 1; } }
-  .ring { position: relative; width: 176px; height: 176px; margin: 4px auto 18px; border-radius: 50%;
-    background: conic-gradient(from 0deg, rgba(34,211,238,0) 0 68%, rgba(34,211,238,.85) 100%); animation: spin 3.6s linear infinite; }
-  .ring::before { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--bg-900); }
-  .ring::after { content: ""; position: absolute; inset: -12px; border-radius: 50%; border: 1px dashed rgba(124,92,255,.4); animation: spin 11s linear infinite reverse; }
-  .ring-inner { position: absolute; inset: 14px; border-radius: 50%; display: grid; place-items: center; text-align: center;
-    background: radial-gradient(circle, rgba(34,211,238,.10), transparent 70%); animation: spin 3.6s linear infinite reverse; }
-  .ring-inner .big { font-family: var(--mono); font-size: 36px; font-weight: 600; letter-spacing: -.02em; color: var(--text); line-height: 1; }
-  .ring-inner .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); margin-top: 6px; }
+  @keyframes tick { 0% { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+  .emit { display: flex; gap: 4px; margin-top: 12px; height: 13px; align-items: flex-end; }
+  .emit i { flex: 1; border-radius: 2px; height: 30%; background: rgba(147,169,247,.55);
+    animation: emit 1.6s ease-in-out infinite; animation-delay: calc(var(--i) * .09s); }
+  .src-pert .emit i { background: rgba(224,180,99,.5); }
+  @keyframes emit { 0%, 100% { height: 25%; opacity: .5; } 50% { height: 100%; opacity: 1; } }
+  .ring { position: relative; width: 168px; height: 168px; margin: 2px auto 20px; border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(255,255,255,0) 0 68%, rgba(255,255,255,.55) 100%);
+    animation: spin 4.2s linear infinite; }
+  .ring::before { content: ""; position: absolute; inset: 2px; border-radius: 50%; background: var(--ink-2); }
+  .ring::after { content: ""; position: absolute; inset: -13px; border-radius: 50%;
+    border: 1px dashed rgba(255,255,255,.16); animation: spin 14s linear infinite reverse; }
+  .ring-inner { position: absolute; inset: 14px; border-radius: 50%; display: grid; place-items: center;
+    text-align: center; animation: spin 4.2s linear infinite reverse; }
+  .ring-inner .big { font: 500 38px/1 var(--mono); letter-spacing: -.02em; color: var(--on-dark);
+    font-variant-numeric: tabular-nums; }
+  .ring-inner .lbl { font: 400 10px var(--mono); letter-spacing: .16em; text-transform: uppercase;
+    color: var(--on-dark-faint); margin-top: 8px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .outcomes { display: flex; justify-content: center; gap: 16px; margin-top: 12px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }
-  .outcomes .k { color: var(--up); } .outcomes .s { color: var(--down); } .outcomes .t { color: var(--dim); }
-  .probe { margin-top: 12px; display: grid; gap: 6px; }
-  .probe .row { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
-  .probe .bar { height: 6px; }
-  .probe .bar i.a { width: 62%; background: linear-gradient(90deg, #1f9d6d, var(--up)); }
-  .probe .bar i.b { width: 62%; background: linear-gradient(90deg, #d84c68, var(--down)); animation: probe 2.6s ease-in-out infinite; }
+  .outcomes { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 14px;
+    font: 400 10.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+  .outcomes .k { color: var(--good-d); } .outcomes .s { color: var(--bad-d); }
+  .outcomes .t { color: var(--on-dark-faint); }
+  .probe { margin-top: 14px; display: grid; gap: 7px; }
+  .probe .row { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 10px; align-items: center;
+    font: 400 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--on-dark-faint); }
+  .probe .bar { height: 5px; }
+  .probe .bar i.a { width: 62%; background: var(--good-d); }
+  .probe .bar i.b { width: 62%; background: var(--bad-d); animation: probe 2.8s ease-in-out infinite; }
   @keyframes probe { 0%, 30% { width: 62%; } 55%, 80% { width: 38%; } 100% { width: 62%; } }
+  .quals { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;
+    margin-top: 20px; }
+  .quals .card { display: flex; gap: 14px; align-items: flex-start; }
+  .quals .dot { width: 9px; height: 9px; border-radius: 999px; margin-top: 8px; flex: none; }
+  .quals h3 { font-size: 18px; }
   @media (max-width: 900px) {
-    .pipeline { grid-template-columns: 1fr; grid-template-rows: none; gap: 14px; }
+    .pipeline { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; gap: 16px; }
     .node.src-mut, .node.src-pert, .node.core, .node.heal { grid-column: auto; grid-row: auto; }
     .wires { display: none; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .ring, .ring::after, .ring-inner, .emit i, .wires path.wire, .probe .bar i.b, .ticker.swap { animation: none; }
-    .wires circle { display: none; }
+
+  /* ---------- 4. stat row ---------- */
+  .statrow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .statcell { min-width: 0; padding: 4px clamp(16px, 2.4vw, 34px); border-left: 1px solid var(--line); }
+  .statcell:first-child { padding-left: 0; border-left: 0; }
+  .stat-n { font: 500 clamp(38px, 5vw, 60px)/1 var(--sans); letter-spacing: -.04em;
+    font-variant-numeric: tabular-nums; color: var(--text); }
+  .stat-n .u { color: var(--text-faint); }
+  .stat-n .u.good { color: var(--good); } .stat-n .u.info { color: var(--info); }
+  .stat-c { margin: 16px 0 0; font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+  @media (max-width: 880px) {
+    .statrow { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 40px; }
+    .statcell:nth-child(odd) { border-left: 0; padding-left: 0; }
+  }
+  @media (max-width: 520px) {
+    .statrow { grid-template-columns: minmax(0, 1fr); row-gap: 0; }
+    .statcell { border-left: 0; padding: 26px 0; border-top: 1px solid var(--line); }
+    .statcell:first-child { padding-top: 0; border-top: 0; }
   }
 
-  .results { display: grid; grid-template-columns: 1fr; gap: 14px; }
-  @media (min-width: 900px) { .results { grid-template-columns: 1fr 1fr; } }
-  .res { border-radius: 16px; border: 1px solid var(--line); background: var(--card); padding: 22px; }
-  .res.bad { border-color: rgba(251,113,133,.3); } .res.good { border-color: rgba(52,211,153,.4); }
-  .res .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .res .big { font-family: var(--mono); font-size: 40px; font-weight: 600; letter-spacing: -.02em; line-height: 1; margin: 6px 0 2px; }
-  .res.bad .big { color: var(--down); } .res.good .big { color: var(--up); }
-  .res .sub { color: var(--muted); font-size: 13px; }
-  .res ul { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; font-size: 13.5px; }
-  .res li { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 8px; }
-  .res li span:last-child { font-family: var(--mono); color: var(--text); }
+  /* ---------- 5. trust strip ---------- */
+  .trust { display: flex; align-items: center; gap: clamp(16px, 2.4vw, 34px); flex-wrap: wrap; }
+  .trust ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+  .trust li { padding: 2px clamp(14px, 2.2vw, 30px); border-right: 1px solid var(--line);
+    color: var(--text-faint); font-size: clamp(15px, 1.4vw, 18px); font-weight: 500; letter-spacing: -.015em; }
+  .trust li:last-child { border-right: 0; padding-right: 0; }
 
-  .cta { text-align: center; position: relative; overflow: hidden; }
-  .cta h2 { font-size: clamp(30px, 4.2vw, 46px); letter-spacing: -.03em; margin: 0 0 12px; }
-  .cta p { color: var(--muted); max-width: 560px; margin: 0 auto 26px; }
+  /* ---------- 6. results / tabs on a gradient band ---------- */
+  .band { overflow: hidden; background: var(--paper); }
+  .band::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+    background: linear-gradient(120deg, var(--g-mint), var(--g-sky) 30%, var(--g-lilac) 55%,
+      var(--g-blush) 78%, var(--g-peach)); }
+  .band::after { content: ""; position: absolute; width: 560px; height: 560px; right: -140px; top: -220px;
+    border-radius: 999px; pointer-events: none; filter: blur(60px); opacity: .6;
+    background: radial-gradient(circle, var(--g-lilac), transparent 70%); }
+  .band > .wrap { position: relative; z-index: 1; }
+  .tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 26px; }
+  .tab { appearance: none; -webkit-appearance: none; cursor: pointer; border-radius: var(--radius-pill);
+    padding: 10px 20px; font: 500 14.5px/1.2 var(--sans); color: var(--text); background: transparent;
+    border: 1px solid rgba(18,19,22,.2); transition: background .2s, color .2s, border-color .2s; }
+  .tab:hover { border-color: rgba(18,19,22,.4); }
+  .tab[aria-selected="true"] { background: var(--ink); color: var(--on-dark); border-color: var(--ink); }
+  .cmp { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+  .res { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: clamp(22px, 2.4vw, 30px); min-width: 0; }
+  .res .head { display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    flex-wrap: wrap; margin-bottom: 20px; }
+  .res .big { font: 500 clamp(38px, 4.4vw, 54px)/1 var(--sans); letter-spacing: -.04em;
+    font-variant-numeric: tabular-nums; margin: 0; }
+  .res.bad .big { color: var(--bad); } .res.good .big { color: var(--good); }
+  .res .sub { color: var(--text-muted); font-size: 14px; margin-top: 10px; }
+  .res ul { list-style: none; margin: 22px 0 0; padding: 0; }
+  .res li { display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
+    border-top: 1px solid var(--line); padding: 11px 0; font-size: 14.5px; color: var(--text-muted); }
+  .res li span:last-child { font-family: var(--mono); font-size: 13px; color: var(--text); text-align: right;
+    font-variant-numeric: tabular-nums; }
+  .pane-note { margin: 18px 0 0; font-size: 14px; color: var(--text-muted); max-width: 78ch; }
+  /* panels swap without a layout jump */
+  @media (min-width: 900px) { .respane { min-height: 570px; } }
+  .own { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  @media (min-width: 900px) { .own { grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); } }
+  .own h3 { font-size: clamp(22px, 2.4vw, 28px); font-weight: 500; letter-spacing: -.025em; margin: 0 0 14px; }
+  .own p { margin: 0 0 14px; color: var(--text-muted); font-size: 15.5px; }
+  .own ol { margin: 0; padding-left: 20px; color: var(--text-muted); font-size: 15px; display: grid; gap: 10px; }
+  .own ol b { color: var(--text); font-weight: 500; }
+  pre.code { margin: 0; background: var(--ink); color: var(--on-dark-muted); border-radius: var(--radius-sm);
+    padding: 18px 20px; font: 400 12.5px/1.7 var(--mono); overflow-x: auto; }
+  pre.code .key { color: var(--info-d); } pre.code .str { color: var(--good-d); }
+  pre.code .cmt { color: var(--on-dark-faint); }
 
-  footer { border-top: 1px solid var(--line); padding: 40px 0 48px; color: var(--muted); font-size: 13px; }
-  .foot { display: grid; grid-template-columns: 1fr; gap: 28px; }
-  @media (min-width: 800px) { .foot { grid-template-columns: 1.4fr 1fr 1fr 1fr; } }
-  .foot h4 { margin: 0 0 10px; font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
-  .foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
-  .foot a:hover { color: var(--text); }
+  /* ---------- 7. honest by design ---------- */
+  .blob { position: absolute; width: 380px; height: 380px; border-radius: 999px; pointer-events: none;
+    filter: blur(38px); opacity: .55; left: -90px; bottom: -120px;
+    background: linear-gradient(120deg, var(--g-mint), var(--g-sky) 40%, var(--g-lilac)); }
+  .honest-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; }
+  .honest-grid .card h3 { font-size: 19px; }
+  .honest-grid .k { margin-bottom: 18px; }
+
+  /* ---------- 8. what it found ---------- */
+  .found-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; }
+  @media (min-width: 760px) { .found-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .ev { background: var(--paper); border: 1px solid #e6dfc4; border-radius: var(--radius); padding: 26px;
+    min-width: 0; }
+  .ev .k { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 16px; }
+  .ev code { display: block; font: 400 12.5px/1.75 var(--mono); color: var(--text); background: var(--paper-2);
+    border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px 16px;
+    white-space: pre-wrap; overflow-wrap: anywhere; }
+  .ev p { margin: 14px 0 0; font-size: 14px; color: var(--text-muted); }
+
+  /* ---------- 9. closing cta ---------- */
+  .ctacard { position: relative; overflow: hidden; background: var(--ink); color: var(--on-dark);
+    border-radius: var(--radius-lg); padding: clamp(56px, 8vw, 112px) clamp(24px, 5vw, 72px);
+    text-align: center; }
+  .ctacard::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(700px 420px at 50% -20%, rgba(255,255,255,.09), transparent 70%); }
+  .ctacard > * { position: relative; }
+  .ctacard h2 .clause { color: var(--on-dark-muted); }
+  .ctacard p { color: var(--on-dark-muted); max-width: 56ch; margin: 20px auto 32px;
+    font-size: clamp(16px, 1.4vw, 19px); }
+
+  /* ---------- 10. footer ---------- */
+  footer { background: var(--ink); color: var(--on-dark-muted); padding: clamp(64px, 7vw, 96px) 0 0;
+    overflow: hidden; }
+  .foot { display: grid; grid-template-columns: minmax(0, 1fr); gap: 34px; font-size: 14.5px; }
+  @media (min-width: 820px) { .foot { grid-template-columns: 1.5fr 1fr 1fr 1fr; } }
+  .foot > div { min-width: 0; }
+  .foot h4 { margin: 0 0 14px; font: 500 11px var(--mono); letter-spacing: .16em; text-transform: uppercase;
+    color: var(--on-dark-faint); }
+  .foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+  .foot a:hover { color: var(--on-dark); }
+  .foot .brand { color: var(--on-dark); margin-bottom: 14px; }
+  .wordmark { margin-top: clamp(44px, 6vw, 88px); height: clamp(40px, 11.1vw, 141px); overflow: hidden; }
+  .wordmark span { display: block; font: 600 clamp(56px, 15vw, 190px)/1 var(--sans); letter-spacing: -.05em;
+    color: rgba(255,255,255,.09); white-space: nowrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .ring, .ring::after, .ring-inner, .emit i, .wires path.wire, .probe .bar i.b, .ticker.swap,
+    .live::after, .rail .prog i { animation: none !important; }
+    .wires circle { display: none; }
+    .bar > i { transition: none; }
+    .js [data-fade] { opacity: 1; transform: none; transition: none; }
+    .rail .prog i { width: 0; }
+  }
 </style>
+<script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
 
-<div class="hero-wrap">
-  <div class="grid-bg"></div>
-  <div class="wash-top"></div>
-  <div class="blob arc"></div>
-  <div class="blob volt"></div>
-  <div class="wrap">
-    <header class="nav">
-      <a class="brand" href="/">
-        <svg class="bolt" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9d85ff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
-          <path d="M16 2 28 9v14l-12 7L4 23V9z" stroke="url(#g)" stroke-width="1.6"/>
-          <path d="M18 8 11 17h5l-2 7 7-9h-5z" fill="url(#g)"/>
-        </svg>
-        SyntraceAI
-      </a>
-      <nav class="nav-links">
-        <a href="#loop">The loop</a>
-        <a href="#engine">Engine</a>
-        <a href="#results">Results</a>
-        <a href="https://github.com/mrnetwork0001/SyntraceAI" target="_blank" rel="noopener">GitHub</a>
-        <a class="btn primary sm" href="/app">Launch App</a>
-      </nav>
-    </header>
+<header class="nav">
+  <div class="wrap bar">
+    <a class="brand" href="/">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 2 28 9v14l-12 7L4 23V9z" stroke="currentColor" stroke-width="1.4" opacity=".5"/>
+        <path d="M18 8 11 17h5l-2 7 7-9h-5z" fill="currentColor"/>
+      </svg>
+      SyntraceAI
+    </a>
+    <nav class="nav-links">
+      <a class="opt" href="#loop">The loop</a>
+      <a class="opt" href="#engine">Engine</a>
+      <a class="opt" href="#results">Results</a>
+      <a href="https://github.com/mrnetwork0001/SyntraceAI" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn primary sm" href="/app">Launch App</a>
+    </nav>
+  </div>
+</header>
 
-    <div class="hero">
+<!-- ============================ 1. HERO ============================ -->
+<section class="hero s-ink on-dark">
+  <div class="wrap">
+    <div class="hero-grid">
       <div>
-        <span class="pill rise"><span class="live"></span> micro1 Frontier Engineering Challenge 2026</span>
-        <h1 class="rise d1">We break your code <span class="gradient-text">faster than your tests notice.</span></h1>
-        <p class="lede rise d2">SyntraceAI is an <b>adversarial mutation-testing agent</b> for AI applications. It injects
+        <span class="pill" data-fade><span class="live"></span> micro1 Frontier Engineering Challenge 2026</span>
+        <h1 class="display" data-fade>We break your code <span class="clause">faster than your tests notice.</span></h1>
+        <p class="lede" data-fade>SyntraceAI is an <b>adversarial mutation-testing agent</b> for AI applications. It injects
           50 subtle bugs - AST operator swaps, boundary shifts, prompt perturbations - runs your suite
           against each one in a sandbox, scores what survived, and <b>auto-heals</b> the gaps with tests it
           proves will kill them.</p>
-        <div class="cta-row rise d3">
+        <div class="cta-row" data-fade>
           <a class="btn primary" href="/app">Launch App</a>
-          <a class="btn" href="https://github.com/mrnetwork0001/SyntraceAI/blob/main/REPRODUCTION_GUIDE.md" target="_blank" rel="noopener">Reproduce it</a>
+          <a class="btn secondary" href="https://github.com/mrnetwork0001/SyntraceAI/blob/main/REPRODUCTION_GUIDE.md" target="_blank" rel="noopener">Reproduce it</a>
         </div>
-        <div class="stats rise d4">
-          <div class="stat"><div class="v"><span>50</span> bugs</div><div class="label">per campaign</div></div>
-          <div class="stat"><div class="v"><span>~8</span>s</div><div class="label">full campaign</div></div>
-          <div class="stat"><div class="v">$<span>0</span></div><div class="label">API cost · offline · seeded</div></div>
+        <div class="hstats" data-fade>
+          <div class="hstat"><div class="v"><span>50</span> bugs</div><span class="label l">per campaign</span></div>
+          <div class="hstat"><div class="v"><span>~8</span>s</div><span class="label l">full campaign</span></div>
+          <div class="hstat"><div class="v">$<span>0</span></div><span class="label l">API cost · offline · seeded</span></div>
         </div>
       </div>
 
-      <div class="term scanline rise d2" id="term">
+      <div class="term" id="term" data-fade>
         <div class="term-head">
           <div class="t"><span class="live"></span> Campaign · <span id="termTarget">demo target</span></div>
           <span class="pill arc" id="termSeed">seed 1337</span>
@@ -299,35 +532,70 @@
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<div class="wrap">
-  <section id="loop">
-    <div class="sec-head">
+<!-- ============================ 2. THE LOOP ============================ -->
+<section id="loop" class="s-paper2">
+  <div class="wrap">
+    <div class="sec-head" data-fade>
       <span class="label">The loop</span>
-      <h2>Four moves, every campaign.</h2>
-      <p>One command. Every number in the report comes from a real, seeded, reproducible run.</p>
+      <h2>Four moves, <span class="clause">every campaign.</span></h2>
+      <p class="lede">One command. Every number in the report comes from a real, seeded, reproducible run.</p>
     </div>
-    <div class="steps">
-      <div class="card"><div class="num">01</div><h3>Inject</h3>
-        <p>Seven AST operator families flip <span class="mono">>=</span> to <span class="mono">></span>, <span class="mono">+</span> to <span class="mono">-</span>, negate branches, nudge boundary constants. Twelve prompt perturbations strip roles, rename schema keys, corrupt delimiters.</p></div>
-      <div class="card"><div class="num">02</div><h3>Isolate</h3>
-        <p>Every bug runs against your suite in its own sandboxed copy of the project - parallel and timeout-guarded. Runaway mutants get killed, not your machine.</p></div>
-      <div class="card"><div class="num">03</div><h3>Score</h3>
-        <p>Killed vs. survived over a frozen bank. The mutation score is the number your line-coverage report was hiding: how many real behavior changes your assertions actually notice.</p></div>
-      <div class="card"><div class="num">04</div><h3>Heal</h3>
-        <p>For each survivor, differential probing finds an input where original and mutant disagree, then synthesizes a hardened assertion - re-verified before it is written, never guessed.</p></div>
-    </div>
-  </section>
 
-  <section id="engine">
-    <div class="sec-head">
-      <span class="label">Engine</span>
-      <h2>Seven operators. Twelve perturbations. One honest score.</h2>
-      <p>Built as a dual-solution benchmark: the same bug bank audits a standard coverage.py baseline and the SyntraceAI campaign.</p>
+    <div class="stepper" id="stepper" data-fade>
+      <div class="rail" role="tablist" aria-label="The campaign loop" aria-orientation="vertical">
+        <button type="button" role="tab" id="steptab-0" aria-controls="step-0" aria-selected="true">
+          <span class="n">01</span><span class="t">Inject</span>
+          <span class="prog" aria-hidden="true"><i></i></span>
+        </button>
+        <button type="button" role="tab" id="steptab-1" aria-controls="step-1" aria-selected="false" tabindex="-1">
+          <span class="n">02</span><span class="t">Isolate</span>
+          <span class="prog" aria-hidden="true"><i></i></span>
+        </button>
+        <button type="button" role="tab" id="steptab-2" aria-controls="step-2" aria-selected="false" tabindex="-1">
+          <span class="n">03</span><span class="t">Score</span>
+          <span class="prog" aria-hidden="true"><i></i></span>
+        </button>
+        <button type="button" role="tab" id="steptab-3" aria-controls="step-3" aria-selected="false" tabindex="-1">
+          <span class="n">04</span><span class="t">Heal</span>
+          <span class="prog" aria-hidden="true"><i></i></span>
+        </button>
+      </div>
+
+      <div class="step-panel">
+        <span class="step-ghost" id="stepGhost" aria-hidden="true">01</span>
+        <div class="step-pane" role="tabpanel" id="step-0" aria-labelledby="steptab-0" tabindex="0">
+          <h3>Inject</h3>
+          <p>Seven AST operator families flip <span class="mono">&gt;=</span> to <span class="mono">&gt;</span>, <span class="mono">+</span> to <span class="mono">-</span>, negate branches, nudge boundary constants. Twelve prompt perturbations strip roles, rename schema keys, corrupt delimiters.</p>
+        </div>
+        <div class="step-pane" role="tabpanel" id="step-1" aria-labelledby="steptab-1" tabindex="0" hidden>
+          <h3>Isolate</h3>
+          <p>Every bug runs against your suite in its own sandboxed copy of the project - parallel and timeout-guarded. Runaway mutants get killed, not your machine.</p>
+        </div>
+        <div class="step-pane" role="tabpanel" id="step-2" aria-labelledby="steptab-2" tabindex="0" hidden>
+          <h3>Score</h3>
+          <p>Killed vs. survived over a frozen bank. The mutation score is the number your line-coverage report was hiding: how many real behavior changes your assertions actually notice.</p>
+        </div>
+        <div class="step-pane" role="tabpanel" id="step-3" aria-labelledby="steptab-3" tabindex="0" hidden>
+          <h3>Heal</h3>
+          <p>For each survivor, differential probing finds an input where original and mutant disagree, then synthesizes a hardened assertion - re-verified before it is written, never guessed.</p>
+        </div>
+      </div>
     </div>
+  </div>
+</section>
+
+<!-- ============================ 3. ENGINE ============================ -->
+<section id="engine" class="s-ink on-dark">
+  <div class="wrap">
+    <div class="sec-head" data-fade>
+      <span class="label">Engine</span>
+      <h2>Seven operators. Twelve perturbations. <span class="clause">One honest score.</span></h2>
+      <p class="lede">Built as a dual-solution benchmark: the same bug bank audits a standard coverage.py baseline and the SyntraceAI campaign.</p>
+    </div>
+
     <div class="pipeline" id="pipeline">
-      <div class="grid-bg"></div>
       <svg class="wires" id="wires" aria-hidden="true"></svg>
 
       <div class="node src-mut" id="nodeMut">
@@ -365,62 +633,244 @@
         <div class="ticker" id="tickHeal">assert final_total(7.0, 'enterprise', 'us', -3.0) == 5.74</div>
       </div>
     </div>
-    <div class="quals">
-      <div class="card"><span class="dot" style="background:var(--arc)"></span><div><h3>Deterministic</h3><p>Same seed → identical bank, identical scores, on any machine, at any parallelism. Reports are byte-stable.</p></div></div>
-      <div class="card"><span class="dot" style="background:var(--volt-bright)"></span><div><h3>Honest</h3><p>Equivalent mutants are reported, never hidden. No verified input, no test. Timeouts and errors are labeled, not laundered.</p></div></div>
-      <div class="card"><span class="dot" style="background:var(--up)"></span><div><h3>Validated</h3><p>Same engine, unchanged, on humanize 4.16.0: 94.7% on the frozen bank, and 12 auto-healed tests the library never had.</p></div></div>
-    </div>
-  </section>
 
-  <section id="results">
-    <div class="sec-head">
+    <div class="quals">
+      <div class="card" data-fade><span class="dot" style="background:var(--info-d)"></span><div><h3>Deterministic</h3><p>Same seed → identical bank, identical scores, on any machine, at any parallelism. Reports are byte-stable.</p></div></div>
+      <div class="card" data-fade><span class="dot" style="background:var(--warn-d)"></span><div><h3>Honest</h3><p>Equivalent mutants are reported, never hidden. No verified input, no test. Timeouts and errors are labeled, not laundered.</p></div></div>
+      <div class="card" data-fade><span class="dot" style="background:var(--good-d)"></span><div><h3>Validated</h3><p>Same engine, unchanged, on humanize 4.16.0: <span id="qHumScore">-</span> on the frozen bank, and <span id="qHumHealed">-</span> auto-healed tests the library never had.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 4. STAT ROW ============================ -->
+<section class="s-paper">
+  <div class="wrap">
+    <div class="statrow">
+      <div class="statcell" data-fade>
+        <div class="stat-n num"><span id="statBugs">50</span> <span class="u">bugs</span></div>
+        <p class="stat-c">Injected per campaign on the demo target - a frozen, seeded bank of AST mutants and prompt perturbations.</p>
+      </div>
+      <div class="statcell" data-fade>
+        <div class="stat-n num" id="statFinal">-</div>
+        <p class="stat-c">Mutation score after auto-healing, read live from the latest demo report.</p>
+      </div>
+      <div class="statcell" data-fade>
+        <div class="stat-n num"><span id="statHealed">-</span></div>
+        <p class="stat-c">Auto-healed assertion tests written back into the suite, each verified to kill a specific bug.</p>
+      </div>
+      <div class="statcell" data-fade>
+        <div class="stat-n num"><span class="u">$</span>0</div>
+        <p class="stat-c">API cost. No model calls, no account, no network - it runs entirely on your machine.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 5. TRUST STRIP ============================ -->
+<section class="s-paper hairline-top" style="padding:clamp(36px,4.4vw,56px) 0">
+  <div class="wrap">
+    <div class="trust" data-fade>
+      <span class="label">Runs on</span>
+      <ul>
+        <li>Python 3.11+</li>
+        <li>pytest</li>
+        <li>coverage.py</li>
+        <li>pydantic</li>
+        <li>Apache 2.0</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 6. RESULTS (TABS) ============================ -->
+<section id="results" class="band">
+  <div class="wrap">
+    <div class="sec-head" data-fade>
       <span class="label">Results · live from the latest run</span>
       <h2>Line coverage is a vanity metric.</h2>
-      <p>A suite can execute 90% of your lines while asserting almost nothing about them. Same code, same suite - measured adversarially.</p>
+      <p class="lede">A suite can execute 90% of your lines while asserting almost nothing about them. Same code, same suite - measured adversarially.</p>
     </div>
-    <div class="results">
-      <div class="res bad">
-        <div class="head"><span class="label">Baseline · coverage.py</span><span class="pill down">looks fine</span></div>
-        <div class="big" id="resCov">-</div><div class="sub">line coverage</div>
-        <ul>
-          <li><span>Injected bugs caught</span><span id="resDet">-</span></li>
-          <li><span>Prompt drift & hallucination</span><span>invisible</span></li>
-          <li><span>Fixing the gaps</span><span>manual</span></li>
-        </ul>
-      </div>
-      <div class="res good">
-        <div class="head"><span class="label">Advanced · SyntraceAI</span><span class="pill up">measured</span></div>
-        <div class="big" id="resFin">-</div><div class="sub">mutation score after auto-healing</div>
-        <ul>
-          <li><span>Injected bugs caught</span><span id="resFinN">-</span></li>
-          <li><span>Auto-healed assertion tests</span><span id="resHealed">-</span></li>
-          <li><span>Survivors reported as equivalent</span><span id="resEq">-</span></li>
-        </ul>
-      </div>
-    </div>
-  </section>
 
-  <section class="cta">
-    <div class="wash-center"></div>
-    <div style="position:relative">
-      <span class="label">Ready</span>
-      <h2>Coverage lies. <span class="gradient-text">Mutation score doesn't.</span></h2>
+    <div data-fade>
+      <div class="tabs" role="tablist" aria-label="Report sets">
+        <button type="button" class="tab" role="tab" id="restab-0" aria-controls="respane-0" aria-selected="true">Demo app</button>
+        <button type="button" class="tab" role="tab" id="restab-1" aria-controls="respane-1" aria-selected="false" tabindex="-1">humanize 4.16.0</button>
+        <button type="button" class="tab" role="tab" id="restab-2" aria-controls="respane-2" aria-selected="false" tabindex="-1">Your project</button>
+      </div>
+
+      <!-- Demo app -->
+      <div class="respane" role="tabpanel" id="respane-0" aria-labelledby="restab-0" tabindex="0">
+        <div class="cmp">
+          <div class="res bad">
+            <div class="head"><span class="label">Baseline · coverage.py</span><span class="tag tag-bad">looks fine</span></div>
+            <div class="big" id="resCov">-</div><div class="sub">line coverage</div>
+            <ul>
+              <li><span>Injected bugs caught</span><span id="resDet">-</span></li>
+              <li><span>Prompt drift &amp; hallucination</span><span>invisible</span></li>
+              <li><span>Fixing the gaps</span><span>manual</span></li>
+            </ul>
+          </div>
+          <div class="res good">
+            <div class="head"><span class="label">Advanced · SyntraceAI</span><span class="tag tag-good">measured</span></div>
+            <div class="big" id="resFin">-</div><div class="sub">mutation score after auto-healing</div>
+            <ul>
+              <li><span>Injected bugs caught</span><span id="resFinN">-</span></li>
+              <li><span>Auto-healed assertion tests</span><span id="resHealed">-</span></li>
+              <li><span>Survivors reported as equivalent</span><span id="resEq">-</span></li>
+            </ul>
+          </div>
+        </div>
+        <p class="pane-note">Demo target: <span class="mono">targets/sample_app</span>, a deterministic AI ticket-triage pipeline with a 48-test suite. Numbers above are read from <span class="mono">/api/reports</span> - the same JSON the CLI writes.</p>
+      </div>
+
+      <!-- humanize -->
+      <div class="respane" role="tabpanel" id="respane-1" aria-labelledby="restab-1" tabindex="0" hidden>
+        <div class="cmp">
+          <div class="res">
+            <div class="head"><span class="label">Frozen 38-bug bank</span><span class="tag tag-info">no findings manufactured</span></div>
+            <div class="big" id="hmScore">-</div><div class="sub">caught by humanize's own suite, before healing</div>
+            <ul>
+              <li><span>Line coverage, mutated modules</span><span id="hmCov">-</span></li>
+              <li><span>Injected bugs caught</span><span id="hmDet">-</span></li>
+              <li><span>Auto-healed tests needed</span><span id="hmHealed">-</span></li>
+              <li><span>Survivors reported as equivalent</span><span id="hmEq">-</span></li>
+              <li><span>Wall time</span><span id="hmWall">-</span></li>
+            </ul>
+          </div>
+          <div class="res good">
+            <div class="head"><span class="label">Exhaustive · all 253 sites</span><span class="tag tag-good">measured</span></div>
+            <div class="big" id="hfFin">-</div><div class="sub">mutation score after auto-healing</div>
+            <ul>
+              <li><span>Caught by the original suite</span><span id="hfDetO">-</span></li>
+              <li><span>Auto-healed assertion tests</span><span id="hfHealed">-</span></li>
+              <li><span>Caught after healing</span><span id="hfDetF">-</span></li>
+              <li><span>Survivors reported as equivalent</span><span id="hfEq">-</span></li>
+              <li><span>Wall time</span><span id="hfWall">-</span></li>
+            </ul>
+          </div>
+        </div>
+        <p class="pane-note">The same engine, unchanged, against a mature MIT-licensed library vendored verbatim in <span class="mono">targets/humanize</span> with the dependency-free part of its own test suite. At the standard bank depth it finds almost nothing - which is the point. At exhaustive depth its 98%-coverage suite still misses behavior changes, and the healer writes the tests that pin them.</p>
+      </div>
+
+      <!-- Your project -->
+      <div class="respane" role="tabpanel" id="respane-2" aria-labelledby="restab-2" tabindex="0" hidden>
+        <div class="own">
+          <div class="res">
+            <h3>One file is the entire integration.</h3>
+            <p>SyntraceAI is a local developer tool, not a hosted service. There is no account, no upload and no API key: it reads your source, mutates temporary copies, runs your suite against them, and deletes them.</p>
+            <p>If your layout is not <span class="mono">app/</span> + <span class="mono">tests/</span>, drop <span class="mono">syntrace_target.json</span> in your project root. <span class="mono">exclude</span> lists modules you do not want mutated; <span class="mono">prompt_templates</span> points at your prompt module and switches on the 12 prompt perturbations - leave it <span class="mono">null</span> for a code-only campaign.</p>
+            <div class="cta-row" style="margin-top:22px">
+              <a class="btn primary" href="/app">Launch App</a>
+              <a class="btn secondary" href="https://github.com/mrnetwork0001/SyntraceAI/blob/main/REPRODUCTION_GUIDE.md" target="_blank" rel="noopener">Reproduction guide</a>
+            </div>
+          </div>
+          <div class="res">
+            <span class="label" style="display:block;margin-bottom:14px">syntrace_target.json</span>
+<pre class="code"><span class="cmt">// project root</span>
+{
+  <span class="key">"source_package"</span>: <span class="str">"myapp"</span>,
+  <span class="key">"tests_dir"</span>: <span class="str">"tests"</span>,
+  <span class="key">"prompt_templates"</span>: null
+}</pre>
+            <span class="label" style="display:block;margin:22px 0 14px">then</span>
+<pre class="code">python advanced/run_mutation.py --target ~/code/my-app</pre>
+            <p class="pane-note">Or type the path into <b>Run against</b> in Mission Control. Each project gets its own report set, so runs never overwrite each other.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 7. HONEST BY DESIGN ============================ -->
+<section class="s-paper" style="overflow:hidden">
+  <span class="blob" aria-hidden="true"></span>
+  <div class="wrap" style="position:relative">
+    <div class="sec-head" data-fade>
+      <span class="label">Honest by design</span>
+      <h2>The uncomfortable numbers <span class="clause">are the ones we print.</span></h2>
+      <p class="lede">A benchmark you cannot interrogate is a benchmark you cannot trust. Three commitments hold the whole tool up.</p>
+    </div>
+    <div class="honest-grid">
+      <div class="card" data-fade>
+        <span class="tag tag-info k">local only</span>
+        <h3>Offline. No account. No upload.</h3>
+        <p>No model calls, no API key, no telemetry. It reads your source, mutates temporary copies, runs your suite against them and deletes them. Your code never leaves your machine.</p>
+      </div>
+      <div class="card" data-fade>
+        <span class="tag tag-warn k">reported</span>
+        <h3>Equivalent mutants are reported, not hidden.</h3>
+        <p>Provable cases are excluded from the bank up front. Unprovable ones are surfaced as unhealable survivors rather than silently capping the score. No verified discriminating input, no test.</p>
+      </div>
+      <div class="card" data-fade>
+        <span class="tag tag-good k">byte-stable</span>
+        <h3>Deterministic reports you can diff.</h3>
+        <p>Same seed, same bank, same scores - on any machine, at any parallelism. Timeouts and errors are labeled, not laundered, and every number on this page is read back from the committed report JSON.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 8. WHAT IT FOUND ============================ -->
+<section class="s-cream">
+  <div class="wrap">
+    <div class="sec-head" data-fade>
+      <span class="label">What it found</span>
+      <h2>Four assertions humanize <span class="clause">never had.</span></h2>
+      <p class="lede">Run exhaustively against humanize 4.16.0, the engine wrote <span id="foundHealed">-</span> tests its own suite lacked. These four pin unit-scaling thresholds nobody had asserted - found by differential probing, re-verified in both project copies before being emitted.</p>
+    </div>
+    <div class="found-grid">
+      <div class="ev" data-fade>
+        <div class="k"><span class="label">humanize.number.intword</span><span class="tag tag-good">verified</span></div>
+        <code>assert humanize.number.intword(1e+27, '%.1f') == '1.0 octillion'</code>
+        <p>The octillion entry in intword's power table. Its 311 vendored tests execute the function; none of them asserted this magnitude.</p>
+      </div>
+      <div class="ev" data-fade>
+        <div class="k"><span class="label">humanize.number.intword</span><span class="tag tag-good">verified</span></div>
+        <code>assert humanize.number.intword(1e+18, '%.1f') == '1.0 quintillion'</code>
+        <p>The quintillion entry, one rung down. A mutated power-table constant changed the output and the suite stayed green.</p>
+      </div>
+      <div class="ev" data-fade>
+        <div class="k"><span class="label">humanize.filesize.naturalsize</span><span class="tag tag-good">verified</span></div>
+        <code>assert humanize.filesize.naturalsize(1e+33, False, False, '%.1f') == '1000.0 QB'</code>
+        <p>The top of the unit ladder, past the last suffix. Reached through the module's own public API, not a guessed literal.</p>
+      </div>
+      <div class="ev" data-fade>
+        <div class="k"><span class="label">humanize.number.metric</span><span class="tag tag-good">verified</span></div>
+        <code>assert humanize.number.metric(1e+33, '', 3) == '1.00 x 10³³'</code>
+        <p>The fall-through past the last SI prefix into scientific notation - a formatting branch the suite executed but never checked.</p>
+      </div>
+    </div>
+    <p class="pane-note" data-fade style="margin-top:26px">Evidence, not endorsement: these are generated tests from a reproducible run against a library we did not write, committed in this repo. The remaining survivors are listed in the report as unhealable, with the reason.</p>
+  </div>
+</section>
+
+<!-- ============================ 9. CLOSING CTA ============================ -->
+<section class="s-paper2">
+  <div class="wrap">
+    <div class="ctacard on-dark" data-fade>
+      <span class="label" style="display:block;margin-bottom:22px">Ready</span>
+      <h2>Coverage lies. <span class="clause">Mutation score doesn't.</span></h2>
       <p>Launch Mission Control, run the campaign, and watch the false-confidence gap open - then close - on your own screen.</p>
       <a class="btn primary" href="/app">Launch App</a>
     </div>
-  </section>
-</div>
+  </div>
+</section>
 
+<!-- ============================ 10. FOOTER ============================ -->
 <footer>
   <div class="wrap">
     <div class="foot">
       <div>
-        <div class="brand" style="margin-bottom:10px">
-          <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" style="width:22px;height:22px"><path d="M16 2 28 9v14l-12 7L4 23V9z" stroke="#9d85ff" stroke-width="1.6"/><path d="M18 8 11 17h5l-2 7 7-9h-5z" fill="#22d3ee"/></svg>
+        <a class="brand" href="/">
+          <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" style="width:22px;height:22px">
+            <path d="M16 2 28 9v14l-12 7L4 23V9z" stroke="currentColor" stroke-width="1.4" opacity=".5"/>
+            <path d="M18 8 11 17h5l-2 7 7-9h-5z" fill="currentColor"/>
+          </svg>
           SyntraceAI
-        </div>
-        <div>Autonomous Agentic Mutation Testing & Hallucination Stress-Tester.</div>
-        <div style="margin-top:10px"><a href="https://github.com/mrnetwork0001/SyntraceAI" target="_blank" rel="noopener">GitHub ↗</a></div>
+        </a>
+        <div>Autonomous Agentic Mutation Testing &amp; Hallucination Stress-Tester.</div>
+        <div style="margin-top:12px"><a href="https://github.com/mrnetwork0001/SyntraceAI" target="_blank" rel="noopener">GitHub ↗</a></div>
       </div>
       <div><h4>Product</h4><ul>
         <li><a href="/app">Mission Control</a></li>
@@ -435,6 +885,7 @@
         <li><a href="https://github.com/python-humanize/humanize" target="_blank" rel="noopener">humanize (validation target)</a></li>
         <li><a href="https://github.com/mrnetwork0001/SyntraceAI/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a></li></ul></div>
     </div>
+    <div class="wordmark" aria-hidden="true"><span>SYNTRACEAI</span></div>
   </div>
 </footer>
 
@@ -482,6 +933,12 @@
     $('resFinN').textContent = `${m.detected_final ?? '-'}/${m.total_bugs ?? '-'}`;
     $('resHealed').textContent = String(healed);
     $('resEq').textContent = String(eq);
+
+    // Stat row (section 4) - same fetch, no second request.
+    const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+    set('statBugs', String(m.total_bugs ?? '-'));
+    set('statFinal', pct(fin));
+    set('statHealed', String(healed));
   } catch (e) { /* engine not run yet - placeholders stand */ }
 })();
 </script>
@@ -582,6 +1039,164 @@
     cycle($('tickMut'), lists.mut, 1700);
     cycle($('tickPert'), lists.pert, 2100);
     cycle($('tickHeal'), lists.heal, 2600);
+  })();
+})();
+</script>
+<script>
+'use strict';
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- scroll fade-up (once, 60ms stagger inside each section) ---------- */
+  (() => {
+    const items = Array.from(document.querySelectorAll('[data-fade]'));
+    if (!items.length) return;
+    if (reduced || !('IntersectionObserver' in window)) {
+      items.forEach(el => el.classList.add('in'));
+      return;
+    }
+    const seen = new Map();
+    items.forEach(el => {
+      const sec = el.closest('section, footer') || document.body;
+      const i = (seen.get(sec) || 0);
+      seen.set(sec, i + 1);
+      el.style.transitionDelay = Math.min(i, 6) * 60 + 'ms';
+    });
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+    items.forEach(el => io.observe(el));
+    // Anything already on screen at load should not wait for a scroll.
+    requestAnimationFrame(() => items.forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.94) { el.classList.add('in'); io.unobserve(el); }
+    }));
+  })();
+
+  /* ---------- numbered stepper: auto-advance 4s, pause on hover, click to select ---------- */
+  (() => {
+    const root = $('stepper');
+    if (!root) return;
+    const tabs = Array.from(root.querySelectorAll('[role="tab"]'));
+    const panes = tabs.map(t => $(t.getAttribute('aria-controls')));
+    const ghost = $('stepGhost');
+    let idx = 0, timer = null, paused = false;
+
+    function select(n, focus) {
+      idx = (n + tabs.length) % tabs.length;
+      tabs.forEach((t, i) => {
+        const on = i === idx;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        if (panes[i]) panes[i].hidden = !on;
+        // restart the 4s progress hairline on the newly active item
+        const bar = t.querySelector('.prog i');
+        if (bar) { bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = ''; }
+      });
+      if (ghost) ghost.textContent = '0' + (idx + 1);
+      if (focus) tabs[idx].focus();
+    }
+    function start() {
+      if (reduced) return;
+      stop();
+      timer = setInterval(() => { if (!paused) select(idx + 1); }, 4000);
+    }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => { select(i); start(); });
+      t.addEventListener('keydown', ev => {
+        const k = ev.key;
+        if (k === 'ArrowDown' || k === 'ArrowRight') { ev.preventDefault(); select(idx + 1, true); start(); }
+        else if (k === 'ArrowUp' || k === 'ArrowLeft') { ev.preventDefault(); select(idx - 1, true); start(); }
+        else if (k === 'Home') { ev.preventDefault(); select(0, true); start(); }
+        else if (k === 'End') { ev.preventDefault(); select(tabs.length - 1, true); start(); }
+      });
+    });
+    root.addEventListener('mouseenter', () => { paused = true; });
+    root.addEventListener('mouseleave', () => { paused = false; });
+    root.addEventListener('focusin', () => { paused = true; });
+    root.addEventListener('focusout', () => { paused = false; });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else start(); });
+
+    select(0);
+    start();
+  })();
+
+  /* ---------- results tabs ---------- */
+  (() => {
+    const list = document.querySelector('#results [role="tablist"]');
+    if (!list) return;
+    const tabs = Array.from(list.querySelectorAll('[role="tab"]'));
+    const panes = tabs.map(t => $(t.getAttribute('aria-controls')));
+    function select(n, focus) {
+      n = (n + tabs.length) % tabs.length;
+      tabs.forEach((t, i) => {
+        const on = i === n;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        if (panes[i]) panes[i].hidden = !on;
+      });
+      if (focus) tabs[n].focus();
+    }
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(i));
+      t.addEventListener('keydown', ev => {
+        if (ev.key === 'ArrowRight') { ev.preventDefault(); select(i + 1, true); }
+        else if (ev.key === 'ArrowLeft') { ev.preventDefault(); select(i - 1, true); }
+      });
+    });
+    // A report set can be linked directly, e.g. /#respane-1
+    const fromHash = () => {
+      const id = location.hash.slice(1);
+      if (!id) return;
+      const i = tabs.findIndex(t => t.id === id || t.getAttribute('aria-controls') === id);
+      if (i >= 0) select(i);
+    };
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
+  })();
+
+  /* ---------- live numbers for the humanize report sets ---------- */
+  (async () => {
+    const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+    const pct = v => (v === null || v === undefined || Number.isNaN(Number(v))) ? '-' : Number(v).toFixed(1) + '%';
+    const load = async q => {
+      try {
+        const res = await fetch('/api/reports' + q);
+        if (!res.ok) return null;
+        const j = await res.json();
+        return j.mutation || null;
+      } catch (e) { return null; }
+    };
+
+    const h = await load('?target=humanize');
+    if (h) {
+      set('hmScore', pct(h.score_original));
+      set('hmCov', pct(h.line_coverage_pct));
+      set('hmDet', `${h.detected_original ?? '-'}/${h.total_bugs ?? '-'}`);
+      set('hmHealed', String((h.healed_tests || []).length) + ' needed');
+      set('hmEq', String((h.unhealable_mutant_ids || []).length));
+      set('hmWall', h.wall_time_s == null ? '-' : h.wall_time_s + 's');
+      set('qHumScore', pct(h.score_original));
+    }
+    const f = await load('?target=humanize_full');
+    if (f) {
+      const healed = (f.healed_tests || []).length;
+      set('hfFin', pct(f.score_final));
+      set('hfDetO', `${f.detected_original ?? '-'}/${f.total_bugs ?? '-'} (${pct(f.score_original)})`);
+      set('hfHealed', String(healed));
+      set('hfDetF', `${f.detected_final ?? '-'}/${f.total_bugs ?? '-'}`);
+      set('hfEq', String((f.unhealable_mutant_ids || []).length));
+      set('hfWall', f.wall_time_s == null ? '-' : f.wall_time_s + 's');
+      set('qHumHealed', String(healed));
+      set('foundHealed', String(healed));
+    }
   })();
 })();
 </script>

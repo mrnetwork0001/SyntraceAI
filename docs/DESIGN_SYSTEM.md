@@ -167,23 +167,53 @@ exists. **Never hard-code a metric that the API can supply.**
 **Prohibited:** fabricated customer names, logos, testimonials, or any metric not read
 from a real report.
 
-## 7. Dashboard (`index.html`) specifics
+## 7. Dashboard (`index.html`) - a DARK application shell
 
-Same tokens; an application shell rather than a marketing page.
+The marketing page is light; **Mission Control is dark**. It is an instrument you sit in
+front of, not a page you read once, and the dark ground keeps attention on the data.
 
-- **Top bar** - white, hairline bottom, sticky: wordmark + "Mission Control", report-set
-  select, status pill, `?`, "Landing".
-- **Run panel** - white card: `Run against` input + preset pills + primary
-  "Run Mutation Campaign" + secondary buttons + the hint line. Unchanged behaviour.
-- **Onboarding card** - the "How this works" 01-04 grid, now on a pastel gradient band,
-  dismissible, restored by `?`.
-- **Scoreboard** - the five metrics as a stat row (hairline-separated, not boxed tiles),
-  keeping the plain-language labels and `title=` hover help.
-- **Gap callout** - `--warn-soft` background, `--warn` left rule.
-- **Tables** (survivors, healed tests) - white cards, hairline rows, mono for ids and
-  locations, soft-tinted status pills. Horizontal scroll inside the card only.
-- **Operator bars** - `--good` / `--bad` segments on `--paper-3` track.
-- **Log panel** - the one deliberately dark element: `--ink` card, mono, `--on-dark`.
+Dashboard-only surface tokens (override the light ones on this page):
+
+```css
+--app-bg:      #141417;   /* the page ground */
+--app-surface: #1b1b1f;   /* cards */
+--app-raised:  #212127;   /* inputs, tracks, nested tiles */
+--app-line:    rgba(255,255,255,.10);
+--app-line-2:  rgba(255,255,255,.16);   /* hover / focus hairlines */
+--app-text:    #f2f2f0;
+--app-muted:   #a8abb2;   /* >= 4.5:1 on --app-bg - never lighter grey for body text */
+--app-faint:   #7c8089;   /* labels only, >= 11px, never body copy */
+```
+
+Semantic data colours are re-tuned for the dark ground (the light `--good`/`--bad` are
+too dark to read on it):
+
+```css
+--good: #4ade80;  --good-soft: rgba(74,222,128,.14);
+--bad:  #f87171;  --bad-soft:  rgba(248,113,113,.14);
+--info: #8ab4ff;  --info-soft: rgba(138,180,255,.14);
+--warn: #fbbf24;  --warn-soft: rgba(251,191,36,.12);
+```
+
+- **Top bar** - sticky, `--app-bg` with a `--app-line` bottom: wordmark + "Mission
+  Control", report-set select, status pill, `?`, "Landing".
+- **Run panel** - `--app-surface` card: `Run against` input (`--app-raised`) + preset
+  pills + primary "Run Mutation Campaign" + secondary buttons + the hint line. The
+  primary button stays high-contrast: white fill, `--app-bg` text.
+- **Onboarding card** - the "How this works" 01-04 grid on a *dimmed* pastel band
+  (the gradient at ~.14 opacity over `--app-bg`, cards `--app-surface`), dismissible,
+  restored by `?`.
+- **Scoreboard** - the five metrics as a hairline-separated stat row, keeping the
+  plain-language labels and `title=` hover help.
+- **Gap callout** - `--warn-soft` fill, `--warn` left rule, `--app-text` copy.
+- **Tables** - `--app-surface` cards, `--app-line` rows, mono ids/locations, tinted
+  status pills. Horizontal scroll inside the card only.
+- **Operator bars** - `--good` / `--bad` segments on an `--app-raised` track.
+- **Log panel** - `#0d0d0f` (a step darker than the shell, so it still reads as a
+  terminal), mono, `--app-text`.
+
+Contrast is a hard requirement here: body text >= 4.5:1 against `--app-bg`. The previous
+dark theme failed this on its explanatory labels - do not repeat it.
 
 ## 8. Hard requirements
 
