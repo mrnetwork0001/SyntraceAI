@@ -1,0 +1,11 @@
+{
+  "source_package": "humanize",
+  "tests_dir": "tests",
+  "prompt_templates": null,
+  "exclude": [
+    "humanize/time.py",
+    "humanize/i18n.py",
+    "humanize/_version.py"
+  ],
+  "notes": "Third-party validation target: humanize 4.16.0 (MIT, see LICENSE-humanize), vendored unmodified from the PyPI sdist. Only its dependency-free test modules are vendored (test_number, test_filesize, test_lists); test_time/test_i18n need freezegun and test_benchmarks needs pytest-benchmark, so the modules they cover (time.py, i18n.py) are excluded from mutation rather than scored against an absent suite."
+}
