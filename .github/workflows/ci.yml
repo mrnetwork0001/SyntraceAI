@@ -1,0 +1,55 @@
+name: SyntraceAI CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  mutation-gate:
+    name: Engine selftests + mutation-score gates
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Engine selftests
+        run: python -m pytest selftests/ -q
+
+      - name: Baseline audit (demo target)
+        run: python baseline/run_baseline.py
+
+      # The campaign is the CI gate: the build fails if the auto-healed
+      # mutation score drops below the threshold. Measured score is 98.0%.
+      - name: Mutation campaign gate (demo target, >= 95%)
+        run: python advanced/run_mutation.py --fail-under 95
+
+      # Third-party validation target (humanize 4.16.0, vendored). Its own
+      # suite already catches 92.1% of the frozen bank; the gate guards that.
+      - name: Mutation campaign gate (humanize, >= 85%)
+        run: >
+          python advanced/run_mutation.py --target targets/humanize
+          --json reports/humanize_mutation_report.json
+          --html reports/humanize_mutation_report.html
+          --trajectory trajectories/agent_trace_03.json
+          --fail-under 85
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: syntraceai-reports-py${{ matrix.python-version }}
+          path: |
+            reports/
+            targets/sample_app/tests/test_healed_assertions.py
+            targets/humanize/tests/test_healed_assertions.py
