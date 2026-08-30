@@ -316,12 +316,71 @@
   /* The log stays a step darker than the shell so it still reads as a terminal. */
   .card.dark { background: var(--ink); border-color: var(--line); }
   #log { background: var(--ink); border-color: var(--line); color: var(--text-muted); }
+
+  /* ---------- application shell ----------
+     A control surface, not a document: fixed chrome, a sidebar that owns the
+     controls, and one working view at a time in the main pane. */
+  .appbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    height: 60px; padding: 0 clamp(16px, 2vw, 26px); }
+  .shell { display: grid; grid-template-columns: 296px minmax(0, 1fr); align-items: start; }
+
+  .sidebar { position: sticky; top: 60px; align-self: start; min-width: 0;
+    height: calc(100vh - 60px); overflow-y: auto; overscroll-behavior: contain;
+    border-right: 1px solid var(--line); padding: 24px 22px 30px;
+    display: grid; gap: 26px; align-content: start; }
+  .side-label { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--text-faint); margin-bottom: 12px; }
+  .side-group { min-width: 0; }
+  .side-group .hint { font-size: 12.5px; margin-top: 14px; line-height: 1.55; }
+
+  .sidebar #targetPath { width: 100%; flex: none; min-width: 0; margin-bottom: 10px; font-size: 12.5px; }
+  .sidebar #presets { display: grid; gap: 6px; margin-bottom: 14px; }
+  .sidebar .preset { width: 100%; text-align: left; padding: 8px 12px; font-size: 12.5px;
+    border-radius: var(--radius-sm); }
+  .sidebar button.primary { width: 100%; justify-content: center; margin-bottom: 8px; }
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .btn-row button { width: 100%; justify-content: center; padding: 10px 12px; font-size: 13px; }
+
+  .side-nav { display: grid; gap: 2px; }
+  .navitem { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    padding: 9px 12px; border-radius: var(--radius-sm); border: 1px solid transparent;
+    background: transparent; color: var(--text-muted); font: 500 13.5px/1.3 var(--sans); cursor: pointer; }
+  .navitem:hover { background: var(--paper); color: var(--text); border-color: transparent; }
+  .navitem[aria-current="true"] { background: var(--paper); color: var(--text); border-color: var(--line); }
+  .navitem .count { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
+  .navitem[aria-current="true"] .count { color: var(--text-muted); }
+
+  .main { min-width: 0; padding: clamp(22px, 2.6vw, 32px) clamp(18px, 2.6vw, 36px) 72px; }
+  .kpis { padding-bottom: clamp(22px, 2.6vw, 30px); margin-bottom: clamp(22px, 2.6vw, 30px);
+    border-bottom: 1px solid var(--line); }
+  .view { display: grid; gap: clamp(18px, 2vw, 22px); }
+  .view[hidden] { display: none; }
+  /* Long tables scroll inside their panel instead of stretching the page. */
+  .panel-scroll { max-height: calc(100vh - 330px); min-height: 220px; overflow: auto; }
+
+  /* Onboarding is a first-run overlay, not a permanent band eating the fold. */
+  .overlay { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center;
+    padding: clamp(16px, 4vw, 48px); background: rgba(8,8,10,.72); backdrop-filter: blur(3px); }
+  .overlay[hidden] { display: none; }
+  .modal { position: relative; overflow: hidden; width: min(940px, 100%); max-height: 88vh; overflow-y: auto;
+    background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius-lg);
+    padding: clamp(26px, 3.4vw, 40px); }
+  .modal::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+    opacity: .10; mix-blend-mode: screen;
+    background: linear-gradient(120deg, var(--g-mint), var(--g-sky) 30%, var(--g-lilac) 55%, var(--g-blush) 78%, var(--g-peach)); }
+  .modal > * { position: relative; z-index: 1; }
+
+  @media (max-width: 1040px) {
+    .shell { grid-template-columns: minmax(0, 1fr); }
+    .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+    .panel-scroll { max-height: none; }
+  }
 </style>
 </head>
 <body>
 
 <header class="topbar">
-  <div class="wrap topbar-inner">
+  <div class="appbar">
     <a class="brand" href="/">
       <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
         <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0c0c0d"/><stop offset="1" stop-color="#4a4c53"/></linearGradient></defs>
@@ -339,8 +398,9 @@
   </div>
 </header>
 
-<section class="band" id="introCard">
-  <div class="wrap">
+<div class="overlay" id="introCard" role="dialog" aria-modal="true" aria-label="How SyntraceAI works"
+     onclick="if (event.target === this) dismissIntro()">
+  <div class="modal">
     <h2>How this works</h2>
     <p class="lead">SyntraceAI <b>breaks your code on purpose</b> to find out what your tests don't notice.
       It runs entirely on this machine - no account, no upload, no API cost.</p>
@@ -355,82 +415,95 @@
         <p>For every bug that slipped through, it synthesizes a test that provably catches it, written into your project's tests folder.</p></div>
     </div>
     <div class="intro-foot">
-      <button onclick="dismissIntro()">Got it</button>
+      <button class="primary" onclick="dismissIntro()">Got it</button>
       <span class="hint">You can reopen this any time with the <b>?</b> button in the header.</span>
     </div>
   </div>
-</section>
+</div>
 
-<div class="wrap sec">
-  <div class="stack">
-    <div class="card runbar rise">
-      <div class="row">
-        <label for="targetPath">Run against</label>
-        <input id="targetPath" value="targets/sample_app" spellcheck="false"
-               placeholder="path to a Python project, e.g. ~/code/my-app"
-               aria-label="target project directory">
-        <span id="presets"></span>
-      </div>
-      <div class="row">
-        <button id="btnMutate" class="primary" onclick="launch('mutate')">⚡ Run Mutation Campaign</button>
-        <button id="btnBaseline" onclick="launch('baseline')">Run Baseline Audit</button>
-        <button id="btnFull" onclick="launch('full')">Run Full</button>
-        <button id="btnLog" onclick="toggleLog()">Log</button>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="side-group">
+      <div class="side-label"><label for="targetPath">Run against</label></div>
+      <input id="targetPath" value="targets/sample_app" spellcheck="false"
+             placeholder="path to a Python project, e.g. ~/code/my-app"
+             aria-label="target project directory">
+      <div id="presets"></div>
+      <button id="btnMutate" class="primary" onclick="launch('mutate')">⚡ Run Mutation Campaign</button>
+      <div class="btn-row">
+        <button id="btnBaseline" onclick="launch('baseline')">Baseline</button>
+        <button id="btnFull" onclick="launch('full')">Full</button>
       </div>
       <p class="hint">Your code never leaves this machine. Layout other than <code>app/</code> + <code>tests/</code>?
         Drop a <code>syntrace_target.json</code> in the project naming your
         <code>source_package</code> and <code>tests_dir</code>.</p>
     </div>
 
-    <div class="card dark" id="logCard" hidden>
-      <h2>Live engine log</h2>
-      <div id="log"></div>
-    </div>
-  </div>
-</div>
+    <nav class="side-nav" aria-label="Views">
+      <div class="side-label">Views</div>
+      <button class="navitem" data-view="overview" aria-current="true" onclick="showView('overview')">Overview</button>
+      <button class="navitem" data-view="survivors" onclick="showView('survivors')">
+        Surviving bugs <span class="count" id="countSurvivors"></span></button>
+      <button class="navitem" data-view="healed" onclick="showView('healed')">
+        Healed tests <span class="count" id="countHealed"></span></button>
+      <button class="navitem" data-view="log" id="btnLog" onclick="showView('log')">Live engine log</button>
+      <button class="navitem" data-view="trajectories" onclick="showView('trajectories')">Agent trajectories</button>
+    </nav>
+  </aside>
 
-<section class="scoreband">
-  <div class="wrap">
-    <h2>Campaign scoreboard</h2>
-    <div id="tiles" class="tiles"></div>
-    <div id="gap" class="gap-callout" hidden></div>
-    <div id="emptyMain" class="empty" hidden>
-      Nothing measured yet for this project.<br>
-      Press <b>⚡ Run Mutation Campaign</b> above - it takes about 10 seconds and fills this page with real numbers.
-    </div>
-  </div>
-</section>
-
-<div class="wrap sec sec-last">
-  <div class="stack">
-    <div class="cols">
-      <div class="card rise">
-        <h2>Detection by mutation operator</h2>
-        <div id="bars" class="bars"></div>
-        <div class="legend"><span><i style="background:var(--good)" aria-hidden="true"></i>detected</span><span><i style="background:var(--bad)" aria-hidden="true"></i>survived</span></div>
+  <main class="main">
+    <section class="kpis">
+      <div id="tiles" class="tiles"></div>
+      <div id="gap" class="gap-callout" hidden></div>
+      <div id="emptyMain" class="empty" hidden>
+        Nothing measured yet for this project.<br>
+        Press <b>⚡ Run Mutation Campaign</b> on the left - it takes about 10 seconds and fills this page with real numbers.
       </div>
-      <div class="card rise d1">
-        <h2>Baseline audit · coverage.py mindset</h2>
-        <div id="baseline"></div>
+    </section>
+
+    <section class="view" data-view="overview">
+      <div class="cols">
+        <div class="card">
+          <h2>Detection by mutation operator</h2>
+          <div id="bars" class="bars"></div>
+          <div class="legend"><span><i style="background:var(--good)" aria-hidden="true"></i>detected</span><span><i style="background:var(--bad)" aria-hidden="true"></i>survived</span></div>
+        </div>
+        <div class="card">
+          <h2>Baseline audit · coverage.py mindset</h2>
+          <div id="baseline"></div>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <div class="card rise d2">
-      <h2>Surviving bugs · pre-heal</h2>
-      <div class="scroll"><div id="survivors"></div></div>
-    </div>
+    <section class="view" data-view="survivors" hidden>
+      <div class="card">
+        <h2>Surviving bugs · pre-heal</h2>
+        <div class="scroll panel-scroll"><div id="survivors"></div></div>
+      </div>
+    </section>
 
-    <div class="card rise d3">
-      <h2>Auto-healed assertion tests</h2>
-      <div class="scroll"><div id="healed"></div></div>
-      <div id="unhealable" class="footnote"></div>
-    </div>
+    <section class="view" data-view="healed" hidden>
+      <div class="card">
+        <h2>Auto-healed assertion tests</h2>
+        <div class="scroll panel-scroll"><div id="healed"></div></div>
+        <div id="unhealable" class="footnote"></div>
+      </div>
+    </section>
 
-    <div class="card rise d4">
-      <h2>Agent trajectories</h2>
-      <div id="trajectories" class="footnote">-</div>
-    </div>
-  </div>
+    <section class="view" data-view="log" hidden>
+      <div class="card dark" id="logCard">
+        <h2>Live engine log</h2>
+        <div id="log"></div>
+      </div>
+    </section>
+
+    <section class="view" data-view="trajectories" hidden>
+      <div class="card">
+        <h2>Agent trajectories</h2>
+        <div id="trajectories" class="footnote">-</div>
+      </div>
+    </section>
+  </main>
 </div>
 
 <script>
@@ -468,7 +541,8 @@ function renderMutation(m) {
   if (!m) { tiles.innerHTML = ''; gap.hidden = true; empty.hidden = false;
             $('bars').innerHTML = '<div class="empty">-</div>';
             $('survivors').innerHTML = '<div class="empty">-</div>';
-            $('healed').innerHTML = '<div class="empty">-</div>'; $('unhealable').textContent = ''; return; }
+            $('healed').innerHTML = '<div class="empty">-</div>'; $('unhealable').textContent = '';
+            $('countSurvivors').textContent = ''; $('countHealed').textContent = ''; return; }
   empty.hidden = true;
 
   const cov = num(m.line_coverage_pct);
@@ -530,7 +604,9 @@ function renderMutation(m) {
       ? `<span title="${esc(text)}">${esc(text.slice(0, limit - 3))}...</span>`
       : esc(text);
   };
+  $('countSurvivors').textContent = survivorsPre.length || '';
   const healed = m.healed_tests || [];
+  $('countHealed').textContent = healed.length || '';
   $('healed').innerHTML = healed.length ? `<table>
     <tr><th>kills</th><th>function</th><th>input</th><th>expected (original behavior)</th></tr>` +
     healed.map(h => `<tr><td class="mono">${esc(h.mutant_id)}</td>
@@ -651,9 +727,25 @@ async function loadPresets() {
   } catch (e) { /* server restarting */ }
 }
 
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape' && !$('introCard').hidden) dismissIntro();
+});
+
+function showView(name) {
+  for (const section of document.querySelectorAll('.view')) {
+    section.hidden = section.dataset.view !== name;
+  }
+  for (const item of document.querySelectorAll('.navitem')) {
+    item.setAttribute('aria-current', String(item.dataset.view === name));
+  }
+  logVisible = name === 'log';
+}
+
+// Kept for the callers that predate the view switcher (the run poller opens the
+// log automatically while a campaign is in flight).
 function toggleLog(force) {
-  logVisible = force === undefined ? !logVisible : force;
-  $('logCard').hidden = !logVisible;
+  const wantLog = force === undefined ? !logVisible : force;
+  showView(wantLog ? 'log' : 'overview');
 }
 
 try { if (localStorage.getItem('syntrace.intro') === 'done') $('introCard').hidden = true; }
