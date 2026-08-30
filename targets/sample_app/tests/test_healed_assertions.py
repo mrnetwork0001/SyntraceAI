@@ -66,14 +66,14 @@ def test_healed_M009_apply_tier_discount() -> None:
 # original: 250.0  |  mutated: 251.0
 # Discriminating input found and re-verified by differential probing.
 def test_healed_M012_compute_tax() -> None:
-    assert app.pricing.compute_tax(5000.0, 'us') == pytest.approx(250.0)
+    assert app.pricing.compute_tax(10000.0, 'plus') == pytest.approx(250.0)
 
 
 # Mutant M015 | BooleanOperatorSwap | app/scoring.py:29
 # original: level >= 4.0 and trust >= 0.8  |  mutated: level >= 4.0 or trust >= 0.8
 # Discriminating input found and re-verified by differential probing.
 def test_healed_M015_priority_score() -> None:
-    assert app.scoring.priority_score(-3, 1.0) == pytest.approx(28.0)
+    assert app.scoring.priority_score(7, -3.0) == pytest.approx(85.0)
 
 
 # Mutant M017 | ComparisonOperatorSwap | app/scoring.py:50
