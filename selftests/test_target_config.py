@@ -40,6 +40,7 @@ def test_code_only_target(tmp_path: Path) -> None:
         },
         package="mylib",
     )
+    (target / "mylib" / "skip_me.py").write_text("X = 1\n")  # excludes must exist
     config = load_target_config(target)
     assert config.source_package == "mylib"
     assert not config.has_prompts

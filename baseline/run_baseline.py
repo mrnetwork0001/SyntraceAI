@@ -378,6 +378,10 @@ def main(argv: list[str] | None = None) -> int:
     # The baseline audits the ORIGINAL suite: a healed-assertion file left
     # behind by a previous advanced campaign would inflate every number here.
     healed_path = target_dir / config.tests_dir / "test_healed_assertions.py"
+    try:
+        healed_path.resolve().relative_to(target_dir.resolve())
+    except ValueError:
+        _abort(f"tests dir resolves outside the target: {healed_path}")
     if healed_path.exists():
         healed_path.unlink()
         _console.print(
@@ -387,7 +391,7 @@ def main(argv: list[str] | None = None) -> int:
 
     _console.print("Step 1/3: line-coverage audit of the pristine target ...")
     line_coverage_pct, tests_passed = _run_coverage_audit(
-        target_dir, config.source_package, config.exclude
+        target_dir, config.source_package, config.coverage_omit(target_dir)
     )
     _console.print(
         f"  suite is green: {tests_passed} tests passed, "

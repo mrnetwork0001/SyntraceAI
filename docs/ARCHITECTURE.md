@@ -88,8 +88,10 @@ if str(REPO_ROOT) not in sys.path:
 
 - Absolute imports only: `from advanced.core_types import Mutant`.
 - Target adapter: a target directory may carry `syntrace_target.json`
-  (`source_package`, `tests_dir`, `prompt_templates` or `null`, `exclude` list). Missing
-  file ⇒ the demo layout below. Targets without a prompt module run code-only
+  (`source_package`, `tests_dir`, `prompt_templates` or `null`, `exclude` list of files
+  or directories). Every path must stay inside the target (no absolute paths, no `..`)
+  and every exclude entry must exist - a typo must fail loudly, never silently exclude
+  nothing. Missing file ⇒ the demo layout below. Targets without a prompt module run code-only
   campaigns (38-mutant bank, no perturbations). Coverage is measured with
   `--source=<package>` and `--omit=<excludes>` so line coverage and mutation scope
   describe the same code. See `advanced/target_config.py`.
@@ -338,6 +340,9 @@ def write_healed_test_file(target_dir: Path, healed: list[HealedTest], *, tests_
 - Module-level mutants (constant tables, flags) are healed by probing every top-level
   function of the module in definition order; the first re-verified discriminator wins
   and the emitted test calls that observing function.
+- Honesty gate: the chosen input is re-verified in both copies under two pinned
+  `PYTHONHASHSEED` values; any disagreement with the original probe (hash-order
+  dependent output) or a non-finite float input makes the mutant unhealable.
 - Probe protocol: write pristine copy and mutated copy of the target to two tmp dirs;
   in each, run a generated probe script that imports the function, applies the JSON
   list of candidate inputs, and prints JSON results (exceptions encoded

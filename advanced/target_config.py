@@ -40,11 +40,26 @@ class TargetConfig:
 
     @property
     def mutation_excludes(self) -> tuple[str, ...]:
-        """Relative paths the mutator must skip: the prompt module + explicit excludes."""
+        """Relative paths the mutator must skip: the prompt module + explicit excludes.
+
+        An entry names either a file or a directory (matched as a prefix).
+        """
         paths = list(self.exclude)
         if self.prompt_templates and self.prompt_templates not in paths:
             paths.insert(0, self.prompt_templates)
         return tuple(paths)
+
+    def coverage_omit(self, target_dir: Path) -> tuple[str, ...]:
+        """``--omit`` patterns for coverage.py: directories become ``<dir>/*``."""
+        patterns: list[str] = []
+        for entry in self.exclude:
+            patterns.append(f"{entry}/*" if (target_dir / entry).is_dir() else entry)
+        return tuple(patterns)
+
+
+def is_excluded(rel_path: str, excludes: tuple[str, ...]) -> bool:
+    """True if *rel_path* equals an exclude entry or lies under an excluded directory."""
+    return any(rel_path == entry or rel_path.startswith(entry + "/") for entry in excludes)
 
 
 def load_target_config(target_dir: Path) -> TargetConfig:
@@ -65,18 +80,29 @@ def load_target_config(target_dir: Path) -> TargetConfig:
     tests_dir = data.get("tests_dir", defaults.tests_dir)
     prompt_templates = data.get("prompt_templates", defaults.prompt_templates)
     exclude = data.get("exclude", [])
-    if not isinstance(exclude, list) or not all(
-        isinstance(entry, str) and entry and not Path(entry).is_absolute() for entry in exclude
-    ):
+    if not isinstance(exclude, list):
         raise TargetConfigError(f"{path}: 'exclude' must be a list of relative paths")
 
-    for name, value in (("source_package", source_package), ("tests_dir", tests_dir)):
-        if not isinstance(value, str) or not value or Path(value).is_absolute():
-            raise TargetConfigError(f"{path}: {name!r} must be a non-empty relative path")
-    if prompt_templates is not None and (
-        not isinstance(prompt_templates, str) or Path(prompt_templates).is_absolute()
-    ):
-        raise TargetConfigError(f"{path}: 'prompt_templates' must be a relative path or null")
+    def safe_rel(value: object, label: str) -> str:
+        """Normalize a config path and refuse anything that could leave the target."""
+        if not isinstance(value, str) or not value.strip():
+            raise TargetConfigError(f"{path}: {label!r} must be a non-empty relative path")
+        normalized = value.replace("\\", "/")
+        if Path(normalized).is_absolute():
+            raise TargetConfigError(f"{path}: {label!r} must be relative, got {value!r}")
+        parts = [p for p in normalized.split("/") if p not in ("", ".")]
+        if not parts or any(p == ".." for p in parts):
+            raise TargetConfigError(
+                f"{path}: {label!r} must stay inside the target directory, got {value!r}"
+            )
+        return "/".join(parts)
+
+    source_package = safe_rel(source_package, "source_package")
+    tests_dir = safe_rel(tests_dir, "tests_dir")
+    if prompt_templates is not None:
+        prompt_templates = safe_rel(prompt_templates, "prompt_templates")
+    exclude = tuple(safe_rel(entry, "exclude") for entry in exclude)
+
     if not (target_dir / source_package).is_dir():
         raise TargetConfigError(
             f"{path}: source_package {source_package!r} is not a directory under {target_dir}"
@@ -85,11 +111,15 @@ def load_target_config(target_dir: Path) -> TargetConfig:
         raise TargetConfigError(
             f"{path}: prompt_templates {prompt_templates!r} does not exist under {target_dir}"
         )
+    for entry in exclude:
+        if not (target_dir / entry).exists():
+            raise TargetConfigError(
+                f"{path}: exclude entry {entry!r} does not exist under {target_dir} "
+                "(a typo here would silently exclude nothing)"
+            )
     return TargetConfig(
-        source_package=source_package.replace("\\", "/").strip("/"),
-        tests_dir=tests_dir.replace("\\", "/").strip("/"),
-        prompt_templates=(
-            prompt_templates.replace("\\", "/").strip("/") if prompt_templates else None
-        ),
-        exclude=tuple(entry.replace("\\", "/").strip("/") for entry in exclude),
+        source_package=source_package,
+        tests_dir=tests_dir,
+        prompt_templates=prompt_templates,
+        exclude=exclude,
     )

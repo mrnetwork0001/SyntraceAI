@@ -68,3 +68,23 @@ the 38-mutant code bank plus an exhaustive 253-site campaign for humanize.
   equivalent; exhaustive campaign **218/253 → 230/253 (86.2% → 90.9%)** with **12
   auto-healed tests** humanize's own suite lacks. Demo target unchanged at 98.0%.
   Selftests: 106.
+
+### Iteration 5 - Adversarial code review with executed repros
+- **Goal:** Harden the new adapter and healer paths against everything a second
+  verification fleet could actually break, not just what it could argue about.
+- **Agent feedback acted on (each reproduced by a script before it was fixed):**
+  - A `..` in the adapter's `source_package` escaped the target and turned harness
+    errors into a silent 100% score; a `..` in `tests_dir` deleted a file outside the
+    target. The adapter now rejects any path that leaves the target, validates that
+    every `exclude` entry exists (a typo silently excluded nothing), supports directory
+    excludes, and both entrypoints refuse a healed-test path outside the target.
+  - The healer's honesty gate re-verified with one subprocess, so hash-order-dependent
+    output (joining a set) could yield a flaky test ~half the time. Verification now
+    runs under two pinned `PYTHONHASHSEED` values and refuses non-finite inputs.
+  - `TYPE_CHECKING` bodies and aliased guards still produced unkillable mutants; the
+    mutator now skips everything inside a type-checking block.
+  - Healed tests written to a `tests_dir` pytest never collects passed the gate
+    trivially; the orchestrator now checks the collected count and aborts loudly.
+  - Dashboard paired the exhaustive humanize set with the frozen-bank baseline; report
+    sets are matched exactly and unknown ids return 404.
+- **Result:** all measured numbers unchanged; selftests 115.

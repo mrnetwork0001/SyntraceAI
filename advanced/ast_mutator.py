@@ -33,7 +33,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from advanced.core_types import CODE_BANK_SIZE, DEFAULT_SEED, Mutant
-from advanced.target_config import load_target_config
+from advanced.target_config import is_excluded, load_target_config
 
 __all__ = [
     "ArithmeticOperatorSwap",
@@ -334,15 +334,28 @@ ALL_OPERATORS: tuple[type[MutationOperator], ...] = (
 )
 
 
-def _is_type_checking_guard(test: ast.expr) -> bool:
-    """``if TYPE_CHECKING:`` / ``if typing.TYPE_CHECKING:`` - import-only blocks.
+def _type_checking_names(tree: ast.Module) -> frozenset[str]:
+    """Names bound to ``TYPE_CHECKING`` in *tree*, including import aliases."""
+    names = {"TYPE_CHECKING"}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module in ("typing", "typing_extensions"):
+            for alias in node.names:
+                if alias.name == "TYPE_CHECKING" and alias.asname:
+                    names.add(alias.asname)
+    return frozenset(names)
 
-    These guards are False at runtime by definition; negating one merely
-    executes type-only imports, which is a semantic no-op for the test suite
-    and would seed the bank with an unkillable mutant.
+
+def _is_type_checking_guard(
+    test: ast.expr, names: frozenset[str] = frozenset({"TYPE_CHECKING"})
+) -> bool:
+    """``if TYPE_CHECKING:`` / ``if typing.TYPE_CHECKING:`` / aliased forms.
+
+    These guards are False at runtime by definition: everything inside them is
+    type-only code that the test suite never executes, so negating the guard
+    or mutating its body would seed the bank with unkillable mutants.
     """
     if isinstance(test, ast.Name):
-        return test.id == "TYPE_CHECKING"
+        return test.id in names
     return isinstance(test, ast.Attribute) and test.attr == "TYPE_CHECKING"
 
 
@@ -434,6 +447,7 @@ def _iter_sites(
     ``"Grader.passing"``); sites not inside any function report ``""``.
     """
     scope: list[tuple[str, bool]] = []  # (name, is_function)
+    tc_names = _type_checking_names(tree)
 
     def qualname() -> str:
         if any(is_fn for _, is_fn in scope):
@@ -441,6 +455,11 @@ def _iter_sites(
         return ""
 
     def visit(node: ast.AST) -> Iterator[tuple[str, _Variant]]:
+        if isinstance(node, ast.If) and _is_type_checking_guard(node.test, tc_names):
+            # Type-only block: no site in the guard or its body is ever executed.
+            for child in node.orelse:
+                yield from visit(child)
+            return
         for variant in operator.variants(node, docstring_ids):
             yield qualname(), variant
         opens_scope = isinstance(node, _SCOPE_NODES)
@@ -528,7 +547,7 @@ def enumerate_mutants(
         )
     if exclude is None:
         exclude = config.mutation_excludes
-    excluded = {entry.replace("\\", "/") for entry in exclude}
+    excluded = tuple(entry.replace("\\", "/") for entry in exclude)
     tests_parts = tuple(Path(config.tests_dir).parts)
 
     mutants: list[Mutant] = []
@@ -541,7 +560,7 @@ def enumerate_mutants(
             or "tests" in relative.parts
             or relative.parts[: len(tests_parts)] == tests_parts
             or "__pycache__" in relative.parts
-            or rel_path in excluded
+            or is_excluded(rel_path, excluded)
         ):
             continue
         source = path.read_text(encoding="utf-8")

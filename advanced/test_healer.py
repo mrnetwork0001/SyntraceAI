@@ -483,21 +483,27 @@ def _probe_function(
     if mode is None:
         raise _Unhealable("no discriminating input found (likely equivalent mutant)")
 
-    # Honesty gate: re-verify the single chosen input in both copies.
+    # Honesty gate: re-verify the single chosen input in both copies under two
+    # pinned hash seeds. A result that depends on hash ordering (joining a
+    # set, iterating a dict of hashed keys) would produce a flaky test, so
+    # every re-verification must agree with the original probe exactly.
     args = candidates[index]
-    v_orig = _run_probe(pristine, [args])
-    v_mut = _run_probe(mutated_dir, [args])
-    if v_orig is None or v_mut is None:
-        raise _Unhealable("verification probe failed or timed out")
-    if v_orig[0] != orig_results[index]:
-        raise _Unhealable("original behavior unstable across runs")
-    if mode == "value":
-        verified = _is_value(v_orig[0]) and _value_assertion_kills(v_orig[0], v_mut[0])
-    else:
-        verified = _raises_assertion_kills(v_orig[0], v_mut[0], module_name)
-    if not verified:
-        raise _Unhealable("discriminating input failed re-verification")
-    return _build_healed_test(mutant, module_name, func_name, args, mode, v_orig[0])
+    if any(isinstance(a, float) and not math.isfinite(a) for a in args):
+        raise _Unhealable("discriminating input contains a non-finite float")
+    for seed_value in (0, 1):
+        v_orig = _run_probe(pristine, [args], hash_seed=seed_value)
+        v_mut = _run_probe(mutated_dir, [args], hash_seed=seed_value)
+        if v_orig is None or v_mut is None:
+            raise _Unhealable("verification probe failed or timed out")
+        if v_orig[0] != orig_results[index] or v_mut[0] != mut_results[index]:
+            raise _Unhealable("behavior unstable across runs (hash-order dependent?)")
+        if mode == "value":
+            verified = _is_value(v_orig[0]) and _value_assertion_kills(v_orig[0], v_mut[0])
+        else:
+            verified = _raises_assertion_kills(v_orig[0], v_mut[0], module_name)
+        if not verified:
+            raise _Unhealable("discriminating input failed re-verification")
+    return _build_healed_test(mutant, module_name, func_name, args, mode, orig_results[index])
 
 
 def _anchor_values(fn_orig: ast.FunctionDef, pools: list[list[Any]]) -> list[Any]:
@@ -514,8 +520,10 @@ def _anchor_values(fn_orig: ast.FunctionDef, pools: list[list[Any]]) -> list[Any
     anchors: list[Any] = []
     for pool, default in zip(pools, defaults):
         value: Any = pool[0]
-        if isinstance(default, ast.Constant) and (
-            default.value is None or type(default.value) in (bool, int, float, str)
+        if (
+            isinstance(default, ast.Constant)
+            and (default.value is None or type(default.value) in (bool, int, float, str))
+            and not (isinstance(default.value, float) and not math.isfinite(default.value))
         ):
             value = default.value
         elif (
@@ -916,18 +924,26 @@ def _index_tuples_with_sum(sizes: list[int], total: int) -> Iterator[tuple[int, 
 
 
 def _run_probe(
-    project_dir: Path, candidates: list[tuple[Any, ...]]
+    project_dir: Path,
+    candidates: list[tuple[Any, ...]],
+    *,
+    hash_seed: int | None = None,
 ) -> list[dict[str, Any]] | None:
     """Run the generated probe script in ``project_dir`` over ``candidates``.
 
-    Returns the decoded per-candidate result list, or ``None`` on timeout,
-    non-zero exit, or unparsable output (the caller treats that as
-    unhealable - never as evidence).
+    ``hash_seed`` pins ``PYTHONHASHSEED`` for the subprocess so verification
+    can check that a result does not depend on hash ordering. Returns the
+    decoded per-candidate result list, or ``None`` on timeout, non-zero exit,
+    or unparsable output (the caller treats that as unhealable - never as
+    evidence).
     """
     inputs_path = project_dir / _INPUTS_FILENAME
     inputs_path.write_text(
         json.dumps([list(args) for args in candidates]), encoding="utf-8"
     )
+    env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
+    if hash_seed is not None:
+        env["PYTHONHASHSEED"] = str(hash_seed)
     try:
         proc = subprocess.run(
             [sys.executable, _PROBE_FILENAME, _INPUTS_FILENAME],
@@ -935,7 +951,7 @@ def _run_probe(
             capture_output=True,
             text=True,
             timeout=PROBE_TIMEOUT_S,
-            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+            env=env,
         )
     except subprocess.TimeoutExpired:
         return None

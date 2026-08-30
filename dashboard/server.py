@@ -100,13 +100,17 @@ def targets() -> JSONResponse:
 def reports(target: str = "") -> JSONResponse:
     if not _TARGET_RE.match(target):
         return JSONResponse({"error": "invalid target"}, status_code=400)
+    if target not in _report_prefixes():
+        return JSONResponse({"error": f"unknown report set {target!r}"}, status_code=404)
     prefix = f"{target}_" if target else ""
-    baseline_prefix = "humanize_" if target.startswith("humanize") else prefix
     traj_dir = REPO_ROOT / "trajectories"
     trajectories = sorted(p.name for p in traj_dir.glob("*.json")) if traj_dir.is_dir() else []
+    # Only an exactly matching baseline report is paired with a campaign: the
+    # exhaustive humanize set has no 253-bug baseline, so it shows none rather
+    # than the frozen-bank baseline's incomparable 36/38.
     return JSONResponse({
         "target": target,
-        "baseline": _read_json(REPO_ROOT / "reports" / f"{baseline_prefix}baseline_report.json"),
+        "baseline": _read_json(REPO_ROOT / "reports" / f"{prefix}baseline_report.json"),
         "mutation": _read_json(REPO_ROOT / "reports" / f"{prefix}mutation_report.json"),
         "trajectories": trajectories,
     })

@@ -22,6 +22,8 @@ if str(REPO_ROOT) not in sys.path:
 
 import argparse
 import json
+import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -63,12 +65,30 @@ def sibling_output_paths(json_arg: str, html_arg: str | None, trajectory_arg: st
     html = html_arg or str(json_path.with_suffix(".html"))
     if trajectory_arg:
         trajectory = trajectory_arg
-    elif json_arg == DEFAULT_JSON:
+    elif os.path.normpath(json_arg) == os.path.normpath(DEFAULT_JSON):
         trajectory = DEFAULT_TRAJECTORY
     else:
         stem = json_path.stem.removesuffix("_mutation_report").removesuffix("_report")
-        trajectory = f"trajectories/{stem}_trace.json"
+        if json_path.is_absolute():
+            trajectory = str(json_path.parent / f"{stem}_trace.json")  # stay out of tree
+        else:
+            trajectory = f"trajectories/{stem}_trace.json"
     return html, trajectory
+
+
+def inside(root: Path, candidate: Path) -> bool:
+    """True if *candidate* resolves to a location within *root*."""
+    try:
+        candidate.resolve().relative_to(root.resolve())
+        return True
+    except ValueError:
+        return False
+
+
+def passed_count(pytest_output: str) -> int | None:
+    """Number of passing tests reported in a pytest summary line, if present."""
+    match = re.search(r"(\d+) passed", pytest_output)
+    return int(match.group(1)) if match else None
 
 
 def coverage_run_command(source_package: str, omit: tuple[str, ...] = ()) -> list[str]:
@@ -222,6 +242,9 @@ def main(argv: list[str] | None = None) -> int:
     # Start every campaign from the un-hardened suite so runs are reproducible.
     healed_rel_path = Path(config.tests_dir) / HEALED_TEST_BASENAME
     healed_path = target_dir / healed_rel_path
+    if not inside(target_dir, healed_path):
+        console.print(f"[red]ABORT: tests dir resolves outside the target:[/red] {healed_path}")
+        return 2
     if healed_path.exists():
         healed_path.unlink()
         console.print("[dim]Removed previously generated healed-assertion suite for a clean run.[/dim]")
@@ -234,8 +257,9 @@ def main(argv: list[str] | None = None) -> int:
         console.print(gate.stdout_tail)
         return 2
     console.print(f"[green]Suite green[/green] in {gate.duration_s:.1f}s")
+    baseline_passed = passed_count(gate.stdout_tail)
     line_cov = measure_line_coverage(
-        target_dir, config.source_package, omit=config.exclude
+        target_dir, config.source_package, omit=config.coverage_omit(target_dir)
     )
     if line_cov is not None:
         console.print(f"Baseline line coverage: [bold]{line_cov}%[/bold]")
@@ -339,6 +363,21 @@ def main(argv: list[str] | None = None) -> int:
             if healed_gate.exit_code != 0:
                 console.print("[red]ABORT: healed suite is not green on the pristine target.[/red]")
                 console.print(healed_gate.stdout_tail)
+                return 2
+            healed_passed = passed_count(healed_gate.stdout_tail)
+            expected_passed = (
+                baseline_passed + len(campaign.healed_tests)
+                if baseline_passed is not None else None
+            )
+            if expected_passed is not None and (
+                healed_passed is None or healed_passed < expected_passed
+            ):
+                console.print(
+                    "[red]ABORT: the healed tests were written but pytest did not collect "
+                    f"them ({healed_passed} passed, expected {expected_passed}). Check that "
+                    f"the adapter's tests_dir ({config.tests_dir!r}) is covered by the "
+                    "target's pytest testpaths.[/red]"
+                )
                 return 2
 
             # Step 5 - re-run survivors against the healed suite.

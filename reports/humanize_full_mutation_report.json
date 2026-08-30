@@ -3772,7 +3772,7 @@
       "description": "constant 30 -> 31"
     }
   ],
-  "wall_time_s": 35.1,
+  "wall_time_s": 22.6,
   "detected_original": 218,
   "score_original": 86.2,
   "detected_final": 230,
