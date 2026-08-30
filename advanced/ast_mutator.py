@@ -33,6 +33,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from advanced.core_types import CODE_BANK_SIZE, DEFAULT_SEED, Mutant
+from advanced.target_config import load_target_config
 
 __all__ = [
     "ArithmeticOperatorSwap",
@@ -209,7 +210,7 @@ class ConditionNegation(MutationOperator):
     name: ClassVar[str] = "ConditionNegation"
 
     def variants(self, node: ast.AST, docstring_ids: frozenset[int]) -> list[_Variant]:
-        if not isinstance(node, ast.If):
+        if not isinstance(node, ast.If) or _is_type_checking_guard(node.test):
             return []
 
         def apply(stmt: ast.If = node) -> _AppliedMutation:
@@ -333,6 +334,18 @@ ALL_OPERATORS: tuple[type[MutationOperator], ...] = (
 )
 
 
+def _is_type_checking_guard(test: ast.expr) -> bool:
+    """``if TYPE_CHECKING:`` / ``if typing.TYPE_CHECKING:`` — import-only blocks.
+
+    These guards are False at runtime by definition; negating one merely
+    executes type-only imports, which is a semantic no-op for the test suite
+    and would seed the bank with an unkillable mutant.
+    """
+    if isinstance(test, ast.Name):
+        return test.id == "TYPE_CHECKING"
+    return isinstance(test, ast.Attribute) and test.attr == "TYPE_CHECKING"
+
+
 def _equivalent_clamp_swap_sites(tree: ast.Module) -> frozenset[tuple[int, int]]:
     """Coordinates of Compare nodes where an ordering-equality swap is a no-op.
 
@@ -380,7 +393,12 @@ def _equivalent_clamp_swap_sites(tree: ast.Module) -> frozenset[tuple[int, int]]
 
 
 def _docstring_node_ids(tree: ast.Module) -> frozenset[int]:
-    """Return ``id()``s of every docstring Constant node in *tree*."""
+    """``id()``s of Constant nodes that operators must never mutate.
+
+    Docstrings (the first statement string of a module, class, or function)
+    and the value of the ``TYPE_CHECKING = False`` idiom — flipping that flag
+    only executes type-only imports at runtime, an unkillable no-op.
+    """
     ids: set[int] = set()
     for node in ast.walk(tree):
         if isinstance(node, _DOC_HOLDERS) and node.body:
@@ -391,6 +409,17 @@ def _docstring_node_ids(tree: ast.Module) -> frozenset[int]:
                 and isinstance(first.value.value, str)
             ):
                 ids.add(id(first.value))
+        targets: list[ast.expr] = []
+        if isinstance(node, ast.Assign):
+            targets = node.targets
+        elif isinstance(node, ast.AnnAssign):
+            targets = [node.target]
+        if (
+            targets
+            and all(isinstance(t, ast.Name) and t.id == "TYPE_CHECKING" for t in targets)
+            and isinstance(node.value, ast.Constant)
+        ):
+            ids.add(id(node.value))
     return frozenset(ids)
 
 
@@ -473,34 +502,44 @@ def _mutants_for_file(source: str, rel_path: str) -> list[Mutant]:
 def enumerate_mutants(
     target_dir: Path,
     *,
-    exclude: tuple[str, ...] = ("app/prompt_templates.py",),
+    exclude: tuple[str, ...] | None = None,
 ) -> list[Mutant]:
-    """Enumerate all valid single-site mutants for ``app/*.py`` under *target_dir*.
+    """Enumerate all valid single-site mutants of the target's source package.
 
-    Skips excluded relative paths, ``__init__.py``, anything under a
-    ``tests``/``__pycache__`` directory. The result is stably sorted by
+    The package to scan comes from the target adapter config
+    (``syntrace_target.json``; default ``app/``). Skips excluded relative
+    paths (default: the configured prompt-templates module, which belongs to
+    the prompt perturbator), ``__init__.py``, and anything under the tests or
+    ``__pycache__`` directories. The result is stably sorted by
     ``(file_path, line_no, col_offset, operator_name)`` and deduplicated on
     identical mutated file sources; ``mutant_id`` is left empty ("") — IDs
     are assigned by :func:`select_bank` after selection.
 
-    Raises ``FileNotFoundError`` if ``<target_dir>/app`` does not exist and
+    Raises ``FileNotFoundError`` if the source package does not exist and
     propagates ``SyntaxError`` if a target source file does not parse — a
     broken target must fail loudly, not shrink the bank silently.
     """
     target_dir = Path(target_dir).resolve()
-    app_dir = target_dir / "app"
-    if not app_dir.is_dir():
-        raise FileNotFoundError(f"target has no app/ package: {app_dir}")
+    config = load_target_config(target_dir)
+    package_dir = target_dir / config.source_package
+    if not package_dir.is_dir():
+        raise FileNotFoundError(
+            f"target has no {config.source_package}/ package: {package_dir}"
+        )
+    if exclude is None:
+        exclude = config.mutation_excludes
     excluded = {entry.replace("\\", "/") for entry in exclude}
+    tests_parts = tuple(Path(config.tests_dir).parts)
 
     mutants: list[Mutant] = []
-    paths = sorted(app_dir.rglob("*.py"), key=lambda p: p.relative_to(target_dir).as_posix())
+    paths = sorted(package_dir.rglob("*.py"), key=lambda p: p.relative_to(target_dir).as_posix())
     for path in paths:
         relative = path.relative_to(target_dir)
         rel_path = relative.as_posix()
         if (
             path.name == "__init__.py"
             or "tests" in relative.parts
+            or relative.parts[: len(tests_parts)] == tests_parts
             or "__pycache__" in relative.parts
             or rel_path in excluded
         ):

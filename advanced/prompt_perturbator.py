@@ -31,6 +31,7 @@ if str(REPO_ROOT) not in sys.path:
 import ast
 
 from advanced.core_types import PROMPT_BANK_SIZE, Perturbation
+from advanced.target_config import load_target_config
 
 __all__ = ["PromptContractError", "enumerate_perturbations", "replace_constant"]
 
@@ -204,7 +205,10 @@ def enumerate_perturbations(target_dir: Path) -> list[Perturbation]:
     ``mutated_source`` is a complete replacement module that compiles.
     Deterministic: same input file, byte-identical bank.
     """
-    templates_path = Path(target_dir) / _TEMPLATES_REL_PATH
+    config = load_target_config(Path(target_dir))
+    if not config.has_prompts:
+        return []  # code-only target: no prompt bank
+    templates_path = Path(target_dir) / (config.prompt_templates or _TEMPLATES_REL_PATH)
     try:
         source = templates_path.read_text(encoding="utf-8")
     except FileNotFoundError:
