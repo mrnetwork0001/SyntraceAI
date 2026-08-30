@@ -61,7 +61,7 @@ from advanced.core_types import (
     TestRunResult,
 )
 from advanced.prompt_perturbator import enumerate_perturbations
-from advanced.run_mutation import coverage_run_command
+from advanced.run_mutation import coverage_run_command, default_json_path
 from advanced.sandbox_runner import evaluate_many
 from advanced.target_config import TargetConfig, load_target_config
 
@@ -360,10 +360,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--json",
         dest="json_path",
-        default="reports/baseline_report.json",
-        help="path of the JSON report to write (default: %(default)s)",
+        default=None,
+        help="path of the JSON report to write "
+             "(default: reports/[<target>_]baseline_report.json)",
     )
     args = parser.parse_args(argv)
+    # Report names follow the target so a user's own project never overwrites
+    # the demo's committed evidence.
+    args.json_path = args.json_path or default_json_path(args.target, "baseline")
 
     started = time.perf_counter()
     target_dir = _resolve_target(args.target)

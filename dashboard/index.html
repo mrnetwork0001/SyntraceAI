@@ -48,6 +48,29 @@
   select.pill option { background: var(--bg-900); color: var(--text); text-transform: none; }
 
   .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+
+  /* ---------- onboarding + target picker ---------- */
+  .intro { border: 1px solid rgba(124,92,255,.25); background: linear-gradient(180deg, rgba(124,92,255,.08), rgba(124,92,255,.02)); }
+  .intro .lead { font-size: 15px; margin: 0 0 16px; color: var(--text); }
+  .intro .lead b { color: var(--volt-bright); }
+  .steps4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .step4 { background: rgba(5,6,12,.5); border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; }
+  .step4 .n { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; color: var(--arc); margin-bottom: 7px; }
+  .step4 h4 { margin: 0 0 5px; font-size: 13.5px; }
+  .step4 p { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+  .intro-foot { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  .runbar { display: grid; gap: 12px; margin-bottom: 18px; padding: 16px 18px; border-radius: 16px;
+    border: 1px solid var(--line2); background: var(--card); }
+  .runbar .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .runbar label { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); flex: none; }
+  #targetPath { flex: 1 1 320px; min-width: 220px; background: rgba(5,6,12,.7); border: 1px solid var(--line2); color: var(--text);
+    border-radius: 10px; padding: 10px 12px; font-family: var(--mono); font-size: 12.5px; }
+  #targetPath:focus { outline: none; border-color: rgba(124,92,255,.5); box-shadow: 0 0 18px -6px rgba(124,92,255,.6); }
+  .preset { border-radius: 999px; padding: 6px 13px; font-size: 12px; font-weight: 500; }
+  .hint { color: var(--dim); font-size: 12px; margin: 0; }
+  .hint code { font-family: var(--mono); color: var(--muted); background: rgba(255,255,255,.05); padding: 1px 6px; border-radius: 5px; }
+  .empty b { color: var(--volt-bright); }
   button { font: 600 13px/1 var(--sans); color: var(--text); border: 1px solid var(--line2); background: rgba(255,255,255,.05); border-radius: 12px;
     padding: 11px 16px; cursor: pointer; transition: border-color .2s, background .2s, transform .2s; }
   button:hover:not(:disabled) { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.08); }
@@ -105,17 +128,50 @@
       SyntraceAI <span class="sub">/ Mission Control</span>
     </a>
     <div class="right">
-      <select id="targetSelect" class="pill" onchange="refreshReports()" title="report set"></select>
+      <select id="targetSelect" class="pill" onchange="refreshReports()" title="which saved report set to display"></select>
       <div id="statusPill" class="pill"><span class="live"></span> idle</div>
+      <button class="pill" onclick="showIntro()" title="What is this? How do I use it?" style="cursor:pointer">?</button>
       <a href="/" class="pill">← Landing</a>
     </div>
   </header>
 
-  <div class="actions rise">
-    <button id="btnBaseline" onclick="launch('baseline')">Run Baseline Audit</button>
-    <button id="btnMutate" class="primary" onclick="launch('mutate')">⚡ Run Mutation Campaign</button>
-    <button id="btnFull" onclick="launch('full')">Run Full (Baseline + Campaign)</button>
-    <button id="btnLog" class="arc" onclick="toggleLog()">Log</button>
+  <div class="card intro rise" id="introCard">
+    <h2>How this works</h2>
+    <p class="lead">SyntraceAI <b>breaks your code on purpose</b> to find out what your tests don't notice.
+      It runs entirely on this machine - no account, no upload, no API cost.</p>
+    <div class="steps4">
+      <div class="step4"><div class="n">01</div><h4>Point it at a project</h4>
+        <p>Any local Python project with a test suite. The bundled demo app is already selected below.</p></div>
+      <div class="step4"><div class="n">02</div><h4>Run the campaign</h4>
+        <p>It injects 50 small bugs - flipped comparisons, shifted thresholds, corrupted prompts - and runs your suite against every one in a sandbox. About 10 seconds.</p></div>
+      <div class="step4"><div class="n">03</div><h4>Read the gap</h4>
+        <p>Coverage tells you which lines ran. The score tells you how many bugs your tests actually caught. The difference is what coverage was hiding.</p></div>
+      <div class="step4"><div class="n">04</div><h4>Keep the tests it writes</h4>
+        <p>For every bug that slipped through, it synthesizes a test that provably catches it, written into your project's tests folder.</p></div>
+    </div>
+    <div class="intro-foot">
+      <button onclick="dismissIntro()">Got it</button>
+      <span class="hint">You can reopen this any time with the <b>?</b> button in the header.</span>
+    </div>
+  </div>
+
+  <div class="runbar rise">
+    <div class="row">
+      <label for="targetPath">Run against</label>
+      <input id="targetPath" value="targets/sample_app" spellcheck="false"
+             placeholder="path to a Python project, e.g. ~/code/my-app"
+             aria-label="target project directory">
+      <span id="presets"></span>
+    </div>
+    <div class="row">
+      <button id="btnMutate" class="primary" onclick="launch('mutate')">⚡ Run Mutation Campaign</button>
+      <button id="btnBaseline" onclick="launch('baseline')">Run Baseline Audit</button>
+      <button id="btnFull" onclick="launch('full')">Run Full</button>
+      <button id="btnLog" class="arc" onclick="toggleLog()">Log</button>
+    </div>
+    <p class="hint">Your code never leaves this machine. Layout other than <code>app/</code> + <code>tests/</code>?
+      Drop a <code>syntrace_target.json</code> in the project naming your
+      <code>source_package</code> and <code>tests_dir</code>.</p>
   </div>
 
   <div class="card" id="logCard" hidden>
@@ -127,7 +183,10 @@
     <h2>Campaign scoreboard</h2>
     <div id="tiles" class="tiles"></div>
     <div id="gap" class="gap-callout" hidden></div>
-    <div id="emptyMain" class="empty" hidden>No campaign data yet - run the mutation engine to populate the scoreboard.</div>
+    <div id="emptyMain" class="empty" hidden>
+      Nothing measured yet for this project.<br>
+      Press <b>⚡ Run Mutation Campaign</b> above - it takes about 10 seconds and fills this page with real numbers.
+    </div>
   </div>
 
   <div class="cols">
@@ -163,6 +222,7 @@
 'use strict';
 let polling = null;
 let logVisible = false;
+let pendingReportId = null;
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
@@ -175,9 +235,18 @@ function outcomeOf(r) {
 }
 const num = v => (v === null || v === undefined || Number.isNaN(Number(v))) ? null : Number(v);
 
-function tile(value, label, cls) {
-  return `<div class="tile"><div class="v ${cls || ''}">${value}</div><div class="l">${label}</div></div>`;
+function tile(value, label, cls, help) {
+  return `<div class="tile"${help ? ` title="${esc(help)}"` : ''}>` +
+    `<div class="v ${cls || ''}">${value}</div><div class="l">${label}</div></div>`;
 }
+
+const HELP = {
+  cov: 'Percentage of source lines your test suite executes. It says nothing about whether your tests would notice if those lines were wrong.',
+  pre: 'How many of the injected bugs your ORIGINAL suite caught. This is the honest measure of what your tests defend.',
+  fin: 'The score after SyntraceAI wrote hardened tests for the bugs that slipped through, verified by re-running the whole bank.',
+  healed: 'Tests SyntraceAI synthesized and verified, written into the project\'s tests folder. Review them and commit the ones you want.',
+  wall: 'Wall-clock time for the campaign: injecting every bug, running the suite against each in a sandbox, healing, and re-running.',
+};
 
 function renderMutation(m) {
   const tiles = $('tiles'), gap = $('gap'), empty = $('emptyMain');
@@ -191,13 +260,14 @@ function renderMutation(m) {
   const pre = num(m.score_original), fin = num(m.score_final);
   const healedCount = (m.healed_tests || []).length;
   tiles.innerHTML =
-    tile(cov !== null ? cov.toFixed(1) + '%' : '-', 'line coverage (before SyntraceAI)', 'volt') +
+    tile(cov !== null ? cov.toFixed(1) + '%' : '-', 'line coverage (what you believed)', 'volt', HELP.cov) +
     tile(pre !== null ? pre.toFixed(1) + '%' : '-',
-         `pre-heal detection (${m.detected_original}/${m.total_bugs})`, pre !== null && pre < 60 ? 'bad' : '') +
+         `bugs your tests caught (${m.detected_original}/${m.total_bugs})`,
+         pre !== null && pre < 60 ? 'bad' : '', HELP.pre) +
     tile(fin !== null ? fin.toFixed(1) + '%' : '-',
-         `final mutation score (${m.detected_final}/${m.total_bugs})`, 'good') +
-    tile(healedCount, 'auto-healed assertion tests', 'accent') +
-    tile(num(m.wall_time_s) !== null ? m.wall_time_s + 's' : '-', 'campaign wall time');
+         `after auto-healing (${m.detected_final}/${m.total_bugs})`, 'good', HELP.fin) +
+    tile(healedCount, 'tests SyntraceAI wrote for you', 'accent', HELP.healed) +
+    tile(num(m.wall_time_s) !== null ? m.wall_time_s + 's' : '-', 'campaign wall time', '', HELP.wall);
 
   if (cov !== null && pre !== null) {
     gap.hidden = false;
@@ -307,17 +377,54 @@ async function poll() {
       if (s.returncode === null || s.returncode === undefined) { pill.className = 'pill'; pill.innerHTML = '<span class="live"></span> idle'; }
       else if (s.returncode === 0) { pill.className = 'pill ok'; pill.innerHTML = `<span class="live"></span> last run: ${esc(s.kind)} ✓`; }
       else { pill.className = 'pill fail'; pill.innerHTML = `<span class="live"></span> last run: ${esc(s.kind)} failed (${s.returncode})`; }
-      if (polling) { clearInterval(polling); polling = null; await loadTargets(); await refreshReports(); }
+      if (polling) {
+        clearInterval(polling); polling = null;
+        await loadTargets();
+        if (pendingReportId !== null) {
+          const sel = $('targetSelect');
+          if ([...sel.options].some(o => o.value === pendingReportId)) sel.value = pendingReportId;
+          pendingReportId = null;
+        }
+        await refreshReports();
+      }
     }
   } catch (e) { /* ignore */ }
 }
 
 async function launch(kind) {
-  const res = await fetch('/api/run/' + kind, { method: 'POST' });
-  if (!res.ok) { const j = await res.json().catch(() => ({})); alert(j.error || 'failed to start'); return; }
+  const target = $('targetPath').value.trim();
+  const url = '/api/run/' + kind + (target ? '?target=' + encodeURIComponent(target) : '');
+  const res = await fetch(url, { method: 'POST' });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok) { alert(j.error || 'failed to start'); return; }
+  pendingReportId = j.report_id ?? null;   // select this project's report set when it finishes
   toggleLog(true);
   if (!polling) polling = setInterval(poll, 1200);
   poll();
+}
+
+function dismissIntro() {
+  $('introCard').hidden = true;
+  try { localStorage.setItem('syntrace.intro', 'done'); } catch (e) { /* private mode */ }
+}
+function showIntro() {
+  $('introCard').hidden = false;
+  $('introCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  try { localStorage.removeItem('syntrace.intro'); } catch (e) { /* private mode */ }
+}
+
+async function loadPresets() {
+  try {
+    const list = await (await fetch('/api/presets')).json();
+    const host = $('presets');
+    host.innerHTML = list.map(p =>
+      `<button class="preset" data-path="${esc(p.path)}" title="${esc(p.path)}">${esc(p.label)}</button>`
+    ).join(' ');
+    host.onclick = ev => {
+      const btn = ev.target.closest('button[data-path]');
+      if (btn) $('targetPath').value = btn.dataset.path;
+    };
+  } catch (e) { /* server restarting */ }
 }
 
 function toggleLog(force) {
@@ -325,6 +432,9 @@ function toggleLog(force) {
   $('logCard').hidden = !logVisible;
 }
 
+try { if (localStorage.getItem('syntrace.intro') === 'done') $('introCard').hidden = true; }
+catch (e) { /* private mode: keep the intro visible */ }
+loadPresets();
 loadTargets().then(refreshReports);
 poll();
 </script>

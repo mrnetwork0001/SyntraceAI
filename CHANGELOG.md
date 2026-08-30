@@ -88,3 +88,22 @@ the 38-mutant code bank plus an exhaustive 253-site campaign for humanize.
   - Dashboard paired the exhaustive humanize set with the frozen-bank baseline; report
     sets are matched exactly and unknown ids return 404.
 - **Result:** all measured numbers unchanged; selftests 115.
+
+### Iteration 6 - Make it usable on the user's own project
+- **Goal:** The engine already ran on any Python project, but only the CLI could reach
+  that: the dashboard's buttons were hard-wired to the bundled demo, and nothing in the
+  UI explained what the tool does or what to press first.
+- **Changes:**
+  - Report paths derive from the target (`reports/<project>_mutation_report.json`), so a
+    user's run can never overwrite the demo's committed evidence. The demo keeps the
+    unprefixed names.
+  - The dashboard takes a **project path**: a `Run against` field plus one-click presets,
+    passed to the CLI as `--target`. Each project gets its own report set in the
+    selector, and the run auto-selects it when it finishes.
+  - A dismissible **"How this works"** panel (01-04), a `?` button to reopen it, an empty
+    state that names the button to press, plain-language metric labels ("bugs your tests
+    caught" rather than "pre-heal detection"), and hover explanations on every tile.
+  - README gained a **"Use it on your own project"** section with the one-file adapter.
+- **Result:** verified end to end against a project outside the repo - 4 tests, 86.7%
+  line coverage, **13/37 bugs caught (35.1%) → 97.3%** with 23 tests written into that
+  project. Demo and humanize numbers unchanged; selftests 122.

@@ -160,6 +160,47 @@ nothing rendered anywhere is a mock number.
 - **Fabricated healing:** the healer's honesty gate re-verifies every discriminating
   input in both project copies before a test is emitted; no verified input, no test.
 
+## Use it on your own project
+
+SyntraceAI is a local developer tool, not a hosted service. There is no account, no
+upload and no API key: it reads your source, mutates temporary copies, runs your suite
+against them, and deletes them. **Your code never leaves your machine.**
+
+Point it at any Python project with a test suite:
+
+```bash
+python advanced/run_mutation.py --target ~/code/my-app
+```
+
+If your layout isn't `app/` + `tests/`, drop one file in your project root - this is the
+entire integration:
+
+```json
+{ "source_package": "myapp", "tests_dir": "tests", "prompt_templates": null }
+```
+
+`syntrace_target.json` also takes an `exclude` list for modules you don't want mutated,
+and `prompt_templates` points at your prompt module if you have one (that switches on
+the 12 prompt perturbations; leave it `null` for a code-only campaign).
+
+You get back a terminal report, `reports/<project>_mutation_report.json` plus a
+self-contained HTML report, and - the part you keep - **new test files written into your
+project's tests directory**, each one pinning behavior on an input verified to catch a
+specific bug. Review them and commit the ones you want.
+
+Everything above is also available in the dashboard: `python dashboard/server.py`, then
+type a path into **Run against** and press **Run Mutation Campaign**. Each project gets
+its own report set in the selector, so runs never overwrite each other.
+
+Worked example on a small third-party-style project (4 tests, 86.7% line coverage):
+**13/37 bugs caught (35.1%) → 97.3% after SyntraceAI wrote 23 tests**, in one command.
+
+For CI, `--fail-under` turns the campaign into a gate:
+
+```bash
+python advanced/run_mutation.py --target . --fail-under 90
+```
+
 ## Threats to validity & limitations
 
 Stated up front, because a benchmark you can't interrogate is a benchmark you can't
@@ -210,7 +251,7 @@ targets/sample_app/      demo AI triage pipeline + deliberately blind-spotted su
 targets/humanize/        third-party validation target (humanize 4.16.0, vendored)
 dashboard/               FastAPI Mission Control (landing page + live dashboard)
 .github/workflows/       CI: selftests + mutation-score gates on both targets
-selftests/               the engine's own test suite (115 tests)
+selftests/               the engine's own test suite (122 tests)
 docs/ARCHITECTURE.md     frozen module contract the engine is built against
 trajectories/            agent execution traces (real runs)
 reports/                 generated JSON/HTML reports (committed as evidence)

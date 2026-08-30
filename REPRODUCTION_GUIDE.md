@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ```bash
 python -m pytest selftests/ -q
 ```
-*Expected:* `115 passed`
+*Expected:* `122 passed`
 
 ## 3. Baseline solution (standard line-coverage mindset)
 
@@ -105,7 +105,23 @@ request.
 python dashboard/server.py
 ```
 Open http://127.0.0.1:8377 - landing page with live campaign stats; **Launch App**
-opens the dashboard at `/app` where you can trigger runs and watch the engine log live.
+opens the dashboard at `/app`. There, **Run against** takes the path of any local Python
+project (the demo and humanize are one-click presets), and **Run Mutation Campaign**
+streams the engine log live. Each project writes its own report set, selectable from the
+dropdown in the header.
+
+## 5b. Run it on your own project
+
+```bash
+python advanced/run_mutation.py --target ~/code/my-app
+```
+If the layout isn't `app/` + `tests/`, add `syntrace_target.json` to that project:
+```json
+{ "source_package": "myapp", "tests_dir": "tests", "prompt_templates": null }
+```
+Reports land in `reports/<project>_*` and the generated tests are written into the
+project's own tests directory. Nothing is uploaded; the tool reads and mutates temporary
+copies locally.
 
 ## 6. Artifacts produced
 

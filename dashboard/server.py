@@ -6,7 +6,9 @@ Serves the landing page, the dashboard SPA, and a small JSON API over the engine
     GET  /app            Mission Control dashboard UI
     GET  /api/targets    report sets available (demo, humanize, humanize exhaustive)
     GET  /api/reports    latest baseline + mutation reports (?target=<id>)
-    POST /api/run/{kind} launch `python main.py <kind>` (baseline | mutate | full)
+    GET  /api/presets    runnable project presets bundled with the repo
+    POST /api/run/{kind} launch `python main.py <kind>` (baseline | mutate | full),
+                         optionally against ?target=<path> (any local project)
     GET  /api/status     run state + live log tail
 
 Usage: python dashboard/server.py [--port 8377]
@@ -23,10 +25,13 @@ if str(REPO_ROOT) not in sys.path:
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import threading
 from collections import deque
+
+from advanced.run_mutation import report_slug
 
 import uvicorn
 from fastapi import FastAPI
@@ -96,6 +101,26 @@ def targets() -> JSONResponse:
     ])
 
 
+@app.get("/api/presets")
+def presets() -> JSONResponse:
+    """Runnable project presets bundled with the repo (targets/*)."""
+    targets_dir = REPO_ROOT / "targets"
+    out = []
+    labels = {"sample_app": "Demo: AI ticket-triage app", "humanize": "humanize 4.16.0 (third-party)"}
+    # Demo first: it is the one a first-time visitor should run.
+    ordered = sorted(targets_dir.iterdir(), key=lambda p: (p.name != "sample_app", p.name))
+    for path in ordered if targets_dir.is_dir() else []:
+        if not path.is_dir() or not (path / "tests").is_dir():
+            continue
+        rel = f"targets/{path.name}"
+        out.append({
+            "path": rel,
+            "label": labels.get(path.name, path.name),
+            "report_id": report_slug(rel),
+        })
+    return JSONResponse(out)
+
+
 @app.get("/api/reports")
 def reports(target: str = "") -> JSONResponse:
     if not _TARGET_RE.match(target):
@@ -117,25 +142,54 @@ def reports(target: str = "") -> JSONResponse:
 
 
 @app.post("/api/run/{kind}")
-def run(kind: str) -> JSONResponse:
+def run(kind: str, target: str = "") -> JSONResponse:
+    """Launch a campaign, optionally against the user's own project directory.
+
+    ``target`` is a filesystem path (the tool is local-only and never uploads
+    code, so a project is named by path, not supplied as an upload). It is
+    passed to the CLI as a single argv element - never through a shell - and
+    the report set it will write is returned as ``report_id`` so the UI can
+    select it when the run finishes.
+    """
     if kind not in VALID_KINDS:
         return JSONResponse({"started": False, "error": f"unknown kind {kind!r}"}, status_code=400)
+
+    extra: list[str] = []
+    report_id = ""
+    label = f"python main.py {kind}"
+    if target.strip():
+        path = Path(target.strip()).expanduser()
+        if not path.is_absolute():
+            path = REPO_ROOT / path
+        if not path.is_dir():
+            return JSONResponse(
+                {"started": False, "error": f"not a directory: {path}"}, status_code=400
+            )
+        rel = str(path)
+        try:  # keep repo-relative paths tidy in the log and reports
+            rel = str(path.resolve().relative_to(REPO_ROOT))
+        except ValueError:
+            pass
+        extra = ["--target", rel]
+        report_id = report_slug(rel)
+        label = f"python main.py {kind} --target {rel}"
+
     with _lock:
         if _state["running"]:
             return JSONResponse({"started": False, "error": "a run is already in progress"}, status_code=409)
         _state.update(running=True, kind=kind, returncode=None)
         _state["log"].clear()
-        _state["log"].append(f"--- launching: python main.py {kind} ---")
+        _state["log"].append(f"--- launching: {label} ---")
     proc = subprocess.Popen(
-        [sys.executable, str(REPO_ROOT / "main.py"), kind],
+        [sys.executable, str(REPO_ROOT / "main.py"), kind, *extra],
         cwd=REPO_ROOT,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
-        env={"PYTHONUNBUFFERED": "1", "TERM": "dumb", **__import__("os").environ},
+        env={"PYTHONUNBUFFERED": "1", "TERM": "dumb", **os.environ},
     )
     threading.Thread(target=_pump_output, args=(proc, kind), daemon=True).start()
-    return JSONResponse({"started": True, "kind": kind})
+    return JSONResponse({"started": True, "kind": kind, "report_id": report_id})
 
 
 @app.get("/api/status")

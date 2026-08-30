@@ -50,8 +50,29 @@ from advanced.trajectory_logger import TrajectoryLogger
 HEALED_TEST_BASENAME = "test_healed_assertions.py"
 DEFAULT_JSON = "reports/mutation_report.json"
 DEFAULT_TRAJECTORY = "trajectories/agent_trace_02.json"
+DEFAULT_TARGET = "targets/sample_app"
+#: The demo target owns the unprefixed report names (the committed evidence).
+DEMO_TARGET_NAME = "sample_app"
 
 console = Console()
+
+
+def report_slug(target: str) -> str:
+    """Filename-safe report prefix derived from a target directory name.
+
+    The demo target keeps the unprefixed names, so any other project - a
+    user's own repo pointed at with ``--target`` - writes its own report set
+    instead of overwriting the committed demo evidence.
+    """
+    name = Path(target.rstrip("/\\")).name or "target"
+    slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+    return "" if slug == DEMO_TARGET_NAME else slug
+
+
+def default_json_path(target: str, kind: str = "mutation") -> str:
+    """``reports/[<slug>_]<kind>_report.json`` for the given target."""
+    slug = report_slug(target)
+    return f"reports/{slug}_{kind}_report.json" if slug else f"reports/{kind}_report.json"
 
 
 def sibling_output_paths(json_arg: str, html_arg: str | None, trajectory_arg: str | None) -> tuple[str, str]:
@@ -203,12 +224,13 @@ def evaluate_bank(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="SyntraceAI adversarial mutation campaign")
-    parser.add_argument("--target", default="targets/sample_app")
+    parser.add_argument("--target", default=DEFAULT_TARGET)
     parser.add_argument("--jobs", type=int, default=None)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--max-code-mutants", type=int, default=CODE_BANK_SIZE)
     parser.add_argument("--no-heal", action="store_true", help="skip auto-healing phase")
-    parser.add_argument("--json", default=DEFAULT_JSON)
+    parser.add_argument("--json", default=None,
+                        help="default: reports/[<target>_]mutation_report.json")
     parser.add_argument("--html", default=None,
                         help="default: the --json path with an .html suffix")
     parser.add_argument("--trajectory", default=None,
@@ -217,6 +239,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--fail-under", type=float, default=None,
                         help="exit 1 if final mutation score falls below this percent")
     args = parser.parse_args(argv)
+    args.json = args.json or default_json_path(args.target)
     args.html, args.trajectory = sibling_output_paths(args.json, args.html, args.trajectory)
 
     started = time.monotonic()
