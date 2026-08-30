@@ -1,7 +1,13 @@
 # 🧪 SyntraceAI - Autonomous Agentic Mutation Testing & Hallucination Stress-Tester
 
 > Built for the **micro1 Frontier Engineering Challenge 2026**
-> **License:** Apache 2.0 · **Author:** Ifeanyichukwu Onwo (`mrnetwork`)
+> **License:** Apache 2.0 · **Author:** Ifeanyichukwu Onwo ([`mrnetwork0001`](https://github.com/mrnetwork0001))
+> **Repository:** https://github.com/mrnetwork0001/SyntraceAI
+>
+> **Improvement changelog:** [CHANGELOG.md](CHANGELOG.md) · **Reproduction guide:**
+> [REPRODUCTION_GUIDE.md](REPRODUCTION_GUIDE.md) · **Frozen module contract:**
+> [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · **Agent trajectories:**
+> [trajectories/](trajectories/)
 
 SyntraceAI is an adversarial chaos agent for AI applications. It injects a deterministic
 bank of **50 bugs** - 38 AST code mutations and 12 prompt perturbations - into a target
@@ -64,6 +70,34 @@ what the suite looks like after SyntraceAI repairs it.
    reported as likely-equivalent - never hidden. The demo campaign ends at 49/50 with
    exactly one such survivor, and manual analysis confirms it is a true equivalent
    mutant (a boundary guard whose fall-through computes the identical value).
+
+## Prior art, and what is new here
+
+**Mutation testing is not new.** [mutmut](https://github.com/boxed/mutmut) and
+[cosmic-ray](https://github.com/sixty-north/cosmic-ray) do it for Python;
+[PIT](https://pitest.org/) for Java, [Stryker](https://stryker-mutator.io/) for
+JavaScript. The idea of scoring a test suite by how many injected faults it kills goes
+back to the 1970s. If that were all this did, it would be a reimplementation.
+
+Three things here I have not found in those tools:
+
+1. **Prompt perturbation as a mutation operator class.** A renamed schema key or a
+   dropped JSON-only directive changes program behavior exactly the way a code edit
+   does, but no coverage tool and no existing mutation tester can see it - the prompt
+   module's lines were "executed" either way. Treating prompts as executable
+   configuration you can mutate is what makes this apply to LLM applications rather
+   than just to code.
+2. **Automatic healing of survivors.** Existing tools stop at "here are the mutants
+   your suite missed." This one searches for an input on which the original and the
+   mutant disagree, re-verifies it, and writes the pytest assertion that kills it. The
+   output is not a report to act on later; it is test files in your repository.
+3. **An honesty gate on that healing.** No verified discriminating input, no test -
+   and mutants proven inert are excluded from the bank before it is scored, so the
+   denominator cannot be padded. A tool that writes its own tests has an obvious
+   failure mode, and this is the guard against it.
+
+The mutation engine itself is deliberately conventional. The novelty is what happens to
+the survivors, and what counts as a mutant in the first place.
 
 ## Third-party validation: humanize 4.16.0
 
@@ -187,17 +221,6 @@ self-contained `reports/mutation_report.html`, and an agent trajectory in
 `trajectories/`. The dashboard landing page and scoreboard read the same reports -
 nothing rendered anywhere is a mock number.
 
-## Main failure modes
-
-- **Over-mutation breaking the runner:** every mutant must pass `compile()` before it
-  reaches a sandbox (AST validation sandboxing); runaway mutants (infinite loops) are
-  killed by per-run timeouts and counted as loudly detected.
-- **Equivalent mutants inflating the denominator:** provable cases (clamp-boundary
-  comparison swaps) are excluded up front; unprovable ones are surfaced explicitly as
-  unhealable rather than silently capping the score.
-- **Fabricated healing:** the healer's honesty gate re-verifies every discriminating
-  input in both project copies before a test is emitted; no verified input, no test.
-
 ## Use it on your own project
 
 SyntraceAI is a local developer tool, not a hosted service. There is no account, no
@@ -272,6 +295,17 @@ trust:
   the prompt half requires the documented template contract (`docs/ARCHITECTURE.md`
   §5.1); the equivalence provers cover clamp swaps and `TYPE_CHECKING` guards under
   documented assumptions. Everything else stays in the bank and is judged empirically.
+
+## Main failure modes
+
+- **Over-mutation breaking the runner:** every mutant must pass `compile()` before it
+  reaches a sandbox (AST validation sandboxing); runaway mutants (infinite loops) are
+  killed by per-run timeouts and counted as loudly detected.
+- **Equivalent mutants inflating the denominator:** provable cases (clamp-boundary
+  comparison swaps) are excluded up front; unprovable ones are surfaced explicitly as
+  unhealable rather than silently capping the score.
+- **Fabricated healing:** the healer's honesty gate re-verifies every discriminating
+  input in both project copies before a test is emitted; no verified input, no test.
 
 ## Hot take
 
