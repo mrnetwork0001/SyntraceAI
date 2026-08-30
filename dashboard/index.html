@@ -82,6 +82,11 @@
     white-space: nowrap; color: var(--ink); }
   .brand svg { width: 22px; height: 22px; flex: none; }
   .bar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+  .bar-right > * { height: 34px; }
+  .bar-right .select { padding-top: 0; padding-bottom: 0; }
+  .bar-right .pill { padding-top: 0; padding-bottom: 0; }
+  /* Hairline between what you are looking at and what you can do to it. */
+  .bar-sep { width: 1px; height: 20px; background: var(--line-2); flex: none; margin: 0 2px; }
 
   .select { appearance: none; -webkit-appearance: none; cursor: pointer; max-width: 232px; min-width: 0;
     font: 500 13px/1 var(--sans); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius-pill);
@@ -318,8 +323,11 @@
   /* ---------- application shell ----------
      A control surface, not a document: fixed chrome, a sidebar that owns the
      controls, and one working view at a time in the main pane. */
+  /* The bar's gutters match the shell beneath it: 22px on the left is the
+     sidebar's own padding, and the right gutter tracks the main pane's, so the
+     utility cluster stops on the same line the content does. */
   .appbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    height: 60px; padding: 0 clamp(16px, 2vw, 26px); }
+    height: 60px; padding: 0 clamp(18px, 2.6vw, 36px) 0 22px; }
   .shell { display: grid; grid-template-columns: 296px minmax(0, 1fr); align-items: start; }
 
   .sidebar { position: sticky; top: 60px; align-self: start; min-width: 0;
@@ -472,6 +480,7 @@
     /* Header: identity on the left, state and the menu on the right. The two
        utility buttons move into the drawer so the bar is not icon soup. */
     .bar-right { margin-left: auto; }
+    .bar-sep { display: none; }
 
     .shell { position: relative; }
     .sidebar {
@@ -546,6 +555,7 @@
     <div class="bar-right">
       <select id="targetSelect" class="select" onchange="refreshReports()" title="which saved report set to display"></select>
       <div id="statusPill" class="pill"><span class="live"></span> idle</div>
+      <span class="bar-sep" aria-hidden="true"></span>
       <button class="iconbtn" id="resetBtn" onclick="showReset()" title="Reset the dashboard" aria-label="Reset the dashboard">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
