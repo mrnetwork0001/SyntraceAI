@@ -32,6 +32,7 @@ import threading
 from collections import deque
 
 from advanced.run_mutation import report_slug
+from advanced.target_config import CONFIG_FILENAME
 
 import uvicorn
 from fastapi import FastAPI
@@ -84,11 +85,20 @@ _TARGET_RE = re.compile(r"^[a-z0-9_]{0,40}$")
 
 
 def _report_prefixes() -> list[str]:
-    """Report-set prefixes present in reports/ ("" is the demo target)."""
+    """Report-set prefixes present in reports/ ("" is the demo target).
+
+    Both campaign and baseline-only reports count: a project audited with
+    "Run Baseline Audit" alone must still be selectable, otherwise its run
+    succeeds and the dashboard silently keeps showing another project.
+    """
     reports_dir = REPO_ROOT / "reports"
     prefixes: set[str] = set()
-    for path in reports_dir.glob("*mutation_report.json") if reports_dir.is_dir() else []:
-        prefixes.add(path.name[: -len("mutation_report.json")].rstrip("_"))
+    if reports_dir.is_dir():
+        for suffix in ("mutation_report.json", "baseline_report.json"):
+            for path in reports_dir.glob("*" + suffix):
+                prefix = path.name[: -len(suffix)].rstrip("_")
+                if _TARGET_RE.match(prefix):  # keep the listing and the route in sync
+                    prefixes.add(prefix)
     return sorted(prefixes, key=lambda p: (p != "", p))
 
 
@@ -107,9 +117,11 @@ def presets() -> JSONResponse:
     targets_dir = REPO_ROOT / "targets"
     out = []
     labels = {"sample_app": "Demo: AI ticket-triage app", "humanize": "humanize 4.16.0 (third-party)"}
+    if not targets_dir.is_dir():
+        return JSONResponse(out)
     # Demo first: it is the one a first-time visitor should run.
     ordered = sorted(targets_dir.iterdir(), key=lambda p: (p.name != "sample_app", p.name))
-    for path in ordered if targets_dir.is_dir() else []:
+    for path in ordered:
         if not path.is_dir() or not (path / "tests").is_dir():
             continue
         rel = f"targets/{path.name}"
@@ -164,6 +176,20 @@ def run(kind: str, target: str = "") -> JSONResponse:
         if not path.is_dir():
             return JSONResponse(
                 {"started": False, "error": f"not a directory: {path}"}, status_code=400
+            )
+        # Fail fast with something actionable rather than starting a campaign
+        # that dies in the clean-suite gate with a wall of coverage warnings.
+        if not (path / CONFIG_FILENAME).is_file() and not any(path.glob("*/*.py")):
+            return JSONResponse(
+                {
+                    "started": False,
+                    "error": (
+                        f"{path} does not look like a Python project: no package with "
+                        f".py files and no {CONFIG_FILENAME}. Point at the project root "
+                        "(the directory containing your package and its tests)."
+                    ),
+                },
+                status_code=400,
             )
         rel = str(path)
         try:  # keep repo-relative paths tidy in the log and reports

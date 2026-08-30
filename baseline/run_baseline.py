@@ -61,7 +61,7 @@ from advanced.core_types import (
     TestRunResult,
 )
 from advanced.prompt_perturbator import enumerate_perturbations
-from advanced.run_mutation import coverage_run_command, default_json_path
+from advanced.run_mutation import coverage_run_command, default_json_path, report_slug
 from advanced.sandbox_runner import evaluate_many
 from advanced.target_config import TargetConfig, load_target_config
 
@@ -154,26 +154,42 @@ def _run_coverage_audit(
 
 
 def _build_bank(
-    target_dir: Path, seed: int, config: TargetConfig
+    target_dir: Path, seed: int, config: TargetConfig, is_demo: bool
 ) -> tuple[list[Mutant], list[Perturbation]]:
-    """Build the frozen bug bank; abort if its composition is violated.
+    """Build the bug bank for this target.
 
-    Code-only targets (no prompt module in the adapter config) get the
-    38-mutant code bank alone; prompt-capable targets add the 12 perturbations.
+    Code-only targets (no prompt module) get the code bank alone; prompt-capable
+    targets add the 12 perturbations. The demo target's frozen composition is
+    enforced because its committed evidence depends on it; other projects are
+    audited at whatever size they yield.
     """
     all_mutants = enumerate_mutants(target_dir)
     bank = select_bank(all_mutants, size=CODE_BANK_SIZE, seed=seed)
     perturbations = enumerate_perturbations(target_dir)
-    if len(bank) != CODE_BANK_SIZE:
+    if not bank:
         _abort(
-            f"frozen bank violated: expected {CODE_BANK_SIZE} code mutants, "
-            f"got {len(bank)} (enumerated {len(all_mutants)} candidates)"
+            "no mutable code found in "
+            f"{config.source_package}/ (enumerated {len(all_mutants)} candidates). "
+            "Check the source_package in syntrace_target.json."
         )
-    expected_prompts = PROMPT_BANK_SIZE if config.has_prompts else 0
-    if len(perturbations) != expected_prompts:
-        _abort(
-            f"frozen bank violated: expected {expected_prompts} prompt perturbations, "
-            f"got {len(perturbations)}"
+    # The demo target's committed evidence depends on the exact frozen bank, so
+    # its composition is enforced. A user's own project is simply smaller or
+    # larger: audit whatever it has rather than refusing to run.
+    if is_demo:
+        if len(bank) != CODE_BANK_SIZE:
+            _abort(
+                f"frozen bank violated: expected {CODE_BANK_SIZE} code mutants, "
+                f"got {len(bank)} (enumerated {len(all_mutants)} candidates)"
+            )
+        if len(perturbations) != PROMPT_BANK_SIZE:
+            _abort(
+                f"frozen bank violated: expected {PROMPT_BANK_SIZE} prompt "
+                f"perturbations, got {len(perturbations)}"
+            )
+    elif len(bank) < CODE_BANK_SIZE:
+        _console.print(
+            f"  note: this project yields {len(bank)} mutation sites "
+            f"(fewer than the standard {CODE_BANK_SIZE}); auditing all of them"
         )
     return bank, perturbations
 
@@ -402,12 +418,13 @@ def main(argv: list[str] | None = None) -> int:
         f"line coverage {line_coverage_pct:.1f}%"
     )
 
+    is_demo = report_slug(args.target) == ""
     prompt_count = PROMPT_BANK_SIZE if config.has_prompts else 0
     _console.print(
-        f"Step 2/3: building the frozen bank ({CODE_BANK_SIZE} code mutants + "
+        f"Step 2/3: building the bug bank (up to {CODE_BANK_SIZE} code mutants + "
         f"{prompt_count} prompt perturbations, seed {args.seed}) ..."
     )
-    mutants, perturbations = _build_bank(target_dir, args.seed, config)
+    mutants, perturbations = _build_bank(target_dir, args.seed, config, is_demo)
 
     _console.print("Step 3/3: evaluating the bank against the ORIGINAL suite ...")
     results = _evaluate_bank(

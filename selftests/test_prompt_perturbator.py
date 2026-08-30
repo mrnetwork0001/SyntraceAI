@@ -272,8 +272,19 @@ def test_missing_constant_raises(tmp_path: Path) -> None:
         enumerate_perturbations(target)
 
 
-def test_missing_templates_module_raises(tmp_path: Path) -> None:
-    with pytest.raises(PromptContractError, match="not found"):
+def test_target_without_a_prompt_module_is_code_only(tmp_path: Path) -> None:
+    """No prompt module is a code-only project, not an error.
+
+    Only an EXPLICITLY configured prompt path that is missing is a mistake, and
+    that is caught earlier by the adapter (see selftests/test_target_config.py).
+    """
+    assert enumerate_perturbations(tmp_path) == []
+
+
+def test_configured_but_missing_templates_module_raises(tmp_path: Path) -> None:
+    (tmp_path / "app").mkdir()
+    (tmp_path / "app" / "prompt_templates.py").write_text("NOT_THE_CONTRACT = 1\n")
+    with pytest.raises(PromptContractError):
         enumerate_perturbations(tmp_path)
 
 

@@ -62,12 +62,26 @@ def is_excluded(rel_path: str, excludes: tuple[str, ...]) -> bool:
     return any(rel_path == entry or rel_path.startswith(entry + "/") for entry in excludes)
 
 
+_UNSET = object()
+
+
 def load_target_config(target_dir: Path) -> TargetConfig:
-    """Load the target's adapter config, falling back to demo-layout defaults."""
+    """Load the target's adapter config, falling back to demo-layout defaults.
+
+    The default prompt module is *auto-detected*: a project laid out as
+    ``app/`` + ``tests/`` with no prompt templates simply runs a code-only
+    campaign, rather than failing because a file it never claimed to have is
+    missing. An explicitly configured ``prompt_templates`` path still must
+    exist - a typo there is a real error.
+    """
     target_dir = Path(target_dir)
     path = target_dir / CONFIG_FILENAME
     if not path.is_file():
-        return TargetConfig()
+        defaults = TargetConfig()
+        prompts = defaults.prompt_templates
+        if prompts and not (target_dir / prompts).is_file():
+            prompts = None
+        return TargetConfig(prompt_templates=prompts)
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
@@ -78,7 +92,11 @@ def load_target_config(target_dir: Path) -> TargetConfig:
     defaults = TargetConfig()
     source_package = data.get("source_package", defaults.source_package)
     tests_dir = data.get("tests_dir", defaults.tests_dir)
-    prompt_templates = data.get("prompt_templates", defaults.prompt_templates)
+    prompt_templates = data.get("prompt_templates", _UNSET)
+    if prompt_templates is _UNSET:  # not configured: auto-detect, never crash
+        prompt_templates = defaults.prompt_templates
+        if prompt_templates and not (target_dir / prompt_templates).is_file():
+            prompt_templates = None
     exclude = data.get("exclude", [])
     if not isinstance(exclude, list):
         raise TargetConfigError(f"{path}: 'exclude' must be a list of relative paths")

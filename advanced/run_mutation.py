@@ -21,6 +21,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -57,16 +58,55 @@ DEMO_TARGET_NAME = "sample_app"
 console = Console()
 
 
-def report_slug(target: str) -> str:
-    """Filename-safe report prefix derived from a target directory name.
+#: Longest slug the dashboard's report-set route accepts, and a safe filename bound.
+MAX_SLUG_LEN = 40
 
-    The demo target keeps the unprefixed names, so any other project - a
-    user's own repo pointed at with ``--target`` - writes its own report set
-    instead of overwriting the committed demo evidence.
+
+def resolve_target_path(target: str) -> Path:
+    """Resolve a --target argument the way a user expects.
+
+    Absolute and ``~`` paths are used as given. A relative path is resolved
+    against the CURRENT DIRECTORY first, so running the tool from inside your
+    own project and passing ``--target .`` audits that project; it falls back
+    to a path relative to the SyntraceAI repo so the bundled
+    ``targets/sample_app`` shorthand keeps working from anywhere.
     """
-    name = Path(target.rstrip("/\\")).name or "target"
-    slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
-    return "" if slug == DEMO_TARGET_NAME else slug
+    path = Path(target).expanduser()
+    if path.is_absolute():
+        return path.resolve()
+    from_cwd = (Path.cwd() / path).resolve()
+    if from_cwd.is_dir():
+        return from_cwd
+    return (REPO_ROOT / path).resolve()
+
+
+def report_slug(target: str) -> str:
+    """Filename-safe report prefix derived from a target directory.
+
+    Identity is the RESOLVED PATH, not the directory name:
+
+    - the bundled demo (``<repo>/targets/sample_app``) keeps the unprefixed
+      report names, which are the committed evidence;
+    - other targets bundled under ``<repo>/targets/`` use their bare name
+      (``humanize``), so the documented report paths stay stable;
+    - every other project - a user's own repo - gets its name plus a short
+      digest of its absolute path. Two projects that merely share a directory
+      name therefore keep separate report sets, and no external project can
+      ever land on the demo's names (a name of ``sample_app``, or one with no
+      ASCII alphanumerics at all, previously did).
+    """
+    resolved = resolve_target_path(target.rstrip("/\\"))
+    bundled = REPO_ROOT / "targets"
+    if resolved == (bundled / DEMO_TARGET_NAME).resolve():
+        return ""
+    name = re.sub(r"[^a-z0-9]+", "_", resolved.name.lower()).strip("_") or "project"
+    try:
+        resolved.relative_to(bundled)
+        return name[:MAX_SLUG_LEN].strip("_")  # bundled target: stable bare name
+    except ValueError:
+        pass
+    digest = hashlib.sha256(str(resolved).encode("utf-8")).hexdigest()[:6]
+    return f"{name[: MAX_SLUG_LEN - 7].strip('_')}_{digest}"
 
 
 def default_json_path(target: str, kind: str = "mutation") -> str:
@@ -243,7 +283,7 @@ def main(argv: list[str] | None = None) -> int:
     args.html, args.trajectory = sibling_output_paths(args.json, args.html, args.trajectory)
 
     started = time.monotonic()
-    target_dir = (REPO_ROOT / args.target).resolve()
+    target_dir = resolve_target_path(args.target)
     if not target_dir.is_dir():
         console.print(f"[red]Target not found:[/red] {target_dir}")
         return 2

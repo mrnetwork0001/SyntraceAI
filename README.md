@@ -183,23 +183,27 @@ entire integration:
 and `prompt_templates` points at your prompt module if you have one (that switches on
 the 12 prompt perturbations; leave it `null` for a code-only campaign).
 
-You get back a terminal report, `reports/<project>_mutation_report.json` plus a
-self-contained HTML report, and - the part you keep - **new test files written into your
-project's tests directory**, each one pinning behavior on an input verified to catch a
-specific bug. Review them and commit the ones you want.
+You get back a terminal report, a JSON + self-contained HTML report under `reports/`
+(named for your project, with a short digest of its path so two projects sharing a
+directory name never collide), and - the part you keep - **new test files written into
+your project's tests directory**, each one pinning behavior on an input verified to
+catch a specific bug. Review them and commit the ones you want. That file is regenerated
+on every run, so copy anything you edit into a test file of your own.
 
 Everything above is also available in the dashboard: `python dashboard/server.py`, then
 type a path into **Run against** and press **Run Mutation Campaign**. Each project gets
-its own report set in the selector, so runs never overwrite each other.
+its own report set in the selector.
 
-Worked example on a small third-party-style project (4 tests, 86.7% line coverage):
-**13/37 bugs caught (35.1%) → 97.3% after SyntraceAI wrote 23 tests**, in one command.
+For a sense of scale on code nobody here wrote, see the humanize results above - that
+run is committed and reproducible from this repo.
 
 For CI, `--fail-under` turns the campaign into a gate:
 
 ```bash
-python advanced/run_mutation.py --target . --fail-under 90
+python /path/to/SyntraceAI/advanced/run_mutation.py --target . --fail-under 90
 ```
+
+(A relative `--target` resolves against your current directory, so `.` is your project.)
 
 ## Threats to validity & limitations
 
@@ -251,7 +255,7 @@ targets/sample_app/      demo AI triage pipeline + deliberately blind-spotted su
 targets/humanize/        third-party validation target (humanize 4.16.0, vendored)
 dashboard/               FastAPI Mission Control (landing page + live dashboard)
 .github/workflows/       CI: selftests + mutation-score gates on both targets
-selftests/               the engine's own test suite (122 tests)
+selftests/               the engine's own test suite (125 tests)
 docs/ARCHITECTURE.md     frozen module contract the engine is built against
 trajectories/            agent execution traces (real runs)
 reports/                 generated JSON/HTML reports (committed as evidence)

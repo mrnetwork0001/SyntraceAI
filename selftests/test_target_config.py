@@ -20,13 +20,35 @@ def _make_target(tmp_path: Path, config: dict | None, package: str = "app") -> P
     return target
 
 
-def test_missing_config_yields_demo_defaults(tmp_path: Path) -> None:
+def test_missing_config_with_prompt_module_yields_demo_defaults(tmp_path: Path) -> None:
     target = _make_target(tmp_path, None)
+    (target / "app" / "prompt_templates.py").write_text("SYSTEM_PROMPT = ''\n")
     config = load_target_config(target)
     assert config == TargetConfig()
-    assert config.source_package == "app"
     assert config.has_prompts
     assert config.mutation_excludes == ("app/prompt_templates.py",)
+
+
+def test_plain_project_without_prompts_runs_code_only(tmp_path: Path) -> None:
+    """A textbook app/ + tests/ project with no prompt module must not crash.
+
+    Regression: the default prompt path was assumed to exist, so the headline
+    "point it at your own project" flow died with a PromptContractError
+    traceback for exactly the layout the UI says needs no config file.
+    """
+    from advanced.prompt_perturbator import enumerate_perturbations
+
+    target = _make_target(tmp_path, None)
+    config = load_target_config(target)
+    assert not config.has_prompts
+    assert config.mutation_excludes == ()
+    assert enumerate_perturbations(target) == []
+
+
+def test_explicit_prompt_path_typo_still_fails_loudly(tmp_path: Path) -> None:
+    target = _make_target(tmp_path, {"prompt_templates": "app/typo.py"})
+    with pytest.raises(TargetConfigError, match="prompt_templates"):
+        load_target_config(target)
 
 
 def test_code_only_target(tmp_path: Path) -> None:

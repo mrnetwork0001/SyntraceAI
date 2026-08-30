@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ```bash
 python -m pytest selftests/ -q
 ```
-*Expected:* `122 passed`
+*Expected:* `125 passed`
 
 ## 3. Baseline solution (standard line-coverage mindset)
 

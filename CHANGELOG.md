@@ -104,6 +104,30 @@ the 38-mutant code bank plus an exhaustive 253-site campaign for humanize.
     state that names the button to press, plain-language metric labels ("bugs your tests
     caught" rather than "pre-heal detection"), and hover explanations on every tile.
   - README gained a **"Use it on your own project"** section with the one-file adapter.
-- **Result:** verified end to end against a project outside the repo - 4 tests, 86.7%
-  line coverage, **13/37 bugs caught (35.1%) → 97.3%** with 23 tests written into that
-  project. Demo and humanize numbers unchanged; selftests 122.
+- **Result:** verified end to end against projects outside the repo. Demo and humanize
+  numbers unchanged; selftests 122.
+
+### Iteration 7 - Adversarial pass on the "your own project" flow
+- **Goal:** A three-agent fleet drove the new flow the way a judge would. It found that
+  the headline feature was broken for the most common layout, and that two of the three
+  run buttons refused to run at all.
+- **Fixed (each reproduced before and after):**
+  - A plain `app/` + `tests/` project with no prompt module crashed with a
+    `PromptContractError` traceback - the exact layout the UI says needs no config. The
+    prompt module is now auto-detected: absent means a code-only campaign.
+  - `Run Baseline Audit` and `Run Full` aborted on any project that could not yield
+    exactly 38 mutation sites. The frozen bank is now enforced only for the demo, whose
+    committed evidence depends on it; other projects are audited at their real size.
+  - Report identity keyed on the directory *name*, so a project merely named
+    `sample_app` - or any name with no ASCII alphanumerics - silently overwrote the
+    committed demo evidence, and two projects sharing a name overwrote each other.
+    Identity is now the resolved path: bundled targets keep their documented names,
+    every other project gets its name plus a digest of its path.
+  - A relative `--target` resolved against the SyntraceAI repo rather than the user's
+    directory, so the documented `--target .` audited the wrong project.
+  - Baseline-only runs produced a report the dashboard could never display; slugs longer
+    than the route's limit were offered then rejected; `/api/presets` 500'd when
+    `targets/` was absent; a non-project directory started a doomed run instead of
+    failing fast.
+- **Result:** all measured numbers unchanged; selftests 125, including regressions for
+  every case above.
