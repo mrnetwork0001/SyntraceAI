@@ -118,7 +118,6 @@
   .on-dark .btn.primary:hover { background: #ffffff; }
   .on-dark .btn.secondary { color: var(--on-dark); border-color: var(--line-dark); }
   .on-dark .btn.secondary:hover { border-color: rgba(255,255,255,.3); background: rgba(255,255,255,.05); }
-  .btn.sm { padding: 9px 17px; font-size: 13.5px; }
 
   .pill { display: inline-flex; align-items: center; gap: 8px; border-radius: var(--radius-pill);
     padding: 5px 12px; font: 500 11px/1.5 var(--mono); text-transform: uppercase; letter-spacing: .1em;
@@ -155,15 +154,43 @@
   /* ---------- nav ---------- */
   header.nav { position: sticky; top: 0; z-index: 60; background: var(--ink);
     border-bottom: 1px solid var(--line-dark); color: var(--on-dark); }
-  header.nav .bar { display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    padding: 15px 0; }
+  /* Vertical only: the padding shorthand here used to reset .wrap's side gutter,
+     which pinned the nav links to the screen edge on narrow viewports. */
+  /* .navbar, not .bar: the progress-bar component owns .bar (height 6px,
+     overflow hidden) and was squashing and clipping this header. */
+  header.nav .navbar { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding-top: 15px; padding-bottom: 15px; }
   .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 17px;
     letter-spacing: -.02em; }
   .brand svg { width: 22px; height: 22px; flex: none; }
   .nav-links { display: flex; align-items: center; gap: clamp(14px, 2vw, 28px); font-size: 14px;
     color: var(--on-dark-muted); }
   .nav-links a:hover { color: var(--on-dark); }
-  @media (max-width: 620px) { .nav-links .opt { display: none; } }
+
+  /* The links have to go somewhere on a phone. Hiding them (which is what this
+     used to do) left the section anchors unreachable, so below the breakpoint
+     they move into a panel behind a burger at the top right. */
+  .navburger { display: none; align-items: center; justify-content: center; width: 38px; height: 38px;
+    padding: 0; border: 1px solid var(--line-dark); border-radius: 999px; background: transparent;
+    color: var(--on-dark); cursor: pointer; }
+  .navburger svg { width: 17px; height: 17px; }
+  .navburger:hover { background: rgba(255,255,255,.07); }
+
+  @media (max-width: 620px) {
+    header.nav .navbar { position: relative; }
+    .navburger { display: inline-flex; }
+    .nav-links {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 70;
+      flex-direction: column; align-items: stretch; gap: 0;
+      padding: 2px var(--gutter) 12px;
+      background: var(--ink); border-bottom: 1px solid var(--line-dark);
+      box-shadow: 0 24px 40px -26px rgba(0,0,0,.9);
+      display: none;
+    }
+    .nav-links.open { display: flex; }
+    .nav-links a { padding: 14px 2px; font-size: 15.5px; border-top: 1px solid var(--line-dark); }
+    .nav-links a:first-child { border-top: 0; }
+  }
 
   /* ---------- hero ---------- */
   .hero { padding: clamp(56px, 7vw, 104px) 0 clamp(72px, 9vw, 124px); overflow: hidden; }
@@ -459,7 +486,7 @@
 <body>
 
 <header class="nav">
-  <div class="wrap bar">
+  <div class="wrap navbar">
     <a class="brand" href="/">
       <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
         <path d="M16 2 28 9v14l-12 7L4 23V9z" stroke="currentColor" stroke-width="1.4" opacity=".5"/>
@@ -467,13 +494,19 @@
       </svg>
       SyntraceAI
     </a>
-    <nav class="nav-links">
+    <nav class="nav-links" id="navlinks">
       <a class="opt" href="#loop">The loop</a>
       <a class="opt" href="#engine">Engine</a>
       <a class="opt" href="#results">Results</a>
-      <a href="https://github.com/mrnetwork0001/SyntraceAI" target="_blank" rel="noopener">GitHub</a>
-      <a class="btn primary sm" href="/app">Launch App</a>
+      <a href="/docs">Docs</a>
     </nav>
+    <button class="navburger" id="navburger" aria-expanded="false" aria-controls="navlinks"
+            aria-label="Menu" title="Menu">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"
+           stroke-linecap="round" aria-hidden="true">
+        <path d="M2 4h12"/><path d="M2 8h12"/><path d="M2 12h12"/>
+      </svg>
+    </button>
   </div>
 </header>
 
@@ -482,7 +515,6 @@
   <div class="wrap">
     <div class="hero-grid">
       <div>
-        <span class="pill" data-fade><span class="live"></span> micro1 Frontier Engineering Challenge 2026</span>
         <h1 class="display" data-fade>We break your code <span class="clause">faster than your tests notice.</span></h1>
         <p class="lede" data-fade>SyntraceAI is an <b>adversarial mutation-testing agent</b> for AI applications. It injects
           50 subtle bugs - AST operator swaps, boundary shifts, prompt perturbations - runs your suite
@@ -1200,6 +1232,31 @@
     }
   })();
 })();
+</script>
+<script>
+  // Landing nav menu. The panel is the same <nav> the desktop header uses, so
+  // there is one set of links rather than a duplicate that can drift.
+  (() => {
+    const btn = document.getElementById('navburger');
+    const menu = document.getElementById('navlinks');
+    const narrow = window.matchMedia('(max-width: 620px)');
+    const setOpen = open => {
+      menu.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      const label = open ? 'Close menu' : 'Menu';
+      btn.title = label;
+      btn.setAttribute('aria-label', label);
+    };
+    btn.addEventListener('click', () => setOpen(!menu.classList.contains('open')));
+    // Picking a destination closes the menu; so does Escape, or growing past
+    // the breakpoint where the links live in the bar again.
+    menu.addEventListener('click', e => { if (e.target.closest('a')) setOpen(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
+    document.addEventListener('click', e => {
+      if (menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) setOpen(false);
+    });
+    narrow.addEventListener('change', () => setOpen(false));
+  })();
 </script>
 </body>
 </html>
