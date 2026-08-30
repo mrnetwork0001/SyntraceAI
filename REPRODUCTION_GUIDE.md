@@ -68,8 +68,14 @@ python advanced/run_mutation.py --target targets/humanize \
 suite is green: 311 tests passed, line coverage 98.1%
 Mutation Score: 94.7% | Injected Bugs Detected: 36/38 | Auto-Healed Assertion Tests Generated: 0
 ```
-Both survivors (`M016`, `M036`) are `value < 0` comparisons guarded by
-`math.isinf(value)` — provably unobservable, reported as likely-equivalent.
+Both survivors sit inside `_format_not_finite`, where `math.isinf(value)` guards the
+comparison: `M036` swaps `value < 0` to `<=`, `M016` shifts `value > 0` to `> -1`. Only
+±inf ever reaches them, so neither change is observable — reported as likely-equivalent.
+
+Note: every campaign starts by deleting the target's generated
+`tests/test_healed_assertions.py`. The committed 12-test humanize file is produced by
+the exhaustive campaign below; running only the 38-bank campaign (0 heals needed)
+leaves no healed file behind until you run the exhaustive one again.
 
 Exhaustive campaign over every mutation site (~25s):
 ```bash
@@ -114,8 +120,9 @@ opens the dashboard at `/app` where you can trigger runs and watch the engine lo
 
 ## 7. Runtime & cost
 
-- **Runtime** (8-core laptop, hardware-dependent): campaign ~8s (measured 7.9s),
-  baseline audit ~3s, `python main.py full` ~12s end to end.
+- **Runtime** (8-core laptop, hardware-dependent): demo campaign ~8–10s (7.9s on an
+  idle machine; the committed report recorded 10.2s under load), baseline audit ~3s,
+  `python main.py full` ~12–14s end to end.
 - **API cost:** $0.00 — local AST parsing + deterministic mock LLM only.
 - **Repeatability note:** both `run_baseline.py` and `run_mutation.py` delete any
   previously generated `test_healed_assertions.py` before measuring, so every run

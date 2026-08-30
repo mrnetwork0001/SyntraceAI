@@ -35,14 +35,26 @@ jobs:
         run: python advanced/run_mutation.py --fail-under 95
 
       # Third-party validation target (humanize 4.16.0, vendored). Its own
-      # suite already catches 92.1% of the frozen bank; the gate guards that.
-      - name: Mutation campaign gate (humanize, >= 85%)
+      # suite catches 94.7% of the frozen 38-mutant bank; the gate guards that.
+      - name: Mutation campaign gate (humanize, frozen bank, >= 85%)
         run: >
           python advanced/run_mutation.py --target targets/humanize
           --json reports/humanize_mutation_report.json
           --html reports/humanize_mutation_report.html
           --trajectory trajectories/agent_trace_03.json
           --fail-under 85
+
+      # Exhaustive campaign over every humanize mutation site (measured 90.9%
+      # after healing). Runs last so the 12 auto-healed tests it writes are
+      # the healed file uploaded below.
+      - name: Mutation campaign gate (humanize, exhaustive, >= 88%)
+        run: >
+          python advanced/run_mutation.py --target targets/humanize
+          --max-code-mutants 400
+          --json reports/humanize_full_mutation_report.json
+          --html reports/humanize_full_mutation_report.html
+          --trajectory trajectories/agent_trace_04.json
+          --fail-under 88
 
       - name: Upload reports
         if: always()

@@ -84,8 +84,9 @@ own 311-test suite) and declared through a one-file target adapter
 
 Two things this shows. First, SyntraceAI does **not manufacture findings** on a
 well-tested library: at the standard bank depth humanize catches 94.7%, and the two
-survivors are `value < 0` comparisons guarded by `math.isinf(value)` — provably
-unobservable. Second, at exhaustive depth its 98%-coverage suite still misses 35
+survivors are sign comparisons (`value < 0`, `value > 0`) guarded by
+`math.isinf(value)` — only ±inf reaches them, so they are provably unobservable.
+Second, at exhaustive depth its 98%-coverage suite still misses 35
 behavior changes, and the healer wrote 12 tests humanize's own suite lacks — pinning
 the unit-scaling thresholds nobody had asserted:
 
@@ -126,7 +127,9 @@ together, deterministically, in seconds, for $0.
 pip install -r requirements.txt
 python main.py full          # baseline audit (~3s) + full campaign (~8s) on the demo target
 python advanced/run_mutation.py --target targets/humanize \
-    --json reports/humanize_mutation_report.json      # third-party target (~4s)
+    --json reports/humanize_mutation_report.json      # third-party target, frozen bank (~4s)
+python advanced/run_mutation.py --target targets/humanize --max-code-mutants 400 \
+    --json reports/humanize_full_mutation_report.json # exhaustive: writes the 12 healed tests (~25s)
 python dashboard/server.py   # Mission Control UI at http://127.0.0.1:8377
 ```
 

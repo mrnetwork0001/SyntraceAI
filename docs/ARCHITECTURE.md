@@ -302,7 +302,7 @@ Differential auto-healing via **subprocess probes** (no import-cache games):
 ```python
 def heal_survivors(target_dir: Path, survivors: list[Mutant], *, seed: int = 1337, max_inputs: int = 2000) -> tuple[list[HealedTest], list[str]]
 def build_prompt_contract_tests(target_dir: Path, surviving: list[Perturbation]) -> list[HealedTest]
-def write_healed_test_file(target_dir: Path, healed: list[HealedTest]) -> Path
+def write_healed_test_file(target_dir: Path, healed: list[HealedTest], *, tests_dir: str = "tests") -> Path
 ```
 
 - For each surviving CODE mutant with a non-empty `function_name` referring to a

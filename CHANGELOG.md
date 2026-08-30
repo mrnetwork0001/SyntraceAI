@@ -38,8 +38,8 @@ from actual runs on the frozen 50-bug bank (seed 1337).
     identical to the campaign's basis.
 - **Result:** **49/50 (98.0%)** final mutation score, **24 auto-healed assertion
   tests**, one surviving mutant reported as likely-equivalent (confirmed a true
-  equivalent by manual analysis). Campaign wall time 7.9s. Determinism verified:
-  repeated runs produce identical results.
+  equivalent by manual analysis). Campaign wall time ~8–10s (7.9s idle, 10.2s in the
+  committed report). Determinism verified: repeated runs produce identical results.
 
 ### Iteration 4 — Third-party validation, target adapter, CI gate
 - **Goal:** Answer the strongest critique from an adversarial review pass — "the demo
@@ -48,8 +48,9 @@ from actual runs on the frozen 50-bug bank (seed 1337).
   - Replaced the hard-coded `app/` layout with a one-file target adapter
     (`syntrace_target.json`) and vendored humanize 4.16.0 with its dependency-free
     test modules as `targets/humanize`.
-  - First humanize run: 92.1% detection, **0 heals** — every survivor was either a
-    true equivalent or out of the healer's reach. Diagnosis showed 25 probed-without-
+  - First humanize run (before the `TYPE_CHECKING` exclusions reshaped the bank):
+    35/38 (92.1%) detection, **0 heals** — every survivor was either a true
+    equivalent or out of the healer's reach. Diagnosis showed 25 probed-without-
     discriminator sites and 6 module-level sites (humanize's `intword` power table).
   - Healer upgrades: union/alias type-hint resolution (`NumberOrString = float | str`),
     default-anchored single-parameter sweeps before the diagonal product, module-level
