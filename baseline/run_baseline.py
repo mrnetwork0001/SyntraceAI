@@ -61,9 +61,10 @@ from advanced.core_types import (
     TestRunResult,
 )
 from advanced.prompt_perturbator import enumerate_perturbations
+from advanced.run_mutation import coverage_run_command
 from advanced.sandbox_runner import evaluate_many
+from advanced.target_config import TargetConfig, load_target_config
 
-PROMPT_TEMPLATES_REL_PATH = "app/prompt_templates.py"
 _AUDIT_TIMEOUT_S = 300.0
 
 _console = Console()
@@ -91,7 +92,9 @@ def _resolve_target(raw: str) -> Path:
     _abort(f"target directory not found: {raw!r} (looked in: {looked})")
 
 
-def _run_coverage_audit(target_dir: Path) -> tuple[float, int]:
+def _run_coverage_audit(
+    target_dir: Path, source_package: str, omit: tuple[str, ...] = ()
+) -> tuple[float, int]:
     """Run the target's suite under coverage.py in a throwaway copy.
 
     Returns ``(total line coverage percent, passing test count)``. Aborts
@@ -106,9 +109,9 @@ def _run_coverage_audit(target_dir: Path) -> tuple[float, int]:
         )
         try:
             run = subprocess.run(
-                # --source=app: measure application code only, the same basis
-                # the advanced campaign reports, so the two numbers compare.
-                [sys.executable, "-m", "coverage", "run", "--source=app", "-m", "pytest", "-q"],
+                # Same measurement scope as the advanced campaign (package
+                # only, adapter excludes omitted) so the two numbers compare.
+                coverage_run_command(source_package, omit),
                 cwd=work,
                 env=env,
                 capture_output=True,
@@ -150,8 +153,14 @@ def _run_coverage_audit(target_dir: Path) -> tuple[float, int]:
     return round(percent, 2), tests_passed
 
 
-def _build_bank(target_dir: Path, seed: int) -> tuple[list[Mutant], list[Perturbation]]:
-    """Build the frozen 50-bug bank; abort if its composition is violated."""
+def _build_bank(
+    target_dir: Path, seed: int, config: TargetConfig
+) -> tuple[list[Mutant], list[Perturbation]]:
+    """Build the frozen bug bank; abort if its composition is violated.
+
+    Code-only targets (no prompt module in the adapter config) get the
+    38-mutant code bank alone; prompt-capable targets add the 12 perturbations.
+    """
     all_mutants = enumerate_mutants(target_dir)
     bank = select_bank(all_mutants, size=CODE_BANK_SIZE, seed=seed)
     perturbations = enumerate_perturbations(target_dir)
@@ -160,9 +169,10 @@ def _build_bank(target_dir: Path, seed: int) -> tuple[list[Mutant], list[Perturb
             f"frozen bank violated: expected {CODE_BANK_SIZE} code mutants, "
             f"got {len(bank)} (enumerated {len(all_mutants)} candidates)"
         )
-    if len(perturbations) != PROMPT_BANK_SIZE:
+    expected_prompts = PROMPT_BANK_SIZE if config.has_prompts else 0
+    if len(perturbations) != expected_prompts:
         _abort(
-            f"frozen bank violated: expected {PROMPT_BANK_SIZE} prompt perturbations, "
+            f"frozen bank violated: expected {expected_prompts} prompt perturbations, "
             f"got {len(perturbations)}"
         )
     return bank, perturbations
@@ -173,13 +183,14 @@ def _evaluate_bank(
     mutants: list[Mutant],
     perturbations: list[Perturbation],
     jobs: int | None,
+    prompt_rel_path: str | None,
 ) -> dict[str, TestRunResult]:
     """Run every bank bug through the sandbox with a live progress display."""
     items: list[tuple[str, str, str]] = [
         (m.mutant_id, m.file_path, m.mutated_source) for m in mutants
     ]
     items += [
-        (p.perturbation_id, PROMPT_TEMPLATES_REL_PATH, p.mutated_source) for p in perturbations
+        (p.perturbation_id, str(prompt_rel_path), p.mutated_source) for p in perturbations
     ]
     detected_count = 0
     lock = threading.Lock()
@@ -279,7 +290,9 @@ def _summarize(
 def _render_report(report: dict[str, Any]) -> None:
     """Render the baseline audit with rich: summary, per-operator table, gap."""
     kinds = report["per_kind"]
-    summary = Table(title="Baseline audit — original suite vs the frozen 50-bug bank")
+    summary = Table(
+        title=f"Baseline audit — original suite vs the frozen {report['total']}-bug bank"
+    )
     summary.add_column("Metric")
     summary.add_column("Value", justify="right")
     summary.add_row("Line coverage", f"{report['line_coverage_pct']:.1f}%")
@@ -323,8 +336,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="run_baseline.py",
         description=(
-            "Audit a target's ORIGINAL test suite against the frozen 50-bug "
-            "SyntraceAI bank and report the false-confidence gap."
+            "Audit a target's ORIGINAL test suite against the frozen SyntraceAI "
+            "bug bank (38 code mutants, +12 prompt perturbations for prompt-capable "
+            "targets) and report the false-confidence gap."
         ),
     )
     parser.add_argument(
@@ -356,9 +370,15 @@ def main(argv: list[str] | None = None) -> int:
     target_dir = _resolve_target(args.target)
     _console.print(f"[bold]SyntraceAI baseline audit[/bold] — target: {target_dir}")
 
+    config = load_target_config(target_dir)
+    _console.print(
+        f"  package: {config.source_package}  prompts: "
+        f"{'yes' if config.has_prompts else 'no (code-only bank)'}"
+    )
+
     # The baseline audits the ORIGINAL suite: a healed-assertion file left
     # behind by a previous advanced campaign would inflate every number here.
-    healed_path = target_dir / "tests" / "test_healed_assertions.py"
+    healed_path = target_dir / config.tests_dir / "test_healed_assertions.py"
     if healed_path.exists():
         healed_path.unlink()
         _console.print(
@@ -367,20 +387,25 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     _console.print("Step 1/3: line-coverage audit of the pristine target ...")
-    line_coverage_pct, tests_passed = _run_coverage_audit(target_dir)
+    line_coverage_pct, tests_passed = _run_coverage_audit(
+        target_dir, config.source_package, config.exclude
+    )
     _console.print(
         f"  suite is green: {tests_passed} tests passed, "
         f"line coverage {line_coverage_pct:.1f}%"
     )
 
+    prompt_count = PROMPT_BANK_SIZE if config.has_prompts else 0
     _console.print(
         f"Step 2/3: building the frozen bank ({CODE_BANK_SIZE} code mutants + "
-        f"{PROMPT_BANK_SIZE} prompt perturbations, seed {args.seed}) ..."
+        f"{prompt_count} prompt perturbations, seed {args.seed}) ..."
     )
-    mutants, perturbations = _build_bank(target_dir, args.seed)
+    mutants, perturbations = _build_bank(target_dir, args.seed, config)
 
     _console.print("Step 3/3: evaluating the bank against the ORIGINAL suite ...")
-    results = _evaluate_bank(target_dir, mutants, perturbations, args.jobs)
+    results = _evaluate_bank(
+        target_dir, mutants, perturbations, args.jobs, config.prompt_templates
+    )
 
     wall_time_s = time.perf_counter() - started
     report = _summarize(

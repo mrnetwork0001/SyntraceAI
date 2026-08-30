@@ -42,14 +42,33 @@ from advanced.core_types import (
     Perturbation,
     TestRunResult,
 )
+from advanced.target_config import load_target_config
 from advanced.trajectory_logger import TrajectoryLogger
 
-HEALED_TEST_REL_PATH = Path("tests") / "test_healed_assertions.py"
+HEALED_TEST_BASENAME = "test_healed_assertions.py"
 
 console = Console()
 
 
-def measure_line_coverage(target_dir: Path, timeout_s: float = 180.0) -> float | None:
+def coverage_run_command(source_package: str, omit: tuple[str, ...] = ()) -> list[str]:
+    """coverage.py invocation measuring exactly the mutated scope.
+
+    ``--source`` restricts measurement to the target package and ``--omit``
+    drops the adapter's excluded modules, so the reported line coverage and
+    the mutation score describe the same code.
+    """
+    command = [sys.executable, "-m", "coverage", "run", f"--source={source_package}"]
+    if omit:
+        command.append("--omit=" + ",".join(omit))
+    return command + ["-m", "pytest", "-q"]
+
+
+def measure_line_coverage(
+    target_dir: Path,
+    source_package: str,
+    timeout_s: float = 180.0,
+    omit: tuple[str, ...] = (),
+) -> float | None:
     """Run coverage.py over the target suite in a scratch copy; return total percent."""
     tmp = Path(tempfile.mkdtemp(prefix="syntrace_cov_"))
     try:
@@ -59,7 +78,7 @@ def measure_line_coverage(target_dir: Path, timeout_s: float = 180.0) -> float |
             ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"),
         )
         run = subprocess.run(
-            [sys.executable, "-m", "coverage", "run", "--source=app", "-m", "pytest", "-q"],
+            coverage_run_command(source_package, omit),
             cwd=work, capture_output=True, text=True, timeout=timeout_s,
         )
         if run.returncode != 0:
@@ -102,11 +121,14 @@ def evaluate_bank(
     jobs: int | None,
     phase: str,
     progress_label: str,
+    prompt_rel_path: str | None = None,
 ) -> list[MutantResult]:
+    if perturbations and not prompt_rel_path:
+        raise ValueError("prompt perturbations require the target's prompt module path")
     items: list[tuple[str, str, str]] = [
         (m.mutant_id, m.file_path, m.mutated_source) for m in mutants
     ] + [
-        (p.perturbation_id, "app/prompt_templates.py", p.mutated_source)
+        (p.perturbation_id, str(prompt_rel_path), p.mutated_source)
         for p in perturbations
     ]
     meta: dict[str, tuple[str, str, str, str]] = {}
@@ -164,11 +186,17 @@ def main(argv: list[str] | None = None) -> int:
         agent="SyntraceAI Advanced Engine",
     )
 
+    config = load_target_config(target_dir)
     console.rule("[bold]SyntraceAI — Adversarial Mutation Campaign")
-    console.print(f"Target: [cyan]{args.target}[/cyan]  Seed: {args.seed}")
+    console.print(
+        f"Target: [cyan]{args.target}[/cyan]  Package: [cyan]{config.source_package}[/cyan]  "
+        f"Prompts: {'yes' if config.has_prompts else 'no (code-only campaign)'}  "
+        f"Seed: {args.seed}"
+    )
 
     # Start every campaign from the un-hardened suite so runs are reproducible.
-    healed_path = target_dir / HEALED_TEST_REL_PATH
+    healed_rel_path = Path(config.tests_dir) / HEALED_TEST_BASENAME
+    healed_path = target_dir / healed_rel_path
     if healed_path.exists():
         healed_path.unlink()
         console.print("[dim]Removed previously generated healed-assertion suite for a clean run.[/dim]")
@@ -181,7 +209,9 @@ def main(argv: list[str] | None = None) -> int:
         console.print(gate.stdout_tail)
         return 2
     console.print(f"[green]Suite green[/green] in {gate.duration_s:.1f}s")
-    line_cov = measure_line_coverage(target_dir)
+    line_cov = measure_line_coverage(
+        target_dir, config.source_package, omit=config.exclude
+    )
     if line_cov is not None:
         console.print(f"Baseline line coverage: [bold]{line_cov}%[/bold]")
     traj.log_step(
@@ -216,6 +246,7 @@ def main(argv: list[str] | None = None) -> int:
     original_results = evaluate_bank(
         target_dir, mutants, perturbations,
         jobs=args.jobs, phase="original_suite", progress_label="evaluating bank",
+        prompt_rel_path=config.prompt_templates,
     )
     campaign = CampaignResult(
         target=args.target,
@@ -266,7 +297,7 @@ def main(argv: list[str] | None = None) -> int:
         traj.log_step(
             "Differential input search over survivors; synthesize hardened assertions",
             "write_to_file",
-            target=str(HEALED_TEST_REL_PATH),
+            target=str(healed_rel_path),
             tool_output=(
                 f"{len(campaign.healed_tests)} healed tests generated; "
                 f"{len(unhealable)} unhealable"
@@ -274,7 +305,9 @@ def main(argv: list[str] | None = None) -> int:
         )
 
         if campaign.healed_tests:
-            test_healer.write_healed_test_file(target_dir, campaign.healed_tests)
+            test_healer.write_healed_test_file(
+                target_dir, campaign.healed_tests, tests_dir=config.tests_dir
+            )
 
             # Gate again: healed tests must pass on the pristine target.
             healed_gate = sandbox_runner.run_suite(target_dir)
@@ -288,6 +321,7 @@ def main(argv: list[str] | None = None) -> int:
             campaign.rerun_results = evaluate_bank(
                 target_dir, surviving_mutants, surviving_perts,
                 jobs=args.jobs, phase="healed_suite", progress_label="re-running survivors",
+                prompt_rel_path=config.prompt_templates,
             )
             traj.log_step(
                 "Re-run surviving bugs against the auto-healed assertion suite",
