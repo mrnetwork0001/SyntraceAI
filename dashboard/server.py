@@ -7,6 +7,9 @@ Serves the landing page, the dashboard SPA, and a small JSON API over the engine
     GET  /docs           documentation (Swagger API reference is at /api/docs)
     GET  /api/targets    report sets available (demo, humanize, humanize exhaustive)
     GET  /api/reports    latest baseline + mutation reports (?target=<id>)
+    GET  /api/reset      what a reset of ?target=<id> would delete, and whether
+                         that set is protected repo evidence
+    POST /api/reset      delete that report set's saved artifacts
     GET  /api/presets    runnable project presets bundled with the repo
     POST /api/run/{kind} launch `python main.py <kind>` (baseline | mutate | full),
                          optionally against ?target=<path> (any local project)
@@ -33,8 +36,12 @@ import threading
 from collections import deque
 from datetime import datetime, timezone
 
-from advanced.run_mutation import report_slug
-from advanced.target_config import CONFIG_FILENAME
+from advanced.run_mutation import (
+    HEALED_TEST_BASENAME,
+    report_slug,
+    sibling_output_paths,
+)
+from advanced.target_config import CONFIG_FILENAME, TargetConfigError, load_target_config
 
 import uvicorn
 from fastapi import FastAPI
@@ -180,6 +187,161 @@ def reports(target: str = "") -> JSONResponse:
         "mutation": _read_report(REPO_ROOT / "reports" / f"{prefix}mutation_report.json"),
         "trajectories": trajectories,
     })
+
+
+# --------------------------------------------------------------------------
+# Reset: clearing a report set
+#
+# Everything the dashboard shows is read from reports/ on disk - there is no
+# server-side session to clear. So a reset is a file operation, and the eight
+# report files for the bundled targets are the committed evidence the README
+# and CHANGELOG cite. Deleting those from a UI button would silently gut the
+# repo's own claims, so the bundled sets are protected and only report sets
+# from the user's own projects can be deleted.
+# --------------------------------------------------------------------------
+
+
+def _report_set_target(prefix: str) -> Path | None:
+    """The target directory a report set was produced from.
+
+    Taken from the report's own ``target`` field rather than re-derived from
+    the filename: the slug is a one-way hash of the absolute path, so the
+    report is the only thing that knows which project it came from.
+    """
+    pre = f"{prefix}_" if prefix else ""
+    for kind in ("mutation", "baseline"):
+        data = _read_json(REPO_ROOT / "reports" / f"{pre}{kind}_report.json")
+        raw = (data or {}).get("target")
+        if isinstance(raw, str) and raw.strip():
+            path = Path(raw.strip()).expanduser()
+            return path if path.is_absolute() else REPO_ROOT / path
+    return None
+
+
+def _is_protected(prefix: str) -> bool:
+    """True if this report set must not be deleted through the dashboard.
+
+    Protected means "produced from a target vendored in this repo" - the demo
+    and humanize sets. A set whose target cannot be identified is protected
+    too: refusing to delete is the recoverable mistake.
+    """
+    target = _report_set_target(prefix)
+    if target is None:
+        return True
+    try:
+        target.resolve().relative_to((REPO_ROOT / "targets").resolve())
+        return True
+    except (ValueError, OSError):
+        return False
+
+
+def _healed_test_path(target_dir: Path) -> Path | None:
+    """The generated assertion file a campaign wrote into the target's suite."""
+    try:
+        config = load_target_config(target_dir)
+    except (TargetConfigError, OSError):
+        return None
+    healed = target_dir / config.tests_dir / HEALED_TEST_BASENAME
+    try:  # never step outside the target, whatever the adapter claims
+        healed.resolve().relative_to(target_dir.resolve())
+    except (ValueError, OSError):
+        return None
+    return healed
+
+
+def _reset_paths(prefix: str) -> list[Path]:
+    """Every artifact a run of this report set produced, existing or not.
+
+    Kept in step with how the engine names its outputs: the JSON and HTML
+    reports for both kinds, the trajectory derived from the campaign's JSON
+    path, and the healed-test file written into the target's own suite.
+    """
+    reports_dir = REPO_ROOT / "reports"
+    pre = f"{prefix}_" if prefix else ""
+    paths = [
+        reports_dir / f"{pre}{kind}_report{ext}"
+        for kind in ("mutation", "baseline")
+        for ext in (".json", ".html")
+    ]
+    campaign_json = f"reports/{pre}mutation_report.json"
+    _, trajectory = sibling_output_paths(campaign_json, None, None)
+    paths.append(REPO_ROOT / trajectory)
+
+    target_dir = _report_set_target(prefix)
+    if target_dir is not None and target_dir.is_dir():
+        healed = _healed_test_path(target_dir)
+        if healed is not None:
+            paths.append(healed)
+    return paths
+
+
+def _describe(path: Path) -> str:
+    """Repo-relative where possible, so the confirm dialog reads as file paths."""
+    try:
+        return str(path.resolve().relative_to(REPO_ROOT))
+    except (ValueError, OSError):
+        return str(path)
+
+
+def _reset_plan(target: str) -> dict:
+    protected = _is_protected(target)
+    target_dir = _report_set_target(target)
+    return {
+        "target": target,
+        "target_path": _describe(target_dir) if target_dir else None,
+        "protected": protected,
+        "files": [] if protected else [_describe(p) for p in _reset_paths(target) if p.exists()],
+    }
+
+
+@app.get("/api/reset")
+def reset_plan(target: str = "") -> JSONResponse:
+    """What deleting this report set would remove - nothing is touched here."""
+    if not _TARGET_RE.match(target):
+        return JSONResponse({"error": "invalid target"}, status_code=400)
+    if target not in _report_prefixes():
+        return JSONResponse({"error": f"unknown report set {target!r}"}, status_code=404)
+    return JSONResponse(_reset_plan(target))
+
+
+@app.post("/api/reset")
+def reset(target: str = "") -> JSONResponse:
+    """Delete one report set's saved artifacts."""
+    if not _TARGET_RE.match(target):
+        return JSONResponse({"error": "invalid target"}, status_code=400)
+    if target not in _report_prefixes():
+        return JSONResponse({"error": f"unknown report set {target!r}"}, status_code=404)
+    with _lock:
+        if _state["running"]:
+            return JSONResponse(
+                {"error": "a run is in progress - wait for it to finish"}, status_code=409
+            )
+    if _is_protected(target):
+        return JSONResponse(
+            {
+                "error": (
+                    "this report set came from a target bundled with the repo, and its "
+                    "reports are the committed evidence the README cites - they are not "
+                    "deletable from here. Use 'Clear the view', or delete the files with "
+                    "git if you really mean to."
+                )
+            },
+            status_code=403,
+        )
+
+    deleted, failed = [], []
+    for path in _reset_paths(target):
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            continue  # never ran, or already gone
+        except OSError as exc:
+            failed.append(f"{_describe(path)}: {exc.strerror or exc}")
+            continue
+        deleted.append(_describe(path))
+    if failed:
+        return JSONResponse({"deleted": deleted, "failed": failed}, status_code=500)
+    return JSONResponse({"deleted": deleted})
 
 
 @app.post("/api/run/{kind}")
