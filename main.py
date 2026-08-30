@@ -18,10 +18,12 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent
 
+#: The bolt mark from the logo, drawn in ASCII so it renders identically in
+#: every terminal (a platform emoji would not).
 BANNER = """\
 ==========================================================================
- 🧪 SYNTRACEAI - Autonomous Agentic Mutation Testing Fleet
- Chaos Engineering & Adversarial Mutation for AI Systems
+  [/]  SYNTRACEAI - Autonomous Agentic Mutation Testing Fleet
+       Chaos Engineering & Adversarial Mutation for AI Systems
 ==========================================================================\
 """
 
