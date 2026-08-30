@@ -81,7 +81,6 @@
   .brand { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; letter-spacing: -.025em;
     white-space: nowrap; color: var(--ink); }
   .brand svg { width: 22px; height: 22px; flex: none; }
-  .sub { color: var(--text-faint); font-size: 14px; font-weight: 400; letter-spacing: 0; }
   .bar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
 
   .select { appearance: none; -webkit-appearance: none; cursor: pointer; max-width: 232px; min-width: 0;
@@ -273,8 +272,6 @@
     #tiles, #baseline .tiles { grid-template-columns: minmax(0, 1fr); row-gap: 0; }
     #tiles .tile, #baseline .tile { border-left: 0; padding: 18px 0; border-top: 1px solid var(--line); }
     #tiles .tile:first-child, #baseline .tile:first-child { border-top: 0; padding-top: 0; }
-    .bar-right { width: 100%; margin-left: 0; }
-    .select { max-width: 100%; flex: 1 1 auto; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
@@ -371,6 +368,27 @@
     background: linear-gradient(120deg, var(--g-mint), var(--g-sky) 30%, var(--g-lilac) 55%, var(--g-blush) 78%, var(--g-peach)); }
   .modal > * { position: relative; z-index: 1; }
 
+  /* ---------- reset dialog ----------
+     Reset is two different actions wearing one word, so the dialog makes the
+     user pick: blank the screen, or delete files. The destructive one names
+     every path it will remove before it will do anything. */
+  .modal.narrow { width: min(600px, 100%); }
+  .choice { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px 20px;
+    margin-top: 16px; background: var(--paper-3); }
+  .choice h4 { margin: 0 0 6px; font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; }
+  .choice p { margin: 0 0 14px; color: var(--text-muted); font-size: 13.5px; line-height: 1.6; }
+  .choice.danger { border-color: rgba(248,113,113,.34); background: var(--bad-soft); }
+  button.danger { background: transparent; border-color: rgba(248,113,113,.5); color: var(--bad); }
+  button.danger:hover:not(:disabled) { background: rgba(248,113,113,.14); border-color: var(--bad); }
+  /* The file list is the whole safety story: never hide it behind a scroll. */
+  .filelist { margin: 0 0 14px; padding: 0; list-style: none; font-family: var(--mono); font-size: 11.5px;
+    line-height: 1.85; color: var(--text-muted); word-break: break-all; }
+  .filelist li::before { content: "- "; color: var(--text-faint); }
+  /* Inline <b> runs inside this text, so it must stay a normal text flow -
+     flex here turns each bold phrase into its own column. */
+  .protected { display: block; font-size: 13px; line-height: 1.65; color: var(--warn); }
+  .protected b { color: var(--warn); font-weight: 600; }
+
   /* ---------- collapsible sidebar ----------
      Collapsed, the sidebar becomes an icon rail: navigation stays one click
      away and the run action stays reachable, while the working pane gains
@@ -412,11 +430,70 @@
   #railToggle svg { width: 15px; height: 15px; transition: transform .22s cubic-bezier(.16,1,.3,1); }
   #railToggle.is-collapsed svg { transform: scaleX(-1); }
 
+  /* ---------- narrow viewports: the sidebar becomes a drawer ----------
+     Stacking a 300px control panel on top of the working pane pushed every
+     result below the fold and made the header wrap into its own content. On
+     narrow screens the sidebar is an overlay instead: the header keeps one
+     row, the main pane keeps the full width, and the controls slide in over
+     the top when asked for. */
+  .scrim { display: none; }
+  .ico-burger { display: none; }
+  #drawerSlot, #drawerUtils { display: none; }
+  /* Icon buttons carry a label that only shows once they move into the drawer,
+     where an unlabelled icon would be a guessing game. */
+  .iconbtn .ibl { display: none; }
+
   @media (max-width: 1040px) {
     .shell, .shell.collapsed { grid-template-columns: minmax(0, 1fr); }
-    .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
     .panel-scroll { max-height: none; }
-    /* The rail makes no sense stacked: always show the full sidebar. */
+
+    /* The header must never wrap - a wrapped bar overlaps the content under
+       it, which is exactly what it was doing. One row, and the flexible
+       middle is what gives. */
+    .appbar { flex-wrap: nowrap; gap: 9px; padding: 0 14px; }
+    .brand { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .bar-right { gap: 7px; flex-wrap: nowrap; min-width: 0; }
+    /* A long "last run: mutate failed (1)" truncates rather than shoving the
+       icon buttons off the edge. */
+    .pill { min-width: 0; max-width: 42vw; overflow: hidden; text-overflow: ellipsis;
+      padding: 7px 11px; }
+
+    /* The report-set selector is relocated into the drawer by placeChrome(),
+       next to the controls it belongs with. */
+    #drawerSlot, #drawerUtils { display: block; }
+    #drawerSlot .select { width: 100%; max-width: none; }
+    #drawerUtils { display: grid; gap: 6px; padding-top: 20px; border-top: 1px solid var(--line); }
+    #drawerUtils .iconbtn { width: 100%; height: auto; justify-content: flex-start; gap: 11px;
+      padding: 10px 12px; border-radius: var(--radius-sm); font-size: 13px; }
+    #drawerUtils .iconbtn .ibl { display: inline; }
+    #drawerUtils .iconbtn .ico-q { width: 16px; text-align: center; flex: none; }
+    #drawerUtils .iconbtn svg { width: 15px; height: 15px; flex: none; }
+
+    /* Header: identity on the left, state and the menu on the right. The two
+       utility buttons move into the drawer so the bar is not icon soup. */
+    .bar-right { margin-left: auto; }
+
+    .shell { position: relative; }
+    .sidebar {
+      position: fixed; top: 60px; right: 0; left: auto; z-index: 90;
+      width: min(324px, 86vw); height: calc(100dvh - 60px);
+      background: var(--paper-2); border-left: 1px solid var(--line);
+      border-right: 0; border-bottom: 0;
+      padding: 22px 20px 40px; overflow-y: auto;
+      transform: translateX(102%);
+      transition: transform .24s cubic-bezier(.16,1,.3,1);
+    }
+    .shell.navopen .sidebar { transform: none; box-shadow: -26px 0 54px -28px rgba(0,0,0,.9); }
+    /* Closed, the drawer is not reachable by keyboard or screen reader. */
+    .shell:not(.navopen) .sidebar { visibility: hidden; }
+    .shell.navopen .sidebar { visibility: visible; }
+
+    .scrim { display: block; position: fixed; inset: 60px 0 0; z-index: 85;
+      background: rgba(6,6,8,.62); opacity: 0; pointer-events: none;
+      transition: opacity .22s ease; }
+    .shell.navopen .scrim { opacity: 1; pointer-events: auto; }
+
+    /* The rail-collapse state is a desktop idea; the drawer replaces it. */
     .shell.collapsed .side-label, .shell.collapsed .side-group .hint,
     .shell.collapsed #targetPath, .shell.collapsed #presets,
     .shell.collapsed .btn-row, .shell.collapsed .navlabel,
@@ -424,7 +501,23 @@
     .shell.collapsed .navitem { justify-content: flex-start; padding: 9px 12px; }
     .shell.collapsed button.primary { padding: 12px 22px; margin-bottom: 8px; }
     .shell.collapsed button.primary .btnlabel { display: revert; }
-    #railToggle { display: none; }
+
+    /* Same button, different job: panel-collapse on desktop, menu on mobile.
+       On mobile it sits at the far right so the logo owns the top left, and
+       the drawer enters from the same edge as the control that opens it. */
+    #railToggle { display: inline-flex; order: 9; }
+    #railToggle .ico-rail { display: none; }
+    #railToggle .ico-burger { display: block; }
+    #railToggle.is-collapsed svg { transform: none; }
+
+    .main { padding-left: 16px; padding-right: 16px; }
+  }
+
+  @media (max-width: 560px) {
+    /* Below this the wordmark is the first thing that can go: the mark still
+       identifies the app and the space buys a readable status pill. */
+    .brand .wordmark { display: none; }
+    .pill { max-width: 34vw; }
   }
 </style>
 </head>
@@ -434,8 +527,12 @@
   <div class="appbar">
     <button class="iconbtn" id="railToggle" onclick="toggleSidebar()" aria-expanded="true"
             aria-controls="sidebar" title="Collapse sidebar" aria-label="Collapse sidebar">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      <svg class="ico-rail" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
         <rect x="1.6" y="2.6" width="12.8" height="10.8" rx="2"/><path d="M6.1 2.6v10.8"/>
+      </svg>
+      <svg class="ico-burger" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"
+           stroke-linecap="round" aria-hidden="true">
+        <path d="M2 4h12"/><path d="M2 8h12"/><path d="M2 12h12"/>
       </svg>
     </button>
     <a class="brand" href="/">
@@ -444,12 +541,19 @@
         <path d="M16 2.6 28.4 9.7v14.6L16 31.4 3.6 24.3V9.7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" opacity=".34"/>
         <path d="M18.4 7.6 10.8 17.6h4.6L13.6 24.4l7.6-10h-4.6z" fill="url(#g)"/>
       </svg>
-      SyntraceAI <span class="sub">/ Mission Control</span>
+      <span class="wordmark">SyntraceAI</span>
     </a>
     <div class="bar-right">
       <select id="targetSelect" class="select" onchange="refreshReports()" title="which saved report set to display"></select>
       <div id="statusPill" class="pill"><span class="live"></span> idle</div>
-      <button class="iconbtn" onclick="showIntro()" title="What is this? How do I use it?">?</button>
+      <button class="iconbtn" id="resetBtn" onclick="showReset()" title="Reset the dashboard" aria-label="Reset the dashboard">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2.5 8a5.5 5.5 0 1 0 1.7-3.97"/><path d="M2.2 2.2v3.1h3.1"/>
+        </svg>
+        <span class="ibl">Reset</span>
+      </button>
+      <button class="iconbtn" id="helpBtn" onclick="showIntro()" title="What is this? How do I use it?"><span class="ico-q">?</span><span class="ibl">How this works</span></button>
     </div>
   </div>
 </header>
@@ -477,8 +581,41 @@
   </div>
 </div>
 
+<div class="overlay" id="resetCard" role="dialog" aria-modal="true" aria-label="Reset the dashboard" hidden
+     onclick="if (event.target === this) dismissReset()">
+  <div class="modal narrow">
+    <h2>Reset</h2>
+    <p class="lead">Everything on screen is read from saved report files - there is no session to
+      clear. So pick what you actually want gone.</p>
+
+    <div class="choice">
+      <h4 id="clearHead">Clear the view</h4>
+      <p id="clearBody">Blanks the tiles, panels and log so you can start from an empty screen.
+        Nothing on disk is touched - the view stays cleared until you restore it or run a
+        campaign.</p>
+      <button id="clearBtn" onclick="clearView()">Clear the view</button>
+    </div>
+
+    <div class="choice danger">
+      <h4>Delete saved reports</h4>
+      <p id="resetWhat">Permanently deletes this report set's files, including the generated
+        assertion tests written into the project's suite. This cannot be undone.</p>
+      <ul class="filelist" id="resetFiles"></ul>
+      <button class="danger" id="resetDelete" onclick="deleteReports()" disabled>Delete saved reports</button>
+    </div>
+
+    <div class="intro-foot" style="margin-top:20px">
+      <button onclick="dismissReset()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="shell">
+  <div class="scrim" id="scrim" onclick="closeNav()" aria-hidden="true"></div>
   <aside class="sidebar" id="sidebar">
+    <div class="side-group" id="drawerSlot">
+      <div class="side-label">Showing</div>
+    </div>
     <div class="side-group">
       <div class="side-label"><label for="targetPath">Run against</label></div>
       <input id="targetPath" value="targets/sample_app" spellcheck="false"
@@ -523,6 +660,7 @@
           <path d="M4.2 6.3v3.2a2.3 2.3 0 0 0 2.3 2.3h3.2"/>
         </svg><span class="navlabel">Agent trajectories</span></button>
     </nav>
+    <div class="side-group" id="drawerUtils"></div>
   </aside>
 
   <main class="main">
@@ -534,6 +672,13 @@
         Nothing measured yet for this project.<br>
         Press <b><svg class="bolt" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M18.4 7.6 10.8 17.6h4.6L13.6 24.4l7.6-10h-4.6z"/></svg> Run Mutation Campaign</b>
         on the left - it takes about 10 seconds and fills this page with real numbers.
+      </div>
+      <!-- Cleared views persist, so the page has to say why it is blank when a
+           saved run still exists on disk - otherwise it reads as data loss. -->
+      <div id="emptyCleared" class="empty" hidden>
+        You cleared this view. The saved run for <span class="mono" id="clearedTarget"></span>
+        is still on disk, untouched.<br>
+        <button style="margin-top:14px" onclick="restoreView()">Restore the view</button>
       </div>
     </section>
 
@@ -773,11 +918,28 @@ async function refreshReports() {
   try {
     const target = $('targetSelect').value || '';
     const r = await (await fetch('/api/reports?target=' + encodeURIComponent(target))).json();
+    if (isCleared(target)) { showClearedState(r); return; }
+    $('emptyCleared').hidden = true;
     renderMutation(r.mutation);
     renderBaseline(r.baseline);
     $('trajectories').innerHTML = (r.trajectories || []).map(t => `<span class="mono">${esc(t)}</span>`)
       .join(' &nbsp;·&nbsp; ') || '-';
   } catch (e) { /* server restarting; next poll wins */ }
+}
+
+// Blank the panels, then say which of the two blanks this is: a project with
+// nothing measured, or a saved run the user chose not to look at.
+function showClearedState(reports) {
+  const hasData = !!(reports && (reports.mutation || reports.baseline));
+  renderMutation(null);
+  renderBaseline(null);
+  $('trajectories').innerHTML = '-';
+  $('log').textContent = '';
+  $('emptyMain').hidden = hasData;
+  $('emptyCleared').hidden = !hasData;
+  const name = (reports && reports.mutation && reports.mutation.target)
+    || (reports && reports.baseline && reports.baseline.target) || 'this project';
+  $('clearedTarget').textContent = name;
 }
 
 function setButtons(disabled) {
@@ -796,7 +958,8 @@ async function poll() {
       if (!logVisible) toggleLog(true);
     } else {
       setButtons(false);
-      if (s.returncode === null || s.returncode === undefined) { pill.className = 'pill'; pill.innerHTML = '<span class="live"></span> idle'; }
+      if (s.returncode === null || s.returncode === undefined || isCleared($('targetSelect').value || '')) {
+        pill.className = 'pill'; pill.innerHTML = '<span class="live"></span> idle'; }
       else if (s.returncode === 0) { pill.className = 'pill ok';
         pill.innerHTML = `<span class="live"></span> last run: ${esc(s.kind)}` + CHECK_MARK; }
       else { pill.className = 'pill fail'; pill.innerHTML = `<span class="live"></span> last run: ${esc(s.kind)} failed (${s.returncode})`; }
@@ -820,7 +983,13 @@ async function launch(kind) {
   const res = await fetch(url, { method: 'POST' });
   const j = await res.json().catch(() => ({}));
   if (!res.ok) { alert(j.error || 'failed to start'); return; }
+  closeNav();
   pendingReportId = j.report_id ?? null;   // select this project's report set when it finishes
+  // Running is an explicit request to see results, so it lifts a cleared view -
+  // both for what is on screen now and for the set this run will write.
+  setCleared($('targetSelect').value || '', false);
+  if (pendingReportId !== null) setCleared(pendingReportId, false);
+  $('emptyCleared').hidden = true;
   toggleLog(true);
   if (!polling) polling = setInterval(poll, 1200);
   poll();
@@ -834,6 +1003,136 @@ function showIntro() {
   $('introCard').hidden = false;
   $('introCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   try { localStorage.removeItem('syntrace.intro'); } catch (e) { /* private mode */ }
+}
+
+// Cleared views persist per report set. Clearing is a display choice, and a
+// display choice that silently undoes itself on the next reload is just a
+// flicker - so it is remembered until the user restores it or runs a campaign.
+const CLEARED_KEY = 'syntrace.cleared';
+
+function clearedSet() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(CLEARED_KEY) || '[]');
+    return new Set(Array.isArray(raw) ? raw : []);
+  } catch (e) { return new Set(); }   // private mode, or someone edited the value
+}
+
+function writeCleared(set) {
+  try { localStorage.setItem(CLEARED_KEY, JSON.stringify([...set])); }
+  catch (e) { /* private mode: the choice just will not survive a reload */ }
+}
+
+function isCleared(target) { return clearedSet().has(target ?? ''); }
+
+function setCleared(target, on) {
+  const set = clearedSet();
+  on ? set.add(target ?? '') : set.delete(target ?? '');
+  writeCleared(set);
+}
+
+// ---------------------------------------------------------------- reset
+//
+// "Reset" means two different things and the dialog refuses to guess: clearing
+// the view is free and reversible, deleting a report set is neither. The
+// delete side stays disabled until the server has said what it would remove
+// and confirmed the set is not one of the repo's committed report sets.
+
+async function showReset() {
+  const card = $('resetCard');
+  const btn = $('resetDelete'), files = $('resetFiles'), what = $('resetWhat');
+  btn.disabled = true;
+  btn.textContent = 'Delete saved reports';
+  files.innerHTML = '';
+  what.textContent = 'Checking what this would delete…';
+  card.hidden = false;
+
+  const target = $('targetSelect').value || '';
+  const cleared = isCleared(target);
+  $('clearHead').textContent = cleared ? 'Restore the view' : 'Clear the view';
+  $('clearBody').textContent = cleared
+    ? 'This report set is currently cleared. Restoring shows its saved run again - the files were '
+      + 'never touched.'
+    : 'Blanks the tiles, panels and log so you can start from an empty screen. Nothing on disk is '
+      + 'touched - the view stays cleared until you restore it or run a campaign.';
+  const clearBtn = $('clearBtn');
+  clearBtn.textContent = cleared ? 'Restore the view' : 'Clear the view';
+  clearBtn.setAttribute('onclick', cleared ? 'restoreView()' : 'clearView()');
+
+  try {
+    const res = await fetch('/api/reset?target=' + encodeURIComponent(target));
+    const info = await res.json();
+    if (!res.ok) { what.textContent = info.error || 'Could not read this report set.'; return; }
+
+    if (info.protected) {
+      what.innerHTML = '<span class="protected"><b>Protected.</b> This report set came from a ' +
+        'target bundled with the repo, and its reports are the committed evidence the README ' +
+        'cites. Deleting it here would leave those claims unbacked, so this button stays off - ' +
+        'use <b>Clear the view</b>, or delete the files with git if you really mean to.</span>';
+      return;
+    }
+    if (!info.files.length) {
+      what.textContent = 'Nothing saved on disk for this report set - there is nothing to delete.';
+      return;
+    }
+    what.innerHTML = `Permanently deletes ${info.files.length} file` +
+      `${info.files.length === 1 ? '' : 's'} for <span class="mono">${esc(info.target_path || info.target)}</span>` +
+      ', including the generated assertion tests written into that project\'s suite. ' +
+      'This cannot be undone.';
+    files.innerHTML = info.files.map(f => `<li>${esc(f)}</li>`).join('');
+    btn.disabled = false;
+    btn.textContent = `Delete ${info.files.length} file${info.files.length === 1 ? '' : 's'}`;
+  } catch (e) {
+    what.textContent = 'Could not reach the server.';
+  }
+}
+
+function dismissReset() { $('resetCard').hidden = true; }
+
+// View-only reset. Remembered per report set, so leaving the page and coming
+// back does not quietly undo it; nothing on disk is touched either way.
+function clearView() {
+  setCleared($('targetSelect').value || '', true);
+  const pill = $('statusPill');
+  pill.className = 'pill';
+  pill.innerHTML = '<span class="live"></span> idle';
+  showView('overview');
+  dismissReset();
+  refreshReports();
+}
+
+function restoreView() {
+  setCleared($('targetSelect').value || '', false);
+  dismissReset();
+  refreshReports();
+  poll();          // bring the real "last run" state back into the pill
+}
+
+async function deleteReports() {
+  const target = $('targetSelect').value || '';
+  const btn = $('resetDelete');
+  btn.disabled = true;
+  btn.textContent = 'Deleting…';
+  try {
+    const res = await fetch('/api/reset?target=' + encodeURIComponent(target), { method: 'POST' });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      alert(j.error || 'reset failed');
+      btn.disabled = false;
+      btn.textContent = 'Delete saved reports';
+      return;
+    }
+  } catch (e) {
+    alert('could not reach the server');
+    btn.disabled = false;
+    btn.textContent = 'Delete saved reports';
+    return;
+  }
+  setCleared(target, false);   // the set is gone; do not strand a flag for it
+  dismissReset();
+  // The set is gone from /api/targets now, so the selector falls back to
+  // whatever remains and the panels follow it.
+  await loadTargets();
+  await refreshReports();
 }
 
 async function loadPresets() {
@@ -851,27 +1150,89 @@ async function loadPresets() {
 }
 
 document.addEventListener('keydown', ev => {
-  if (ev.key === 'Escape' && !$('introCard').hidden) dismissIntro();
+  if (ev.key !== 'Escape') return;
+  if (!$('resetCard').hidden) dismissReset();
+  else if (!$('introCard').hidden) dismissIntro();
+  else closeNav();
 });
 
+// ---------------------------------------------------------------- chrome
+//
+// One button, two jobs. On desktop it collapses the sidebar to an icon rail;
+// below the breakpoint the sidebar is an overlay drawer and the same button is
+// the menu. Keeping it one control means the header never changes shape.
+const NARROW = window.matchMedia('(max-width: 1040px)');
+const shellEl = () => document.querySelector('.shell');
+
 function setSidebar(collapsed) {
-  const shell = document.querySelector('.shell');
   const btn = $('railToggle');
-  shell.classList.toggle('collapsed', collapsed);
+  shellEl().classList.toggle('collapsed', collapsed);
   btn.classList.toggle('is-collapsed', collapsed);
-  btn.setAttribute('aria-expanded', String(!collapsed));
-  const label = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
-  btn.title = label;
-  btn.setAttribute('aria-label', label);
+  if (!NARROW.matches) {
+    btn.setAttribute('aria-expanded', String(!collapsed));
+    const label = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+    btn.title = label;
+    btn.setAttribute('aria-label', label);
+  }
   try { localStorage.setItem('syntrace.sidebar', collapsed ? 'collapsed' : 'open'); }
   catch (e) { /* private mode: the choice just will not persist */ }
 }
 
-function toggleSidebar() {
-  setSidebar(!document.querySelector('.shell').classList.contains('collapsed'));
+function setNav(open) {
+  const btn = $('railToggle');
+  shellEl().classList.toggle('navopen', open);
+  btn.setAttribute('aria-expanded', String(open));
+  const label = open ? 'Close menu' : 'Menu';
+  btn.title = label;
+  btn.setAttribute('aria-label', label);
+  // The drawer overlays the page, so the page behind it must not scroll.
+  document.body.style.overflow = open ? 'hidden' : '';
+  if (open) $('sidebar').scrollTop = 0;
 }
 
+function closeNav() { if (shellEl().classList.contains('navopen')) setNav(false); }
+
+function toggleSidebar() {
+  if (NARROW.matches) { setNav(!shellEl().classList.contains('navopen')); return; }
+  setSidebar(!shellEl().classList.contains('collapsed'));
+}
+
+// The report-set selector belongs beside the run controls, not wedged into a
+// 390px header. It is moved rather than duplicated so there is one live
+// element and one source of truth for the selection.
+function placeChrome() {
+  const bar = document.querySelector('.bar-right');
+  const sel = $('targetSelect'), reset = $('resetBtn'), help = $('helpBtn');
+  if (NARROW.matches) {
+    if (sel.parentElement !== $('drawerSlot')) $('drawerSlot').appendChild(sel);
+    if (reset.parentElement !== $('drawerUtils')) $('drawerUtils').append(reset, help);
+  } else if (sel.parentElement !== bar) {
+    // Rebuild the bar in its designed order: selector, status, reset, help.
+    bar.insertBefore(sel, bar.firstChild);
+    bar.append(reset, help);
+  }
+}
+
+function syncChrome() {
+  placeChrome();
+  if (NARROW.matches) {
+    // Leaving 'collapsed' on would fight the drawer's own open/closed state.
+    setNav(shellEl().classList.contains('navopen'));
+  } else {
+    setNav(false);
+    const btn = $('railToggle');
+    const collapsed = shellEl().classList.contains('collapsed');
+    btn.setAttribute('aria-expanded', String(!collapsed));
+    const label = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+    btn.title = label;
+    btn.setAttribute('aria-label', label);
+  }
+}
+
+NARROW.addEventListener('change', syncChrome);
+
 function showView(name) {
+  closeNav();
   for (const section of document.querySelectorAll('.view')) {
     section.hidden = section.dataset.view !== name;
   }
@@ -892,6 +1253,7 @@ try { if (localStorage.getItem('syntrace.intro') === 'done') $('introCard').hidd
 catch (e) { /* private mode: keep the intro visible */ }
 try { if (localStorage.getItem('syntrace.sidebar') === 'collapsed') setSidebar(true); }
 catch (e) { /* private mode: start expanded */ }
+syncChrome();
 loadPresets();
 loadTargets().then(refreshReports);
 poll();
