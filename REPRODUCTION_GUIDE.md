@@ -1,4 +1,4 @@
-# 🛠️ SyntraceAI — Deterministic Reproduction Guide
+# 🛠️ SyntraceAI - Deterministic Reproduction Guide
 
 Every command below was executed on a clean environment before this guide was written;
 the expected outputs are pasted from real runs. The engine is seeded (default `1337`)
@@ -8,7 +8,7 @@ at any `--jobs` parallelism.
 ## 1. Environment setup
 
 Requires Python 3.11+ (developed and verified on 3.14). No API keys, no network access,
-$0 in model cost — the demo target uses a deterministic rule-based mock LLM.
+$0 in model cost - the demo target uses a deterministic rule-based mock LLM.
 
 ```bash
 git clone https://github.com/mrnetwork0001/SyntraceAI.git   # or unzip the submission archive
@@ -70,7 +70,7 @@ Mutation Score: 94.7% | Injected Bugs Detected: 36/38 | Auto-Healed Assertion Te
 ```
 Both survivors sit inside `_format_not_finite`, where `math.isinf(value)` guards the
 comparison: `M036` swaps `value < 0` to `<=`, `M016` shifts `value > 0` to `> -1`. Only
-±inf ever reaches them, so neither change is observable — reported as likely-equivalent.
+±inf ever reaches them, so neither change is observable - reported as likely-equivalent.
 
 Note: every campaign starts by deleting the target's generated
 `tests/test_healed_assertions.py`. The committed 12-test humanize file is produced by
@@ -104,7 +104,7 @@ request.
 ```bash
 python dashboard/server.py
 ```
-Open http://127.0.0.1:8377 — landing page with live campaign stats; **Launch App**
+Open http://127.0.0.1:8377 - landing page with live campaign stats; **Launch App**
 opens the dashboard at `/app` where you can trigger runs and watch the engine log live.
 
 ## 6. Artifacts produced
@@ -125,11 +125,11 @@ opens the dashboard at `/app` where you can trigger runs and watch the engine lo
 - **Runtime** (8-core laptop, hardware-dependent): demo campaign ~8–10s (7.9s on an
   idle machine; the committed report recorded 10.2s under load), baseline audit ~3s,
   `python main.py full` ~12–14s end to end.
-- **API cost:** $0.00 — local AST parsing + deterministic mock LLM only.
+- **API cost:** $0.00 - local AST parsing + deterministic mock LLM only.
 - **Repeatability note:** both `run_baseline.py` and `run_mutation.py` delete any
   previously generated `test_healed_assertions.py` before measuring, so every run
   starts from the original un-hardened suite and reproduces the same numbers.
 - **What "identical" means:** across repeated runs (any `--jobs`, any supported Python
   version) every verdict, score, mutant ID, and healed test is identical. The mutation
-  report JSON is byte-stable except for the single top-level `wall_time_s` field —
+  report JSON is byte-stable except for the single top-level `wall_time_s` field -
   `diff` two runs yourself.

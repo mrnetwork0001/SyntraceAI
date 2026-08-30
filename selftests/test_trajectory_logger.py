@@ -104,7 +104,7 @@ def test_all_optionals_recorded_in_schema_order(tmp_path: Path) -> None:
 
 def test_replaying_reference_trace_reproduces_its_steps(tmp_path: Path) -> None:
     """Feeding the reference trace's steps through the logger must reproduce
-    them exactly — same keys present, same keys omitted, same indices."""
+    them exactly - same keys present, same keys omitted, same indices."""
     reference = json.loads(REFERENCE_TRACE.read_text(encoding="utf-8"))
     logger = TrajectoryLogger(
         tmp_path / "replay.json", task=reference["task"], agent=reference["agent"]

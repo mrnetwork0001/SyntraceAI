@@ -1,6 +1,6 @@
 {
   "task": "Build SyntraceAI: AST mutation + prompt perturbation engine with differential auto-healing",
-  "agent": "Claude Code (Fable 5) — orchestrator + 6 parallel implementation subagents",
+  "agent": "Claude Code (Fable 5) - orchestrator + 6 parallel implementation subagents",
   "timestamp": "2026-08-29T19:45:00Z",
   "steps": [
     {
@@ -9,7 +9,7 @@
       "action": "write_to_file",
       "target": "docs/ARCHITECTURE.md",
       "tool_output": "Frozen contract: 13-section spec covering shared types, exact prompt marker lines, deterministic mock-LLM rules, 38+12 bug bank, sandbox outcome mapping, healer honesty invariants",
-      "human_checkpoint": "Approved — 'go ahead and build' (owner authorized full build)"
+      "human_checkpoint": "Approved - 'go ahead and build' (owner authorized full build)"
     },
     {
       "step_index": 2,
@@ -24,7 +24,7 @@
       "action": "run_command",
       "command": "python main.py full",
       "tool_output": "Baseline: 87.1% line coverage, 24/50 (48.0%) detection. First campaign: 39/50 (78.0%) post-heal, 15 healed tests, 8 unhealable code mutants, 3 inert prompt perturbations",
-      "human_checkpoint": "Reviewed — 78% below the 90% bar; root-caused every miss at its code site before changing anything"
+      "human_checkpoint": "Reviewed - 78% below the 90% bar; root-caused every miss at its code site before changing anything"
     },
     {
       "step_index": 4,
@@ -39,7 +39,7 @@
       "action": "run_command",
       "command": "python main.py full && python advanced/run_mutation.py",
       "tool_output": "Mutation Score: 98.0% | Injected Bugs Detected: 49/50 | Auto-Healed Assertion Tests Generated: 24 | wall 7.9s | identical results on repeat run | sole survivor M010 confirmed a true equivalent mutant by manual analysis",
-      "human_checkpoint": "Final verification passed — every published number reproduced from a real seeded run"
+      "human_checkpoint": "Final verification passed - every published number reproduced from a real seeded run"
     }
   ]
 }

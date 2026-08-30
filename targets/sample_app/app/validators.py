@@ -4,7 +4,7 @@ Two parsing modes:
 
 - ``parse_strict``: the completion must be exactly one valid JSON object
   that satisfies the ``TriageResult`` schema, otherwise ``ContractViolation``.
-- ``parse_lenient``: best-effort salvage that never raises — it fishes the
+- ``parse_lenient``: best-effort salvage that never raises - it fishes the
   first ``{...}`` blob out of prose, fills missing keys with defaults, and
   coerces types. This is a deliberate real-world antipattern: it silently
   converts contract breaches into plausible-looking results.

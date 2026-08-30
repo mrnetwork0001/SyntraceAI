@@ -335,7 +335,7 @@ ALL_OPERATORS: tuple[type[MutationOperator], ...] = (
 
 
 def _is_type_checking_guard(test: ast.expr) -> bool:
-    """``if TYPE_CHECKING:`` / ``if typing.TYPE_CHECKING:`` — import-only blocks.
+    """``if TYPE_CHECKING:`` / ``if typing.TYPE_CHECKING:`` - import-only blocks.
 
     These guards are False at runtime by definition; negating one merely
     executes type-only imports, which is a semantic no-op for the test suite
@@ -352,7 +352,7 @@ def _equivalent_clamp_swap_sites(tree: ast.Module) -> frozenset[tuple[int, int]]
     Pattern: ``if x >cmp C: x = C`` with no else branch, where ``cmp`` is one of
     ``> >= < <=``, ``x`` is a plain name, and ``C`` is the same non-zero constant
     on both lines. Swapping ``>`` <-> ``>=`` (or ``<`` <-> ``<=``) only changes
-    behavior at ``x == C`` — where the body assigns the very same value — so
+    behavior at ``x == C`` - where the body assigns the very same value - so
     the mutant is equivalent under the documented assumptions: ``x`` holds a
     standard numeric of the same type as ``C`` (an int-valued float crossing an
     int constant, or vice versa, would make the boundary assignment a type
@@ -396,7 +396,7 @@ def _docstring_node_ids(tree: ast.Module) -> frozenset[int]:
     """``id()``s of Constant nodes that operators must never mutate.
 
     Docstrings (the first statement string of a module, class, or function)
-    and the value of the ``TYPE_CHECKING = False`` idiom — flipping that flag
+    and the value of the ``TYPE_CHECKING = False`` idiom - flipping that flag
     only executes type-only imports at runtime, an unkillable no-op.
     """
     ids: set[int] = set()
@@ -512,11 +512,11 @@ def enumerate_mutants(
     the prompt perturbator), ``__init__.py``, and anything under the tests or
     ``__pycache__`` directories. The result is stably sorted by
     ``(file_path, line_no, col_offset, operator_name)`` and deduplicated on
-    identical mutated file sources; ``mutant_id`` is left empty ("") — IDs
+    identical mutated file sources; ``mutant_id`` is left empty ("") - IDs
     are assigned by :func:`select_bank` after selection.
 
     Raises ``FileNotFoundError`` if the source package does not exist and
-    propagates ``SyntaxError`` if a target source file does not parse — a
+    propagates ``SyntaxError`` if a target source file does not parse - a
     broken target must fail loudly, not shrink the bank silently.
     """
     target_dir = Path(target_dir).resolve()
@@ -553,7 +553,7 @@ def enumerate_mutants(
     for mutant in mutants:
         key = (mutant.file_path, mutant.mutated_source)
         if key in seen:
-            continue  # same bug produced by two operators — keep the first
+            continue  # same bug produced by two operators - keep the first
         seen.add(key)
         unique.append(mutant)
     return unique
@@ -568,8 +568,8 @@ def select_bank(
 
     Mutants are grouped by ``(file_path, operator_name)``; each group is
     shuffled with a single ``random.Random(seed)`` (groups processed in
-    sorted-key order), then groups are drained round-robin — one mutant per
-    group per round, in sorted-key order, skipping exhausted groups — so the
+    sorted-key order), then groups are drained round-robin - one mutant per
+    group per round, in sorted-key order, skipping exhausted groups - so the
     bank spans all files and operator types. IDs are assigned after
     selection, in selection order. If fewer than *size* mutants exist, all
     of them are returned. The input list and its elements are not modified.

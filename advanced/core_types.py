@@ -1,7 +1,7 @@
 """Frozen shared types for the SyntraceAI engine.
 
 Single source of truth for every dataclass exchanged between modules.
-See docs/ARCHITECTURE.md — do not redefine these anywhere else.
+See docs/ARCHITECTURE.md - do not redefine these anywhere else.
 """
 
 from __future__ import annotations
@@ -21,10 +21,10 @@ def repo_root() -> Path:
 
 
 class Outcome(str, Enum):
-    KILLED = "killed"        # test suite failed (exit 1) — bug detected
-    SURVIVED = "survived"    # test suite passed — bug slipped through
-    TIMEOUT = "timeout"      # runaway mutant killed by resource guard — detected
-    ERROR = "error"          # suite broke loudly (collection/internal error) — detected
+    KILLED = "killed"        # test suite failed (exit 1) - bug detected
+    SURVIVED = "survived"    # test suite passed - bug slipped through
+    TIMEOUT = "timeout"      # runaway mutant killed by resource guard - detected
+    ERROR = "error"          # suite broke loudly (collection/internal error) - detected
     NOT_RUN = "not_run"
 
     @property

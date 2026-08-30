@@ -3,7 +3,7 @@
 ``mock_llm`` is a deterministic, rule-based stand-in for a hosted model.
 It is a pure function of the prompt string and it *reads its own
 instructions*: when contract-critical lines are missing or corrupted in
-the prompt, it degrades the way real LLMs do — hallucinated keys, wrong
+the prompt, it degrades the way real LLMs do - hallucinated keys, wrong
 value types, dropped fields, and chatty prose around the JSON.
 """
 

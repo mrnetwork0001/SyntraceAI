@@ -1,4 +1,4 @@
-"""SyntraceAI Mission Control — local dashboard server.
+"""SyntraceAI Mission Control - local dashboard server.
 
 Serves the landing page, the dashboard SPA, and a small JSON API over the engine:
 

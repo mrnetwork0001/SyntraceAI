@@ -1,7 +1,7 @@
 """Baseline auditor (ARCHITECTURE.md §11).
 
 Measures, honestly and from a real run, how much of the frozen 50-bug
-SyntraceAI bank the target's ORIGINAL test suite actually detects — and puts
+SyntraceAI bank the target's ORIGINAL test suite actually detects - and puts
 that number next to the suite's line-coverage percentage (the "false
 confidence gap").
 
@@ -98,7 +98,7 @@ def _run_coverage_audit(
     """Run the target's suite under coverage.py in a throwaway copy.
 
     Returns ``(total line coverage percent, passing test count)``. Aborts
-    with exit code 2 if the suite is not fully green — a baseline audit of a
+    with exit code 2 if the suite is not fully green - a baseline audit of a
     broken suite would be meaningless.
     """
     env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
@@ -212,7 +212,7 @@ def _evaluate_bank(
                 progress.update(
                     task_id,
                     advance=1,
-                    description=f"Injecting {len(items)} bugs — {detected_count} detected",
+                    description=f"Injecting {len(items)} bugs - {detected_count} detected",
                 )
 
         results = evaluate_many(target_dir, items, jobs=jobs, on_result=on_result)
@@ -290,23 +290,23 @@ def _render_report(report: dict[str, Any]) -> None:
     """Render the baseline audit with rich: summary, per-operator table, gap."""
     kinds = report["per_kind"]
     summary = Table(
-        title=f"Baseline audit — original suite vs the frozen {report['total']}-bug bank"
+        title=f"Baseline audit - original suite vs the frozen {report['total']}-bug bank"
     )
     summary.add_column("Metric")
     summary.add_column("Value", justify="right")
     summary.add_row("Line coverage", f"{report['line_coverage_pct']:.1f}%")
     summary.add_row("Tests passed (green suite)", str(report["tests_passed"]))
     summary.add_row(
-        "Bugs detected — overall",
+        "Bugs detected - overall",
         f"{report['detected']}/{report['total']} ({report['detection_pct']:.1f}%)",
     )
     summary.add_row(
-        "Bugs detected — code mutants",
+        "Bugs detected - code mutants",
         f"{kinds['code']['detected']}/{kinds['code']['total']} "
         f"({kinds['code']['detection_pct']:.1f}%)",
     )
     summary.add_row(
-        "Bugs detected — prompt perturbations",
+        "Bugs detected - prompt perturbations",
         f"{kinds['prompt']['detected']}/{kinds['prompt']['total']} "
         f"({kinds['prompt']['detection_pct']:.1f}%)",
     )
@@ -367,7 +367,7 @@ def main(argv: list[str] | None = None) -> int:
 
     started = time.perf_counter()
     target_dir = _resolve_target(args.target)
-    _console.print(f"[bold]SyntraceAI baseline audit[/bold] — target: {target_dir}")
+    _console.print(f"[bold]SyntraceAI baseline audit[/bold] - target: {target_dir}")
 
     config = load_target_config(target_dir)
     _console.print(

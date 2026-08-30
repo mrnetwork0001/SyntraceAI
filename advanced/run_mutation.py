@@ -212,7 +212,7 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     config = load_target_config(target_dir)
-    console.rule("[bold]SyntraceAI — Adversarial Mutation Campaign")
+    console.rule("[bold]SyntraceAI - Adversarial Mutation Campaign")
     console.print(
         f"Target: [cyan]{args.target}[/cyan]  Package: [cyan]{config.source_package}[/cyan]  "
         f"Prompts: {'yes' if config.has_prompts else 'no (code-only campaign)'}  "
@@ -226,8 +226,8 @@ def main(argv: list[str] | None = None) -> int:
         healed_path.unlink()
         console.print("[dim]Removed previously generated healed-assertion suite for a clean run.[/dim]")
 
-    # Step 1 — clean-suite gate.
-    console.print("\n[bold]Step 1[/bold] — Clean-suite gate")
+    # Step 1 - clean-suite gate.
+    console.print("\n[bold]Step 1[/bold] - Clean-suite gate")
     gate = sandbox_runner.run_suite(target_dir)
     if gate.exit_code != 0:
         console.print("[red]ABORT: target test suite is not green before mutation.[/red]")
@@ -246,8 +246,8 @@ def main(argv: list[str] | None = None) -> int:
         tool_output=f"suite green; line coverage {line_cov}%",
     )
 
-    # Step 2 — build the frozen bug bank.
-    console.print("\n[bold]Step 2[/bold] — Building the adversarial bug bank")
+    # Step 2 - build the frozen bug bank.
+    console.print("\n[bold]Step 2[/bold] - Building the adversarial bug bank")
     all_mutants = ast_mutator.enumerate_mutants(target_dir)
     mutants = ast_mutator.select_bank(all_mutants, size=args.max_code_mutants, seed=args.seed)
     perturbations = prompt_perturbator.enumerate_perturbations(target_dir)
@@ -266,8 +266,8 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
 
-    # Step 3 — sandboxed evaluation of the full bank.
-    console.print("\n[bold]Step 3[/bold] — Sandboxed evaluation (original test suite)")
+    # Step 3 - sandboxed evaluation of the full bank.
+    console.print("\n[bold]Step 3[/bold] - Sandboxed evaluation (original test suite)")
     original_results = evaluate_bank(
         target_dir, mutants, perturbations,
         jobs=args.jobs, phase="original_suite", progress_label="evaluating bank",
@@ -301,9 +301,9 @@ def main(argv: list[str] | None = None) -> int:
     surviving_perts = [p for p in perturbations if p.perturbation_id in survived_ids]
 
     if not args.no_heal and survived_ids:
-        # Step 4 — auto-heal survivors.
+        # Step 4 - auto-heal survivors.
         console.print(
-            f"\n[bold]Step 4[/bold] — Auto-healing {len(surviving_mutants)} code + "
+            f"\n[bold]Step 4[/bold] - Auto-healing {len(surviving_mutants)} code + "
             f"{len(surviving_perts)} prompt survivors"
         )
         healed, unhealable = test_healer.heal_survivors(
@@ -341,8 +341,8 @@ def main(argv: list[str] | None = None) -> int:
                 console.print(healed_gate.stdout_tail)
                 return 2
 
-            # Step 5 — re-run survivors against the healed suite.
-            console.print("\n[bold]Step 5[/bold] — Re-running survivors against the healed suite")
+            # Step 5 - re-run survivors against the healed suite.
+            console.print("\n[bold]Step 5[/bold] - Re-running survivors against the healed suite")
             campaign.rerun_results = evaluate_bank(
                 target_dir, surviving_mutants, surviving_perts,
                 jobs=args.jobs, phase="healed_suite", progress_label="re-running survivors",

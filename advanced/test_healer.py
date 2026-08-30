@@ -1,8 +1,8 @@
 """Differential auto-healer for surviving mutants (ARCHITECTURE.md §9).
 
 For every surviving code mutant that targets a top-level function with scalar
-type hints, the healer searches for a *discriminating input* — an input on
-which the pristine target and the mutated target observably disagree — by
+type hints, the healer searches for a *discriminating input* - an input on
+which the pristine target and the mutated target observably disagree - by
 running a generated probe script in subprocesses against two temporary copies
 of the target (no import-cache games). A pytest test asserting the ORIGINAL
 behavior on that input is then synthesized; on re-run it kills the mutant.
@@ -76,7 +76,7 @@ FLOAT_EXTRAS: tuple[float, ...] = (
 LONG_SENTENCE: str = "the quick brown fox jumps over the lazy dog today"
 #: Adversarial JSON contract payloads: one in-contract, one with an
 #: out-of-range confidence, one with a wrong type. Shaped after the demo
-#: target's triage schema — useful for any target parsing LLM-style JSON
+#: target's triage schema - useful for any target parsing LLM-style JSON
 #: completions with a similar contract, but not schema-agnostic.
 CONTRACT_PAYLOADS: tuple[str, ...] = (
     '{"category": "bug", "priority": 3, "confidence": 0.5, "summary": "checkout crash"}',
@@ -87,7 +87,7 @@ CONTRACT_PAYLOADS: tuple[str, ...] = (
 FALLBACK_STRINGS: tuple[str, ...] = ("", "zzz", LONG_SENTENCE, *CONTRACT_PAYLOADS)
 #: Per-probe subprocess timeout (§9: "cap runtime, ~30s").
 PROBE_TIMEOUT_S: float = 30.0
-#: pytest.approx default tolerances — a float difference below these would NOT
+#: pytest.approx default tolerances - a float difference below these would NOT
 #: be caught by the emitted ``pytest.approx`` assertion, so it must not count
 #: as discriminating.
 APPROX_REL_TOL: float = 1e-6
@@ -110,7 +110,7 @@ _SYNTH_MAX_LEN = 4000
 #: ``"### TICKET ###" + "zzz"`` reach suffix/terminator parsing paths that no
 #: single harvested constant exercises.
 _CONCAT_MAX_BASES = 8
-_CONCAT_MAX_RESULTS = 64  # all pairs of the capped base set — every base leads once
+_CONCAT_MAX_RESULTS = 64  # all pairs of the capped base set - every base leads once
 _CONCAT_MAX_LEN = 200
 
 #: Fixed prompt-contract battery (§9): expected category → ticket text. Each
@@ -131,7 +131,7 @@ _CONTRACT_KEYS: tuple[str, ...] = (
 #: Probe script written into each temporary project copy. ``__MODULE__`` and
 #: ``__FUNC__`` are substituted per mutant. It guards every call and prints a
 #: single JSON line of results (exceptions encoded ``{"__exc__": "TypeName"}``).
-_PROBE_TEMPLATE = '''"""SyntraceAI differential probe (auto-generated) — do not edit."""
+_PROBE_TEMPLATE = '''"""SyntraceAI differential probe (auto-generated) - do not edit."""
 import importlib
 import json
 import sys
@@ -182,7 +182,7 @@ if __name__ == "__main__":
 #: composite inputs (e.g. a fully rendered prompt) that raw literal pools
 #: cannot reach. Results feed BOTH probe sides identically, so discrimination
 #: evidence stays symmetric.
-_SYNTH_TEMPLATE = '''"""SyntraceAI cross-function input synthesis (auto-generated) — do not edit."""
+_SYNTH_TEMPLATE = '''"""SyntraceAI cross-function input synthesis (auto-generated) - do not edit."""
 import importlib
 import json
 import sys
@@ -238,7 +238,7 @@ def heal_survivors(
     discriminating input, and synthesize a pytest test pinning the ORIGINAL
     behavior on it.
 
-    Returns ``(healed_tests, unhealable_mutant_ids)`` — both in the order the
+    Returns ``(healed_tests, unhealable_mutant_ids)`` - both in the order the
     survivors were given. A mutant is unhealable when its signature is
     unsupported, its probe fails or times out, or no discriminating input is
     found (likely-equivalent mutant). No test is ever emitted without a
@@ -275,7 +275,7 @@ def build_prompt_contract_tests(
     The five tests are independent of *which* perturbation survived: each one
     feeds a fixed ticket (covering the billing / bug / account / performance /
     general keyword families) through ``app.llm_pipeline.triage_ticket(t,
-    strict=True)`` and asserts the exact §5.3 contract — key set (including
+    strict=True)`` and asserts the exact §5.3 contract - key set (including
     the merged ``priority_score`` / ``escalate`` keys), types, and ranges.
     Any perturbation that degrades the LLM output breaks strict parsing and
     fails these tests loudly.
@@ -394,8 +394,8 @@ def _heal_one(
     A mutant inside a top-level function is probed through that function. A
     module-level mutant (a constant table, a flag) has no enclosing function,
     so it is probed through every top-level function of its module in
-    definition order — a constant is observable through whichever API reads
-    it — and the first verified discriminator wins.
+    definition order - a constant is observable through whichever API reads
+    it - and the first verified discriminator wins.
     """
     module_name = _module_name_for(mutant.file_path)
     source_path = target_dir / mutant.file_path
@@ -504,7 +504,7 @@ def _anchor_values(fn_orig: ast.FunctionDef, pools: list[list[Any]]) -> list[Any
     """One realistic anchor value per parameter for single-parameter sweeps.
 
     A parameter's own default (when it is a scalar or ``None`` literal) is
-    the most realistic anchor — ``metric(value, unit="", precision=3)`` is
+    the most realistic anchor - ``metric(value, unit="", precision=3)`` is
     how callers actually invoke it; otherwise the first pool value is used.
     """
     arguments = fn_orig.args
@@ -551,7 +551,7 @@ def _build_healed_test(
         if orig_encoded.get("__exc_module__") == module_name:
             exc_ref = f"{module_name}.{exc_name}"  # exception defined in the target module
         else:
-            exc_ref = exc_name  # builtin — resolves bare inside the test file
+            exc_ref = exc_name  # builtin - resolves bare inside the test file
         body = [
             f"def {test_name}() -> None:",
             f"    with pytest.raises({exc_ref}):",
@@ -766,7 +766,7 @@ def _synthesized_strings(
     Runs a synthesis subprocess in the PRISTINE copy that applies each
     qualifying sibling ``str -> str`` function to a deterministic set of base
     strings (harvested module constants plus ``LONG_SENTENCE``). The composed
-    outputs — rendered prompts, formatted payloads — reach code paths that
+    outputs - rendered prompts, formatted payloads - reach code paths that
     literal pools cannot. Failures degrade to an empty list, never to an
     error: synthesis is an input-pool enrichment, not required evidence.
     """
@@ -853,7 +853,7 @@ def _interleaved_product(
 ) -> list[tuple[Any, ...]]:
     """Candidate inputs in a deterministic, boundary-first order, capped.
 
-    Two phases: (1) **anchored sweeps** — the all-anchors tuple, then every
+    Two phases: (1) **anchored sweeps** - the all-anchors tuple, then every
     parameter swept through its whole pool while the others hold their
     anchors (defaults), so each parameter's far boundaries are reached even
     when the product is enormous; (2) the Cartesian product enumerated by
@@ -922,7 +922,7 @@ def _run_probe(
 
     Returns the decoded per-candidate result list, or ``None`` on timeout,
     non-zero exit, or unparsable output (the caller treats that as
-    unhealable — never as evidence).
+    unhealable - never as evidence).
     """
     inputs_path = project_dir / _INPUTS_FILENAME
     inputs_path.write_text(
@@ -1007,7 +1007,7 @@ def _value_assertion_kills(orig: dict[str, Any], mut: dict[str, Any]) -> bool:
     ):
         return False
     if "__exc__" in mut:
-        return True  # the assertion's call raises on the mutant — loud failure
+        return True  # the assertion's call raises on the mutant - loud failure
     if "unsupported" in mut:
         return True  # non-scalar mutant result can never satisfy a scalar assertion
     mut_type, mut_value = mut["type"], mut["value"]
@@ -1042,7 +1042,7 @@ def _raises_assertion_kills(
     The original exception must be referenceable from the generated test file:
     either a *builtin* type (bare name) or a type defined in the probed target
     module itself (referenced as ``<module>.<ExcName>``, which the test file
-    already imports). The mutant must not raise at all — differing exception
+    already imports). The mutant must not raise at all - differing exception
     types are deliberately not treated as evidence.
     """
     exc_name = orig.get("__exc__")

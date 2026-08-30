@@ -14,7 +14,7 @@ campaign, in the exact schema of ``trajectories/agent_trace_01.json``::
 
 ``step_index`` auto-increments from 1. The four optional step keys
 (``command``, ``target``, ``tool_output``, ``human_checkpoint``) are omitted
-entirely when ``None`` — never serialized as ``null``. The top-level
+entirely when ``None`` - never serialized as ``null``. The top-level
 timestamp is ISO-8601 UTC with a ``Z`` suffix, captured when the logger is
 created (trajectory start time).
 """

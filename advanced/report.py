@@ -2,7 +2,7 @@
 
 All three renderers work off a single ``CampaignResult``. The JSON report is
 ``CampaignResult.to_dict()`` verbatim. The HTML report is one self-contained
-file — inline CSS only, CSS-bar charts, no external assets of any kind —
+file - inline CSS only, CSS-bar charts, no external assets of any kind -
 and is readable in both light and dark color schemes.
 """
 
@@ -149,11 +149,11 @@ def render_terminal(campaign: CampaignResult, *, console: Console | None = None)
                 result.mutant_id,
                 result.operator_name,
                 result.location,
-                _shorten(result.description, 70) or "—",
+                _shorten(result.description, 70) or "-",
             )
         out.print(sv_table)
     else:
-        out.print("[bold green]No surviving bugs — every injected bug was detected.[/bold green]")
+        out.print("[bold green]No surviving bugs - every injected bug was detected.[/bold green]")
 
     if campaign.healed_tests:
         heal_table = Table(
@@ -176,7 +176,7 @@ def render_terminal(campaign: CampaignResult, *, console: Console | None = None)
 
     if campaign.unhealable_mutant_ids:
         out.print(
-            "[yellow]Unhealable (no discriminating input found — likely equivalent): "
+            "[yellow]Unhealable (no discriminating input found - likely equivalent): "
             + ", ".join(campaign.unhealable_mutant_ids)
             + "[/yellow]"
         )
@@ -190,7 +190,7 @@ def write_json(campaign: CampaignResult, path: Path) -> None:
     """Write ``CampaignResult.to_dict()`` as pretty-printed JSON.
 
     Per-bug ``duration_s`` timing fields are stripped so the report is
-    byte-stable across identical runs — two runs with the same seed diff
+    byte-stable across identical runs - two runs with the same seed diff
     clean except for the single top-level ``wall_time_s`` field.
     """
     data = campaign.to_dict()
@@ -318,7 +318,7 @@ def _gap_section(campaign: CampaignResult) -> str:
     gap = _gap_points(campaign)
     note = (
         f'<p class="gap-note">The original suite’s coverage overstates its bug-finding '
-        f"power by <strong>{gap:.1f} points</strong> — the false-confidence gap.</p>"
+        f"power by <strong>{gap:.1f} points</strong> - the false-confidence gap.</p>"
         if gap is not None
         else '<p class="gap-note">No baseline coverage figure was recorded for this run.</p>'
     )
@@ -347,14 +347,14 @@ def _survivors_section(campaign: CampaignResult) -> str:
     if not survivors:
         return (
             "<section><h2>Surviving bugs</h2>"
-            '<p class="ok">None — every injected bug was detected.</p></section>'
+            '<p class="ok">None - every injected bug was detected.</p></section>'
         )
     body = "".join(
         "<tr>"
         f"<td>{html.escape(r.mutant_id)}</td>"
         f"<td>{html.escape(r.operator_name)}</td>"
         f"<td><code>{html.escape(r.location)}</code></td>"
-        f"<td><code>{html.escape(r.description) or '—'}</code></td>"
+        f"<td><code>{html.escape(r.description) or '-'}</code></td>"
         f"<td>{html.escape(r.phase)}</td>"
         "</tr>"
         for r in survivors
@@ -390,7 +390,7 @@ def _healed_section(campaign: CampaignResult) -> str:
     if campaign.unhealable_mutant_ids:
         ids = ", ".join(html.escape(i) for i in campaign.unhealable_mutant_ids)
         parts.append(
-            f'<p class="gap-note">Unhealable (no discriminating input found — '
+            f'<p class="gap-note">Unhealable (no discriminating input found - '
             f"likely equivalent mutants, reported honestly): {ids}</p>"
         )
     parts.append("</section>")
@@ -417,7 +417,7 @@ def write_html(campaign: CampaignResult, path: Path) -> None:
         "<!DOCTYPE html>\n"
         '<html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
-        f"<title>SyntraceAI report — {html.escape(campaign.target)}</title>"
+        f"<title>SyntraceAI report - {html.escape(campaign.target)}</title>"
         f"<style>{_CSS}</style></head><body><main>"
         "<h1>SyntraceAI mutation campaign</h1>"
         f'<p class="sub">Target <code>{html.escape(campaign.target)}</code> '

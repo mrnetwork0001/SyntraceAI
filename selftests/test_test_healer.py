@@ -57,7 +57,7 @@ def strict_pos(x: int) -> int:
 
 
 def describe(items: list) -> str:
-    """Non-scalar parameter — unsupported by the healer by design."""
+    """Non-scalar parameter - unsupported by the healer by design."""
     return str(len(items))
 '''
 
@@ -194,7 +194,7 @@ def _equivalent_mutant(mutant_id: str) -> Mutant:
 
 
 def _unsupported_signature_mutant(mutant_id: str) -> Mutant:
-    """Mutant targeting ``describe`` (a ``list`` parameter — unsupported)."""
+    """Mutant targeting ``describe`` (a ``list`` parameter - unsupported)."""
     tree = ast.parse(MATHY_SOURCE)
     fn = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "describe")
     return _mutant_from_tree(

@@ -8,7 +8,7 @@ removed, even on crash or timeout. Exit codes map onto ``Outcome``:
     exit 0  -> SURVIVED   (suite green: the bug slipped through)
     exit 1  -> KILLED     (tests failed: the bug was detected)
     timeout -> TIMEOUT    (runaway mutant, killed by the resource guard)
-    other   -> ERROR      (collection/import/internal error — still detected)
+    other   -> ERROR      (collection/import/internal error - still detected)
 """
 
 from __future__ import annotations
@@ -171,7 +171,7 @@ def evaluate_many(
 
     Runs ``evaluate_patch`` on a thread pool (the work is subprocess-bound so
     threads are the right tool). ``jobs`` defaults to ``min(8, cpu_count)``.
-    ``on_result`` is invoked from the calling thread as each item completes —
+    ``on_result`` is invoked from the calling thread as each item completes -
     completion order, not submission order. A crash while evaluating one item
     is recorded as an ERROR result for that item and never affects the others.
     """

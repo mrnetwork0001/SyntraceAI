@@ -126,7 +126,7 @@
     <h2>Campaign scoreboard</h2>
     <div id="tiles" class="tiles"></div>
     <div id="gap" class="gap-callout" hidden></div>
-    <div id="emptyMain" class="empty" hidden>No campaign data yet — run the mutation engine to populate the scoreboard.</div>
+    <div id="emptyMain" class="empty" hidden>No campaign data yet - run the mutation engine to populate the scoreboard.</div>
   </div>
 
   <div class="cols">
@@ -154,7 +154,7 @@
 
   <div class="card rise">
     <h2>Agent trajectories</h2>
-    <div id="trajectories" class="footnote">—</div>
+    <div id="trajectories" class="footnote">-</div>
   </div>
 </div>
 
@@ -181,28 +181,28 @@ function tile(value, label, cls) {
 function renderMutation(m) {
   const tiles = $('tiles'), gap = $('gap'), empty = $('emptyMain');
   if (!m) { tiles.innerHTML = ''; gap.hidden = true; empty.hidden = false;
-            $('bars').innerHTML = '<div class="empty">—</div>';
-            $('survivors').innerHTML = '<div class="empty">—</div>';
-            $('healed').innerHTML = '<div class="empty">—</div>'; $('unhealable').textContent = ''; return; }
+            $('bars').innerHTML = '<div class="empty">-</div>';
+            $('survivors').innerHTML = '<div class="empty">-</div>';
+            $('healed').innerHTML = '<div class="empty">-</div>'; $('unhealable').textContent = ''; return; }
   empty.hidden = true;
 
   const cov = num(m.line_coverage_pct);
   const pre = num(m.score_original), fin = num(m.score_final);
   const healedCount = (m.healed_tests || []).length;
   tiles.innerHTML =
-    tile(cov !== null ? cov.toFixed(1) + '%' : '—', 'line coverage (before SyntraceAI)', 'volt') +
-    tile(pre !== null ? pre.toFixed(1) + '%' : '—',
+    tile(cov !== null ? cov.toFixed(1) + '%' : '-', 'line coverage (before SyntraceAI)', 'volt') +
+    tile(pre !== null ? pre.toFixed(1) + '%' : '-',
          `pre-heal detection (${m.detected_original}/${m.total_bugs})`, pre !== null && pre < 60 ? 'bad' : '') +
-    tile(fin !== null ? fin.toFixed(1) + '%' : '—',
+    tile(fin !== null ? fin.toFixed(1) + '%' : '-',
          `final mutation score (${m.detected_final}/${m.total_bugs})`, 'good') +
     tile(healedCount, 'auto-healed assertion tests', 'accent') +
-    tile(num(m.wall_time_s) !== null ? m.wall_time_s + 's' : '—', 'campaign wall time');
+    tile(num(m.wall_time_s) !== null ? m.wall_time_s + 's' : '-', 'campaign wall time');
 
   if (cov !== null && pre !== null) {
     gap.hidden = false;
     gap.innerHTML = `<b>False-confidence gap:</b> ${cov.toFixed(1)}% line coverage suggested a healthy
       suite, yet only ${pre.toFixed(1)}% of injected bugs were caught before auto-healing
-      (${fin !== null ? fin.toFixed(1) : '—'}% after).`;
+      (${fin !== null ? fin.toFixed(1) : '-'}% after).`;
   } else { gap.hidden = true; }
 
   const finals = m.final_results || m.original_results || [];
@@ -218,7 +218,7 @@ function renderMutation(m) {
       return `<div class="row"><div class="name" title="${esc(name)}">${esc(name)}</div>
         <div class="bar"><div class="k" style="width:${dp}%"></div><div class="s" style="width:${100 - dp}%"></div></div>
         <div class="n">${c.d}/${t} caught</div></div>`;
-    }).join('') || '<div class="empty">—</div>';
+    }).join('') || '<div class="empty">-</div>';
 
   const survivorsPre = (m.original_results || []).filter(r => outcomeOf(r) === 'survived');
   $('survivors').innerHTML = survivorsPre.length ? `<table>
@@ -233,7 +233,7 @@ function renderMutation(m) {
         <td>${esc(r.operator_name)}</td><td class="mono">${esc(r.location)}</td>
         <td>${esc(r.description || '')}</td><td>${finTag}</td></tr>`;
     }).join('') + '</table>'
-    : '<div class="empty">No survivors — every injected bug was detected by the original suite.</div>';
+    : '<div class="empty">No survivors - every injected bug was detected by the original suite.</div>';
 
   const healed = m.healed_tests || [];
   $('healed').innerHTML = healed.length ? `<table>
@@ -241,7 +241,7 @@ function renderMutation(m) {
     healed.map(h => `<tr><td class="mono">${esc(h.mutant_id)}</td>
       <td class="mono">${esc(h.module ? h.module + '.' : '')}${esc(h.function_name)}</td>
       <td class="mono">${esc(h.input_repr)}</td><td class="mono">${esc(h.expected_repr)}</td></tr>`).join('') +
-    '</table>' : '<div class="empty">—</div>';
+    '</table>' : '<div class="empty">-</div>';
 
   const un = m.unhealable_mutant_ids || [];
   $('unhealable').textContent = un.length
@@ -254,13 +254,13 @@ function renderBaseline(b) {
   const det = num(b.detected), tot = num(b.total);
   const pct = det !== null && tot ? (100 * det / tot) : null;
   let html = '<div class="tiles">' +
-    tile(cov !== null ? cov.toFixed(1) + '%' : '—', 'line coverage', 'volt') +
-    tile(det !== null && tot !== null ? `${det}/${tot}` : '—',
+    tile(cov !== null ? cov.toFixed(1) + '%' : '-', 'line coverage', 'volt') +
+    tile(det !== null && tot !== null ? `${det}/${tot}` : '-',
          `bugs detected${pct !== null ? ' (' + pct.toFixed(0) + '%)' : ''}`, 'bad') +
     '</div>';
   if (cov !== null && pct !== null) {
     html += `<div class="gap-callout" style="margin-top:12px">The baseline suite reports
-      <b>${cov.toFixed(1)}%</b> coverage yet catches only <b>${pct.toFixed(0)}%</b> of injected bugs —
+      <b>${cov.toFixed(1)}%</b> coverage yet catches only <b>${pct.toFixed(0)}%</b> of injected bugs -
       line coverage is a vanity metric.</div>`;
   }
   $('baseline').innerHTML = html;
@@ -283,7 +283,7 @@ async function refreshReports() {
     renderMutation(r.mutation);
     renderBaseline(r.baseline);
     $('trajectories').innerHTML = (r.trajectories || []).map(t => `<span class="mono">${esc(t)}</span>`)
-      .join(' &nbsp;·&nbsp; ') || '—';
+      .join(' &nbsp;·&nbsp; ') || '-';
   } catch (e) { /* server restarting; next poll wins */ }
 }
 

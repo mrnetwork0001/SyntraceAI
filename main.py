@@ -1,4 +1,4 @@
-"""SyntraceAI — Autonomous Agentic Mutation Testing & Hallucination Stress-Tester.
+"""SyntraceAI - Autonomous Agentic Mutation Testing & Hallucination Stress-Tester.
 
 CLI hub. Subcommands delegate to the baseline auditor and the advanced engine:
 
@@ -20,7 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parent
 
 BANNER = """\
 ==========================================================================
- 🧪 SYNTRACEAI — Autonomous Agentic Mutation Testing Fleet
+ 🧪 SYNTRACEAI - Autonomous Agentic Mutation Testing Fleet
  Chaos Engineering & Adversarial Mutation for AI Systems
 ==========================================================================\
 """

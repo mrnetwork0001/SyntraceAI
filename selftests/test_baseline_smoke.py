@@ -3,8 +3,8 @@
 The baseline script imports sibling modules (advanced.ast_mutator,
 advanced.prompt_perturbator, advanced.sandbox_runner) that are owned by
 other agents and may land later. These tests verify everything that can be
-verified standalone — the script compiles and carries the §3 bootstrap
-header — and run the live ``--help`` check only once the siblings are
+verified standalone - the script compiles and carries the §3 bootstrap
+header - and run the live ``--help`` check only once the siblings are
 importable (the integrator exercises the full flow).
 """
 

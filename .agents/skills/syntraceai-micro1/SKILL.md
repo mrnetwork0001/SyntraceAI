@@ -3,9 +3,9 @@ name: syntraceai-micro1
 description: Architecture, guidelines, mutation testing rules, and micro1 challenge specs for SyntraceAI built for the Frontier Engineering Challenge.
 ---
 
-# 🧪 SyntraceAI — micro1 Frontier Engineering Challenge Skill & Execution Guide
+# 🧪 SyntraceAI - micro1 Frontier Engineering Challenge Skill & Execution Guide
 
-Use this skill whenever working on, reviewing, or developing **SyntraceAI** — the Autonomous Agentic Mutation Testing & Hallucination Stress-Tester for micro1.
+Use this skill whenever working on, reviewing, or developing **SyntraceAI** - the Autonomous Agentic Mutation Testing & Hallucination Stress-Tester for micro1.
 
 ## 📌 Project Overview & Target
 - **Target Event:** micro1 Frontier Engineering Challenge 2026
@@ -20,7 +20,7 @@ Use this skill whenever working on, reviewing, or developing **SyntraceAI** — 
 
 ### 2. Measured Improvement Metric
 - Demonstrate a 20%+ jump in bug detection rate. Measured result: baseline 24/50
-  (48.0%) detection at 87.1% line coverage vs advanced 49/50 (98.0%) mutation score —
+  (48.0%) detection at 87.1% line coverage vs advanced 49/50 (98.0%) mutation score -
   all numbers from real seeded runs (see `reports/*.json`).
 
 ### 3. Trajectory Logging

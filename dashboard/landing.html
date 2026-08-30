@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SyntraceAI — Autonomous Mutation Testing & Hallucination Stress-Tester</title>
-<meta name="description" content="SyntraceAI breaks your code faster than your tests notice. Adversarial AST mutation, prompt perturbation, sandboxed scoring and differential auto-healing — deterministic, $0, one command.">
+<title>SyntraceAI - Autonomous Mutation Testing & Hallucination Stress-Tester</title>
+<meta name="description" content="SyntraceAI breaks your code faster than your tests notice. Adversarial AST mutation, prompt perturbation, sandboxed scoring and differential auto-healing - deterministic, $0, one command.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -192,7 +192,7 @@
         <span class="pill rise"><span class="live"></span> micro1 Frontier Engineering Challenge 2026</span>
         <h1 class="rise d1">We break your code <span class="gradient-text">faster than your tests notice.</span></h1>
         <p class="lede rise d2">SyntraceAI is an <b>adversarial mutation-testing agent</b> for AI applications. It injects
-          50 subtle bugs — AST operator swaps, boundary shifts, prompt perturbations — runs your suite
+          50 subtle bugs - AST operator swaps, boundary shifts, prompt perturbations - runs your suite
           against each one in a sandbox, scores what survived, and <b>auto-heals</b> the gaps with tests it
           proves will kill them.</p>
         <div class="cta-row rise d3">
@@ -223,9 +223,9 @@
             </div>
           </div>
           <div class="gauge">
-            <div class="row"><span class="n">Line coverage</span><div class="bar"><i class="cov" id="barCov"></i></div><span class="pct" id="pctCov">—</span></div>
-            <div class="row"><span class="n">Bugs caught</span><div class="bar"><i class="det" id="barDet"></i></div><span class="pct" id="pctDet">—</span></div>
-            <div class="row"><span class="n">After healing</span><div class="bar"><i class="fin" id="barFin"></i></div><span class="pct" id="pctFin">—</span></div>
+            <div class="row"><span class="n">Line coverage</span><div class="bar"><i class="cov" id="barCov"></i></div><span class="pct" id="pctCov">-</span></div>
+            <div class="row"><span class="n">Bugs caught</span><div class="bar"><i class="det" id="barDet"></i></div><span class="pct" id="pctDet">-</span></div>
+            <div class="row"><span class="n">After healing</span><div class="bar"><i class="fin" id="barFin"></i></div><span class="pct" id="pctFin">-</span></div>
           </div>
           <div class="edge">
             <span class="msg">False-confidence gap</span>
@@ -235,7 +235,7 @@
         </div>
         <div class="term-foot">
           <span class="label">deterministic · byte-stable reports</span>
-          <span class="label" id="termWall">—</span>
+          <span class="label" id="termWall">-</span>
         </div>
       </div>
     </div>
@@ -253,11 +253,11 @@
       <div class="card"><div class="num">01</div><h3>Inject</h3>
         <p>Seven AST operator families flip <span class="mono">>=</span> to <span class="mono">></span>, <span class="mono">+</span> to <span class="mono">-</span>, negate branches, nudge boundary constants. Twelve prompt perturbations strip roles, rename schema keys, corrupt delimiters.</p></div>
       <div class="card"><div class="num">02</div><h3>Isolate</h3>
-        <p>Every bug runs against your suite in its own sandboxed copy of the project — parallel and timeout-guarded. Runaway mutants get killed, not your machine.</p></div>
+        <p>Every bug runs against your suite in its own sandboxed copy of the project - parallel and timeout-guarded. Runaway mutants get killed, not your machine.</p></div>
       <div class="card"><div class="num">03</div><h3>Score</h3>
         <p>Killed vs. survived over a frozen bank. The mutation score is the number your line-coverage report was hiding: how many real behavior changes your assertions actually notice.</p></div>
       <div class="card"><div class="num">04</div><h3>Heal</h3>
-        <p>For each survivor, differential probing finds an input where original and mutant disagree, then synthesizes a hardened assertion — re-verified before it is written, never guessed.</p></div>
+        <p>For each survivor, differential probing finds an input where original and mutant disagree, then synthesizes a hardened assertion - re-verified before it is written, never guessed.</p></div>
     </div>
   </section>
 
@@ -271,11 +271,11 @@
       <div class="card"><div class="fn">enumerate_mutants() <span class="pill">38 mutants</span></div>
         <h3>AST Mutation Engine</h3><p>Arithmetic, comparison, boolean, condition-negation, constant, boundary and return-value operators. Every mutant is compile-validated; provably-equivalent clamp swaps are excluded so the bank never lies.</p></div>
       <div class="card"><div class="fn">enumerate_perturbations() <span class="pill">12 attacks</span></div>
-        <h3>Prompt Perturbation Fleet</h3><p>Role stripping, JSON-only directive removal, schema key renames, zero-width whitespace, few-shot drop — surfacing hallucination paths your happy-path tests never touch.</p></div>
+        <h3>Prompt Perturbation Fleet</h3><p>Role stripping, JSON-only directive removal, schema key renames, zero-width whitespace, few-shot drop - surfacing hallucination paths your happy-path tests never touch.</p></div>
       <div class="card"><div class="fn">evaluate_many() <span class="pill arc">parallel</span></div>
-        <h3>Sandboxed Execution</h3><p>Fresh project copy per mutant, parallel workers, hard timeouts. Exit codes map to killed / survived / timeout / error — loud failures count, silence never does.</p></div>
+        <h3>Sandboxed Execution</h3><p>Fresh project copy per mutant, parallel workers, hard timeouts. Exit codes map to killed / survived / timeout / error - loud failures count, silence never does.</p></div>
       <div class="card"><div class="fn">heal_survivors() <span class="pill up">verified</span></div>
-        <h3>Differential Auto-Healing</h3><p>Subprocess probes over boundary-aware inputs — type-hint pools, harvested literals, anchored sweeps, the module's own API. Only a re-verified discriminating input becomes a test.</p></div>
+        <h3>Differential Auto-Healing</h3><p>Subprocess probes over boundary-aware inputs - type-hint pools, harvested literals, anchored sweeps, the module's own API. Only a re-verified discriminating input becomes a test.</p></div>
     </div>
     <div class="quals">
       <div class="card"><span class="dot" style="background:var(--arc)"></span><div><h3>Deterministic</h3><p>Same seed → identical bank, identical scores, on any machine, at any parallelism. Reports are byte-stable.</p></div></div>
@@ -288,25 +288,25 @@
     <div class="sec-head">
       <span class="label">Results · live from the latest run</span>
       <h2>Line coverage is a vanity metric.</h2>
-      <p>A suite can execute 90% of your lines while asserting almost nothing about them. Same code, same suite — measured adversarially.</p>
+      <p>A suite can execute 90% of your lines while asserting almost nothing about them. Same code, same suite - measured adversarially.</p>
     </div>
     <div class="results">
       <div class="res bad">
         <div class="head"><span class="label">Baseline · coverage.py</span><span class="pill down">looks fine</span></div>
-        <div class="big" id="resCov">—</div><div class="sub">line coverage</div>
+        <div class="big" id="resCov">-</div><div class="sub">line coverage</div>
         <ul>
-          <li><span>Injected bugs caught</span><span id="resDet">—</span></li>
+          <li><span>Injected bugs caught</span><span id="resDet">-</span></li>
           <li><span>Prompt drift & hallucination</span><span>invisible</span></li>
           <li><span>Fixing the gaps</span><span>manual</span></li>
         </ul>
       </div>
       <div class="res good">
         <div class="head"><span class="label">Advanced · SyntraceAI</span><span class="pill up">measured</span></div>
-        <div class="big" id="resFin">—</div><div class="sub">mutation score after auto-healing</div>
+        <div class="big" id="resFin">-</div><div class="sub">mutation score after auto-healing</div>
         <ul>
-          <li><span>Injected bugs caught</span><span id="resFinN">—</span></li>
-          <li><span>Auto-healed assertion tests</span><span id="resHealed">—</span></li>
-          <li><span>Survivors reported as equivalent</span><span id="resEq">—</span></li>
+          <li><span>Injected bugs caught</span><span id="resFinN">-</span></li>
+          <li><span>Auto-healed assertion tests</span><span id="resHealed">-</span></li>
+          <li><span>Survivors reported as equivalent</span><span id="resEq">-</span></li>
         </ul>
       </div>
     </div>
@@ -317,7 +317,7 @@
     <div style="position:relative">
       <span class="label">Ready</span>
       <h2>Coverage lies. <span class="gradient-text">Mutation score doesn't.</span></h2>
-      <p>Launch Mission Control, run the campaign, and watch the false-confidence gap open — then close — on your own screen.</p>
+      <p>Launch Mission Control, run the campaign, and watch the false-confidence gap open - then close - on your own screen.</p>
       <a class="btn primary" href="/app">Launch App</a>
     </div>
   </section>
@@ -347,7 +347,7 @@
         <li><a href="https://github.com/python-humanize/humanize" target="_blank" rel="noopener">humanize (validation target)</a></li>
         <li><a href="https://github.com/mrnetwork0001/SyntraceAI/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a></li></ul></div>
     </div>
-    <div class="disclaimer">Every number rendered on this page is read live from a real seeded run — the tiles show "—" until the engine has produced a report. Nothing here is a mock value. Built by Ifeanyichukwu Onwo (mrnetwork) for the micro1 Frontier Engineering Challenge 2026.</div>
+    <div class="disclaimer">Every number rendered on this page is read live from a real seeded run - the tiles show "-" until the engine has produced a report. Nothing here is a mock value. Built by Ifeanyichukwu Onwo (mrnetwork) for the micro1 Frontier Engineering Challenge 2026.</div>
   </div>
 </footer>
 
@@ -356,7 +356,7 @@
 (async () => {
   const $ = id => document.getElementById(id);
   const num = v => (v === null || v === undefined || Number.isNaN(Number(v))) ? null : Number(v);
-  const pct = v => v === null ? '—' : v.toFixed(1) + '%';
+  const pct = v => v === null ? '-' : v.toFixed(1) + '%';
   try {
     const r = await (await fetch('/api/reports')).json();
     const m = r.mutation;
@@ -365,7 +365,7 @@
     const healed = (m.healed_tests || []).length, eq = (m.unhealable_mutant_ids || []).length;
 
     $('termTarget').textContent = (m.target || 'demo target').replace('targets/', '');
-    $('termSeed').textContent = 'seed ' + (m.seed ?? '—');
+    $('termSeed').textContent = 'seed ' + (m.seed ?? '-');
     $('pctCov').textContent = pct(cov); $('pctDet').textContent = pct(pre); $('pctFin').textContent = pct(fin);
     requestAnimationFrame(() => {
       if (cov !== null) $('barCov').style.width = cov + '%';
@@ -377,7 +377,7 @@
       $('edgeBadge').textContent = (gap > 0 ? '−' : '+') + Math.abs(gap).toFixed(1) + ' pts hidden by coverage';
     }
     $('actionText').textContent = `HEAL → ${healed} tests synthesized`;
-    $('actionMeta').textContent = `${m.detected_final ?? '—'}/${m.total_bugs ?? '—'} detected · ${eq} equivalent`;
+    $('actionMeta').textContent = `${m.detected_final ?? '-'}/${m.total_bugs ?? '-'} detected · ${eq} equivalent`;
     if (num(m.wall_time_s) !== null) $('termWall').textContent = `wall ${m.wall_time_s}s`;
 
     const survivor = (m.original_results || []).find(x => x.detected === false && x.kind === 'code');
@@ -390,12 +390,12 @@
     }
 
     $('resCov').textContent = pct(cov);
-    $('resDet').textContent = `${m.detected_original ?? '—'}/${m.total_bugs ?? '—'} (${pct(pre)})`;
+    $('resDet').textContent = `${m.detected_original ?? '-'}/${m.total_bugs ?? '-'} (${pct(pre)})`;
     $('resFin').textContent = pct(fin);
-    $('resFinN').textContent = `${m.detected_final ?? '—'}/${m.total_bugs ?? '—'}`;
+    $('resFinN').textContent = `${m.detected_final ?? '-'}/${m.total_bugs ?? '-'}`;
     $('resHealed').textContent = String(healed);
     $('resEq').textContent = String(eq);
-  } catch (e) { /* engine not run yet — placeholders stand */ }
+  } catch (e) { /* engine not run yet - placeholders stand */ }
 })();
 </script>
 </body>

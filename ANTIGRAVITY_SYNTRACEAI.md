@@ -1,4 +1,4 @@
-# 🧪 ANTIGRAVITY_SYNTRACEAI — Persistent Project Context Directive
+# 🧪 ANTIGRAVITY_SYNTRACEAI - Persistent Project Context Directive
 
 > **Project Name:** SYNTRACEAI  
 > **Target Event:** micro1 Frontier Engineering Challenge 2026 ($10,000 Cash Pool)  

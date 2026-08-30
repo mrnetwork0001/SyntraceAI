@@ -1,9 +1,9 @@
-# SyntraceAI — Architecture & Module Contract (FROZEN)
+# SyntraceAI - Architecture & Module Contract (FROZEN)
 
 This document is the **binding interface contract** for SyntraceAI. Every module MUST
 conform exactly to the APIs, file layout, marker strings, and behavior rules below.
 Shared dataclasses/enums live in `advanced/core_types.py` and are the single source of
-truth — import them, never redefine them.
+truth - import them, never redefine them.
 
 ## 1. What SyntraceAI is
 
@@ -28,7 +28,7 @@ SyntraceAI/
 │   └── run_baseline.py              # coverage.py audit + bank detection w/ original suite
 ├── advanced/
 │   ├── __init__.py
-│   ├── core_types.py                # FROZEN shared types (already written — do not edit)
+│   ├── core_types.py                # FROZEN shared types (already written - do not edit)
 │   ├── ast_mutator.py               # AST mutation operators + bank selection
 │   ├── prompt_perturbator.py        # prompt perturbation operators
 │   ├── sandbox_runner.py            # isolated per-mutant pytest execution
@@ -94,24 +94,24 @@ if str(REPO_ROOT) not in sys.path:
   `--source=<package>` and `--omit=<excludes>` so line coverage and mutation scope
   describe the same code. See `advanced/target_config.py`.
 - Every module gets a selftest in `selftests/test_<module>.py` that runs standalone
-  (create tiny fixture projects/sources inline or in tmp dirs — do NOT depend on
+  (create tiny fixture projects/sources inline or in tmp dirs - do NOT depend on
   `targets/sample_app` except where the contract says so).
 - Bank composition is FROZEN: `CODE_BANK_SIZE = 38`, `PROMPT_BANK_SIZE = 12`, seed 1337.
 
-## 4. Shared types — `advanced/core_types.py` (already written, read it)
+## 4. Shared types - `advanced/core_types.py` (already written, read it)
 
 Key types: `Outcome` (KILLED/SURVIVED/TIMEOUT/ERROR/NOT_RUN), `Mutant`, `Perturbation`,
 `TestRunResult`, `MutantResult`, `HealedTest`, `CampaignResult`, plus `repo_root()`.
 `Outcome.detected` property: KILLED, TIMEOUT, ERROR ⇒ detected (loud failure);
 SURVIVED ⇒ undetected.
 
-## 5. Target app spec — `targets/sample_app` (owner: sample-app agent)
+## 5. Target app spec - `targets/sample_app` (owner: sample-app agent)
 
-A deterministic AI support-ticket triage pipeline. **No network, no real LLM** — a
+A deterministic AI support-ticket triage pipeline. **No network, no real LLM** - a
 rule-based `mock_llm` that is a pure function of the prompt string, so prompt
 perturbations produce realistic degraded LLM behavior at $0 cost.
 
-### 5.1 `app/prompt_templates.py` — EXACT marker lines (perturbator keys off these)
+### 5.1 `app/prompt_templates.py` - EXACT marker lines (perturbator keys off these)
 
 Module-level string constants ONLY (plain `NAME = "..."` assignments, no f-strings):
 
@@ -131,11 +131,11 @@ Module-level string constants ONLY (plain `NAME = "..."` assignments, no f-strin
 
 ```python
 def build_prompt(ticket_text: str) -> str            # TICKET_TEMPLATE.format(...)
-def mock_llm(prompt: str) -> str                     # pure, deterministic — rules below
+def mock_llm(prompt: str) -> str                     # pure, deterministic - rules below
 def triage_ticket(ticket_text: str, *, strict: bool = False) -> dict
 ```
 
-`mock_llm` rules (implement EXACTLY — perturbations depend on them):
+`mock_llm` rules (implement EXACTLY - perturbations depend on them):
 1. Parse required key names from the `Required JSON keys:` line (regex quoted names).
    If that line is missing/corrupted → hallucination fallback keys
    `["category", "priority", "summary", "extra_thoughts"]`.
@@ -163,7 +163,7 @@ def triage_ticket(ticket_text: str, *, strict: bool = False) -> dict
     model forgets the `summary` field entirely.
 13. If `### OUTPUT RULES ###` absent → trailing commentary is appended after the JSON
     body (before any rule-10 wrapping): `\n\nHope this helps! Reply if you need a deeper
-    analysis.` — every contract line in the prompt has a real behavioral consequence.
+    analysis.` - every contract line in the prompt has a real behavioral consequence.
 
 `triage_ticket`: build prompt → mock_llm → `parse_strict` if strict else `parse_lenient`
 → merge `{"priority_score": scoring.priority_score(priority, confidence), "escalate":
@@ -174,13 +174,13 @@ scoring.escalation_required(...)}` → return dict.
 `ContractViolation(Exception)`; `REQUIRED_KEYS = ("category", "priority", "confidence",
 "summary")`; pydantic model `TriageResult` (category in the 5 known values, priority int
 1–5, confidence float 0–1, summary non-empty str);
-`parse_strict(raw: str) -> dict` — `json.loads` directly (no salvage), validate via
+`parse_strict(raw: str) -> dict` - `json.loads` directly (no salvage), validate via
 model, raise `ContractViolation` on any failure;
-`parse_lenient(raw: str) -> dict` — regex-salvage first `{...}` blob, fill missing keys
+`parse_lenient(raw: str) -> dict` - regex-salvage first `{...}` blob, fill missing keys
 with defaults (`general`, 1, 0.0, `""`), best-effort type coercion, never raises.
 The lenient path is a *deliberate real-world antipattern* the demo exposes.
 
-### 5.4 `app/pricing.py` and `app/scoring.py` — healer-friendly logic
+### 5.4 `app/pricing.py` and `app/scoring.py` - healer-friendly logic
 
 Top-level, pure, deterministic functions with scalar/str args and type hints,
 boundary-rich (thresholds like 50/100/500, `>=` vs `>`, clamps, caps):
@@ -201,7 +201,7 @@ def clamp(value: float, low: float, high: float) -> float
 Use literal numeric constants in comparisons (the healer harvests them for boundary
 input generation).
 
-### 5.5 `tests/` — deliberately blind-spotted, but GREEN
+### 5.5 `tests/` - deliberately blind-spotted, but GREEN
 
 The suite MUST pass 100% green and reach roughly **85–92% line coverage**, while being
 weak at boundaries and contracts, e.g.: test discount at values away from thresholds
@@ -234,11 +234,11 @@ def select_bank(mutants: list[Mutant], size: int = 38, seed: int = 1337) -> list
   (skip the adapter excludes and prompt module, `__init__.py`, and the tests dir).
 - Deterministic ordering: (file path, line, col, operator name). IDs `M001…` assigned
   AFTER selection, in selection order.
-- Every mutant MUST pass `compile(mutated_source, path, "exec")` — discard ones that
+- Every mutant MUST pass `compile(mutated_source, path, "exec")` - discard ones that
   don't (AST validation sandboxing).
 - Equivalent-mutant exclusions: an ordering-equality comparison swap inside a clamp
   pattern (`if x > C: x = C` with no else, plain name, same non-zero constant, standard
-  numeric semantics) is a semantic no-op and MUST be excluded from enumeration — an
+  numeric semantics) is a semantic no-op and MUST be excluded from enumeration - an
   unkillable bug in the bank would misstate every downstream score. Likewise the
   `TYPE_CHECKING` idiom: `if TYPE_CHECKING:` guards are never negated and the constant
   in `TYPE_CHECKING = False` is never mutated (import-only blocks at runtime).
@@ -256,21 +256,21 @@ def replace_constant(module_source: str, name: str, new_value: str) -> str  # AS
 The 12 perturbations (IDs `P001…P012` in this order), each producing a full mutated
 prompt-module source (the adapter's `prompt_templates`, default
 `app/prompt_templates.py`; code-only targets return `[]`) via `replace_constant`:
-1. `RoleStripping` — remove the `You are TriageBot…` line from SYSTEM_PROMPT.
-2. `JsonOnlyDirectiveRemoval` — remove the `Respond ONLY…` line from SYSTEM_PROMPT.
-3. `InstructionNegation` — replace `Respond ONLY with a single valid JSON object and
+1. `RoleStripping` - remove the `You are TriageBot…` line from SYSTEM_PROMPT.
+2. `JsonOnlyDirectiveRemoval` - remove the `Respond ONLY…` line from SYSTEM_PROMPT.
+3. `InstructionNegation` - replace `Respond ONLY with a single valid JSON object and
    nothing else.` with `You may include helpful commentary around the JSON object.`
 4. `SchemaKeyRename(confidence→certainty)` in the Required-keys line.
 5. `SchemaKeyRename(summary→synopsis)`.
 6. `SchemaKeyRename(category→topic)`.
-7. `TypeRuleRemoval` — remove the `Priority must be an integer…` line.
-8. `RangeRuleRemoval` — remove the `Confidence must be a number…` line.
-9. `SectionMarkerCorruption` — `### TICKET ###` → `@@@ TICKET @@@` in TICKET_TEMPLATE.
-10. `SectionMarkerCorruption` — remove `### OUTPUT RULES ###` section from
+7. `TypeRuleRemoval` - remove the `Priority must be an integer…` line.
+8. `RangeRuleRemoval` - remove the `Confidence must be a number…` line.
+9. `SectionMarkerCorruption` - `### TICKET ###` → `@@@ TICKET @@@` in TICKET_TEMPLATE.
+10. `SectionMarkerCorruption` - remove `### OUTPUT RULES ###` section from
     TICKET_TEMPLATE (keep placeholders `{system}`, `{few_shot}`, `{ticket}` intact!).
-11. `WhitespaceNoise` — insert zero-width space `​` inside `Required JSON keys`
+11. `WhitespaceNoise` - insert zero-width space `​` inside `Required JSON keys`
     (between "JSON" and "keys") in SYSTEM_PROMPT.
-12. `FewShotDrop` — FEW_SHOT_BLOCK → `""`.
+12. `FewShotDrop` - FEW_SHOT_BLOCK → `""`.
 
 Rules: operate on the ORIGINAL constants read from the target's real
 `prompt_templates.py` (parse module AST, extract constant values). A perturbation must
@@ -308,17 +308,17 @@ def write_healed_test_file(target_dir: Path, healed: list[HealedTest], *, tests_
 ```
 
 - For each surviving CODE mutant with a non-empty `function_name` referring to a
-  top-level function in the mutated file: generate candidate inputs from type hints —
+  top-level function in the mutated file: generate candidate inputs from type hints -
   int pool `[-3, -1, 0, 1, 2, 3, 7, 10, 49, 50, 51, 99, 100, 101, 499, 500, 501, 1000,
   2500, 5000, 10000]` (large magnitudes push computed intermediates across caps),
   float = same as floats, bool `[True, False]`, str = string constants harvested from
   the module AST plus fallbacks (`""`, `"zzz"`, a ten-word sentence, and canonical
-  adversarial JSON contract payloads) — plus every numeric literal harvested from the
+  adversarial JSON contract payloads) - plus every numeric literal harvested from the
   function's AST and its ±1 neighbors. Cartesian product over params, deterministic
   order, capped at `max_inputs`.
 - Cross-function input synthesis: str-param pools are additionally enriched by running
   the module's own top-level `str -> str` single-parameter functions (excluding the
-  function under probe) over harvested base strings in the PRISTINE copy — composed
+  function under probe) over harvested base strings in the PRISTINE copy - composed
   inputs like fully rendered prompts reach code paths raw literals cannot. Synthesized
   inputs feed both probe sides identically; synthesis failure degrades to no
   enrichment, never to an error.
@@ -331,9 +331,9 @@ def write_healed_test_file(target_dir: Path, healed: list[HealedTest], *, tests_
   refused honestly.
 - Float pools additionally carry non-integral values and orders of magnitude (10⁶…10³³,
   2¹⁰…2⁴⁰); int pools deliberately do NOT (an int parameter may be a precision or
-  repeat count — `f"{x:.{10**33}f}"` never returns).
+  repeat count - `f"{x:.{10**33}f}"` never returns).
 - Candidate order: the all-defaults anchor tuple, then each parameter swept through its
-  whole pool with the others held at their defaults, then the diagonal product — so far
+  whole pool with the others held at their defaults, then the diagonal product - so far
   boundaries are reached even when the full product dwarfs `max_inputs`.
 - Module-level mutants (constant tables, flags) are healed by probing every top-level
   function of the module in definition order; the first re-verified discriminator wins
@@ -347,7 +347,7 @@ def write_healed_test_file(target_dir: Path, healed: list[HealedTest], *, tests_
   `pytest.raises` if original raises while mutant doesn't). Test name
   `test_healed_<mutant_id>_<function_name>`; header comment names the mutant id,
   operator, and location it kills.
-- Return `(healed_tests, unhealable_mutant_ids)` — unhealable = no discriminating
+- Return `(healed_tests, unhealable_mutant_ids)` - unhealable = no discriminating
   input found (likely-equivalent mutant) or unsupported signature. Honesty required:
   never fabricate a test without a verified discriminating input.
 - `build_prompt_contract_tests`: emit strict-contract tests (independent of which
@@ -372,7 +372,7 @@ CSS-bar charts, dark-scheme friendly, no external assets.
 
 ## 11. `advanced/trajectory_logger.py` + `baseline/run_baseline.py` (owner: baseline agent)
 
-`TrajectoryLogger(path: Path, task: str, agent: str)` — `.log_step(instruction, action,
+`TrajectoryLogger(path: Path, task: str, agent: str)` - `.log_step(instruction, action,
 *, command=None, target=None, tool_output=None, human_checkpoint=None)` auto-increments
 `step_index`, ISO-8601 UTC timestamps, `.save()` writes JSON matching the schema of
 `trajectories/agent_trace_01.json`.
@@ -380,14 +380,14 @@ CSS-bar charts, dark-scheme friendly, no external assets.
 `run_baseline.py` (CLI: `--target targets/sample_app`, `--jobs`, `--seed 1337`,
 `--json reports/baseline_report.json`):
 1. Copy target to tmp, run `coverage run -m pytest` + `coverage json` there; report
-   total line coverage % and test count (suite must be green — abort loudly if not).
+   total line coverage % and test count (suite must be green - abort loudly if not).
 2. Build the SAME frozen 50-bug bank (via `advanced.ast_mutator` +
-   `advanced.prompt_perturbator` — the bank is the shared benchmark harness).
+   `advanced.prompt_perturbator` - the bank is the shared benchmark harness).
 3. `evaluate_many` with the ORIGINAL suite; report detected/total, per-kind breakdown.
 4. Print the false-confidence gap (e.g. "91% line coverage, 42% bug detection") via
    rich; write JSON report. Exit 0.
 
-## 12. `advanced/run_mutation.py` + `main.py` (owner: integrator — do not write)
+## 12. `advanced/run_mutation.py` + `main.py` (owner: integrator - do not write)
 
 Orchestrates: clean-suite gate → bank build → parallel evaluation → heal → re-run
 survivors → reports + trajectory. Reads every API above exactly as specified.
