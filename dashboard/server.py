@@ -107,6 +107,20 @@ def _pump_output(proc: subprocess.Popen, kind: str) -> None:
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 
+@app.middleware("http")
+async def always_revalidate(request, call_next):
+    """Make the browser check before reusing anything it has cached.
+
+    Nothing here sent a Cache-Control header, so browsers fell back to
+    heuristic caching and would serve a stale page or logo after an edit -
+    confusing during development and worse mid-demo. ETag and Last-Modified
+    are still sent, so revalidation is a cheap 304 rather than a re-download.
+    """
+    response = await call_next(request)
+    response.headers.setdefault("Cache-Control", "no-cache")
+    return response
+
+
 @app.get("/")
 def landing() -> FileResponse:
     return FileResponse(Path(__file__).parent / "landing.html")

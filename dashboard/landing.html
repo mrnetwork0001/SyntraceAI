@@ -462,8 +462,8 @@
     font-size: clamp(16px, 1.4vw, 19px); }
 
   /* ---------- 10. footer ---------- */
-  footer { background: var(--ink); color: var(--on-dark-muted); padding: clamp(64px, 7vw, 96px) 0 0;
-    overflow: hidden; }
+  footer { background: var(--ink); color: var(--on-dark-muted);
+    padding: clamp(64px, 7vw, 96px) 0 clamp(56px, 6vw, 80px); overflow: hidden; }
   .foot { display: grid; grid-template-columns: minmax(0, 1fr); gap: 34px; font-size: 14.5px; }
   @media (min-width: 820px) { .foot { grid-template-columns: 1.5fr 1fr 1fr 1fr; } }
   .foot > div { min-width: 0; }
@@ -472,9 +472,6 @@
   .foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
   .foot a:hover { color: var(--on-dark); }
   .foot .brand { color: var(--on-dark); margin-bottom: 14px; }
-  .wordmark { margin-top: clamp(44px, 6vw, 88px); height: clamp(40px, 11.1vw, 141px); overflow: hidden; }
-  .wordmark span { display: block; font: 600 clamp(56px, 15vw, 190px)/1 var(--sans); letter-spacing: -.05em;
-    color: rgba(255,255,255,.09); white-space: nowrap; }
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
@@ -917,7 +914,6 @@
         <li><a href="https://github.com/python-humanize/humanize" target="_blank" rel="noopener">humanize (validation target)</a></li>
         <li><a href="https://github.com/mrnetwork0001/SyntraceAI/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a></li></ul></div>
     </div>
-    <div class="wordmark" aria-hidden="true"><span>SYNTRACEAI</span></div>
   </div>
 </footer>
 
