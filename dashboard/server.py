@@ -30,6 +30,7 @@ import re
 import subprocess
 import threading
 from collections import deque
+from datetime import datetime, timezone
 
 from advanced.run_mutation import report_slug
 from advanced.target_config import CONFIG_FILENAME
@@ -57,6 +58,26 @@ def _read_json(path: Path) -> dict | None:
         return json.loads(path.read_text())
     except (OSError, json.JSONDecodeError):
         return None
+
+
+def _read_report(path: Path) -> dict | None:
+    """Read a report and stamp it with when it was written.
+
+    The report file itself is deliberately byte-stable (no timestamps), so the
+    age comes from the file's mtime. The dashboard needs it to say plainly that
+    what you are looking at is a saved run rather than something live.
+    """
+    data = _read_json(path)
+    if data is None:
+        return None
+    try:
+        stamped = dict(data)
+        stamped["generated_at"] = (
+            datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).isoformat()
+        )
+        return stamped
+    except OSError:
+        return data
 
 
 def _pump_output(proc: subprocess.Popen, kind: str) -> None:
@@ -147,8 +168,8 @@ def reports(target: str = "") -> JSONResponse:
     # than the frozen-bank baseline's incomparable 36/38.
     return JSONResponse({
         "target": target,
-        "baseline": _read_json(REPO_ROOT / "reports" / f"{prefix}baseline_report.json"),
-        "mutation": _read_json(REPO_ROOT / "reports" / f"{prefix}mutation_report.json"),
+        "baseline": _read_report(REPO_ROOT / "reports" / f"{prefix}baseline_report.json"),
+        "mutation": _read_report(REPO_ROOT / "reports" / f"{prefix}mutation_report.json"),
         "trajectories": trajectories,
     })
 

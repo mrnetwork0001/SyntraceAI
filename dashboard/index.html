@@ -381,6 +381,19 @@
   .bolt { width: 15px; height: 15px; flex: none; }
   .empty .bolt { width: 13px; height: 13px; vertical-align: -2px; }
   .tick { width: 12px; height: 12px; flex: none; }
+
+  /* Provenance: the numbers below are a stored result, and the page has to say
+     so. Without this a first-time visitor reads the demo's saved run as their
+     own live one. */
+  .provenance { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 18px; font-size: 13px; color: var(--text-muted); }
+  .provenance .chip { font-family: var(--mono); font-size: 10px; font-weight: 500;
+    letter-spacing: .14em; text-transform: uppercase; padding: 4px 9px;
+    border-radius: var(--radius-pill); background: var(--paper-3); color: var(--text-faint); }
+  .provenance .chip.fresh { background: var(--good-soft); color: var(--good); }
+  .provenance .what { color: var(--text); font-family: var(--mono); font-size: 12.5px; }
+  .provenance .rerun { margin-left: auto; }
+  .provenance .rerun button { padding: 7px 14px; font-size: 12.5px; }
   .shell { transition: grid-template-columns .22s cubic-bezier(.16,1,.3,1); }
   .shell.collapsed { grid-template-columns: 64px minmax(0, 1fr); }
   .shell.collapsed .sidebar { padding: 18px 10px 26px; gap: 16px; }
@@ -514,6 +527,7 @@
 
   <main class="main">
     <section class="kpis">
+      <div id="provenance" class="provenance" hidden></div>
       <div id="tiles" class="tiles"></div>
       <div id="gap" class="gap-callout" hidden></div>
       <div id="emptyMain" class="empty" hidden>
@@ -590,6 +604,46 @@ function outcomeOf(r) {
 }
 const num = v => (v === null || v === undefined || Number.isNaN(Number(v))) ? null : Number(v);
 
+function relativeAge(iso) {
+  const then = Date.parse(iso);
+  if (!Number.isFinite(then)) return null;
+  const secs = Math.max(0, (Date.now() - then) / 1000);
+  if (secs < 45) return 'just now';
+  let value = secs / 60, name = 'minute';
+  for (const [step, next] of [[60, 'hour'], [24, 'day'], [Infinity, 'day']]) {
+    if (value < step) break;
+    value /= step; name = next;
+  }
+  const n = Math.round(value);
+  return `${n} ${name}${n === 1 ? '' : 's'} ago`;
+}
+
+// Say plainly what the numbers on screen are: a stored result for a named
+// project, not a live reading of anything the visitor just did.
+function renderProvenance(m) {
+  const host = $('provenance');
+  const age = relativeAge(m.generated_at);
+  const fresh = age === 'just now';
+  const target = m.target || 'unknown target';
+  const provenance = fresh
+    ? 'measured in this session.'
+    : 'a stored result from an earlier run, not a live reading.';
+  host.innerHTML =
+    `<span class="chip${fresh ? ' fresh' : ''}">${fresh ? 'just ran' : 'saved run'}</span>` +
+    `<span>Results for <span class="what">${esc(target)}</span>` +
+    `${m.seed !== undefined ? ` · seed ${esc(m.seed)}` : ''}` +
+    `${age ? ` · ${esc(age)}` : ''} - ${provenance}</span>` +
+    `<span class="rerun"><button onclick="rerunShown()">Run this again</button></span>`;
+  host.dataset.target = target;
+  host.hidden = false;
+}
+
+function rerunShown() {
+  const target = $('provenance').dataset.target;
+  if (target && target !== 'unknown target') $('targetPath').value = target;
+  launch('mutate');
+}
+
 function tile(value, label, cls, help) {
   return `<div class="tile"${help ? ` title="${esc(help)}"` : ''}>` +
     `<div class="v ${cls || ''}">${value}</div><div class="l">${label}</div></div>`;
@@ -605,12 +659,13 @@ const HELP = {
 
 function renderMutation(m) {
   const tiles = $('tiles'), gap = $('gap'), empty = $('emptyMain');
-  if (!m) { tiles.innerHTML = ''; gap.hidden = true; empty.hidden = false;
+  if (!m) { tiles.innerHTML = ''; gap.hidden = true; empty.hidden = false; $('provenance').hidden = true;
             $('bars').innerHTML = '<div class="empty">-</div>';
             $('survivors').innerHTML = '<div class="empty">-</div>';
             $('healed').innerHTML = '<div class="empty">-</div>'; $('unhealable').textContent = '';
             $('countSurvivors').textContent = ''; $('countHealed').textContent = ''; return; }
   empty.hidden = true;
+  renderProvenance(m);
 
   const cov = num(m.line_coverage_pct);
   const pre = num(m.score_original), fin = num(m.score_final);
