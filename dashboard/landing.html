@@ -137,6 +137,63 @@
   .quals .card { display: flex; gap: 12px; align-items: flex-start; }
   .quals .dot { width: 10px; height: 10px; border-radius: 999px; margin-top: 6px; flex: none; }
 
+  /* ---------- engine pipeline ---------- */
+  .pipeline { position: relative; display: grid; grid-template-columns: 1fr 1.15fr 1fr; grid-template-rows: 1fr 1fr; gap: 26px 64px; padding: 10px 0 4px; }
+  .pipeline .grid-bg { -webkit-mask-image: radial-gradient(ellipse at center, #000 15%, transparent 72%); mask-image: radial-gradient(ellipse at center, #000 15%, transparent 72%); }
+  .wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: visible; }
+  .wires path.wire { fill: none; stroke: rgba(255,255,255,.25); stroke-width: 1.75; stroke-dasharray: 5 7; opacity: .55; animation: dash 1.4s linear infinite; }
+  .wires path.wire.back { animation-direction: reverse; }
+  @keyframes dash { to { stroke-dashoffset: -24; } }
+  .wires circle { filter: drop-shadow(0 0 6px currentColor); }
+  .node { position: relative; z-index: 1; border-radius: 16px; border: 1px solid var(--line); padding: 20px 22px;
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)), var(--bg-900);
+    transition: border-color .25s, transform .25s, box-shadow .25s; }
+  .node:hover { border-color: rgba(124,92,255,.35); transform: translateY(-2px); box-shadow: 0 0 24px -4px rgba(124,92,255,.35); }
+  .node .fn { font-family: var(--mono); font-size: 12.5px; color: var(--volt-bright); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .node h3 { margin: 0 0 8px; font-size: 16px; letter-spacing: -.01em; }
+  .node p { margin: 0; color: var(--muted); font-size: 13.5px; }
+  .node.src-mut { grid-column: 1; grid-row: 1; }
+  .node.src-pert { grid-column: 1; grid-row: 2; }
+  .node.core { grid-column: 2; grid-row: 1 / 3; display: flex; flex-direction: column; justify-content: center; text-align: center; border-color: rgba(34,211,238,.25); }
+  .node.core:hover { border-color: rgba(34,211,238,.5); box-shadow: 0 0 24px -4px rgba(34,211,238,.4); }
+  .node.core .fn { justify-content: center; }
+  .node.heal { grid-column: 3; grid-row: 1 / 3; display: flex; flex-direction: column; justify-content: center; }
+  .ticker { margin-top: 12px; padding: 8px 10px; border-radius: 10px; background: rgba(5,6,12,.7); border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11.5px; color: var(--arc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ticker.swap { animation: tick .45s ease; }
+  @keyframes tick { 0% { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .emit { display: flex; gap: 4px; margin-top: 10px; height: 14px; align-items: flex-end; }
+  .emit i { flex: 1; border-radius: 2px; height: 30%; background: linear-gradient(180deg, var(--volt-bright), rgba(124,92,255,.25));
+    animation: emit 1.5s ease-in-out infinite; animation-delay: calc(var(--i) * .09s); }
+  .src-pert .emit i { background: linear-gradient(180deg, var(--arc), rgba(34,211,238,.25)); }
+  @keyframes emit { 0%, 100% { height: 25%; opacity: .45; } 50% { height: 100%; opacity: 1; } }
+  .ring { position: relative; width: 176px; height: 176px; margin: 4px auto 18px; border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(34,211,238,0) 0 68%, rgba(34,211,238,.85) 100%); animation: spin 3.6s linear infinite; }
+  .ring::before { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--bg-900); }
+  .ring::after { content: ""; position: absolute; inset: -12px; border-radius: 50%; border: 1px dashed rgba(124,92,255,.4); animation: spin 11s linear infinite reverse; }
+  .ring-inner { position: absolute; inset: 14px; border-radius: 50%; display: grid; place-items: center; text-align: center;
+    background: radial-gradient(circle, rgba(34,211,238,.10), transparent 70%); animation: spin 3.6s linear infinite reverse; }
+  .ring-inner .big { font-family: var(--mono); font-size: 36px; font-weight: 600; letter-spacing: -.02em; color: var(--text); line-height: 1; }
+  .ring-inner .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); margin-top: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .outcomes { display: flex; justify-content: center; gap: 16px; margin-top: 12px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }
+  .outcomes .k { color: var(--up); } .outcomes .s { color: var(--down); } .outcomes .t { color: var(--dim); }
+  .probe { margin-top: 12px; display: grid; gap: 6px; }
+  .probe .row { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+  .probe .bar { height: 6px; }
+  .probe .bar i.a { width: 62%; background: linear-gradient(90deg, #1f9d6d, var(--up)); }
+  .probe .bar i.b { width: 62%; background: linear-gradient(90deg, #d84c68, var(--down)); animation: probe 2.6s ease-in-out infinite; }
+  @keyframes probe { 0%, 30% { width: 62%; } 55%, 80% { width: 38%; } 100% { width: 62%; } }
+  @media (max-width: 900px) {
+    .pipeline { grid-template-columns: 1fr; grid-template-rows: none; gap: 14px; }
+    .node.src-mut, .node.src-pert, .node.core, .node.heal { grid-column: auto; grid-row: auto; }
+    .wires { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ring, .ring::after, .ring-inner, .emit i, .wires path.wire, .probe .bar i.b, .ticker.swap { animation: none; }
+    .wires circle { display: none; }
+  }
+
   .results { display: grid; grid-template-columns: 1fr; gap: 14px; }
   @media (min-width: 900px) { .results { grid-template-columns: 1fr 1fr; } }
   .res { border-radius: 16px; border: 1px solid var(--line); background: var(--card); padding: 22px; }
@@ -268,15 +325,44 @@
       <h2>Seven operators. Twelve perturbations. One honest score.</h2>
       <p>Built as a dual-solution benchmark: the same bug bank audits a standard coverage.py baseline and the SyntraceAI campaign.</p>
     </div>
-    <div class="svc">
-      <div class="card"><div class="fn">enumerate_mutants() <span class="pill">38 mutants</span></div>
-        <h3>AST Mutation Engine</h3><p>Arithmetic, comparison, boolean, condition-negation, constant, boundary and return-value operators. Every mutant is compile-validated; provably-equivalent clamp swaps are excluded so the bank never lies.</p></div>
-      <div class="card"><div class="fn">enumerate_perturbations() <span class="pill">12 attacks</span></div>
-        <h3>Prompt Perturbation Fleet</h3><p>Role stripping, JSON-only directive removal, schema key renames, zero-width whitespace, few-shot drop - surfacing hallucination paths your happy-path tests never touch.</p></div>
-      <div class="card"><div class="fn">evaluate_many() <span class="pill arc">parallel</span></div>
-        <h3>Sandboxed Execution</h3><p>Fresh project copy per mutant, parallel workers, hard timeouts. Exit codes map to killed / survived / timeout / error - loud failures count, silence never does.</p></div>
-      <div class="card"><div class="fn">heal_survivors() <span class="pill up">verified</span></div>
-        <h3>Differential Auto-Healing</h3><p>Subprocess probes over boundary-aware inputs - type-hint pools, harvested literals, anchored sweeps, the module's own API. Only a re-verified discriminating input becomes a test.</p></div>
+    <div class="pipeline" id="pipeline">
+      <div class="grid-bg"></div>
+      <svg class="wires" id="wires" aria-hidden="true"></svg>
+
+      <div class="node src-mut" id="nodeMut">
+        <div class="fn">enumerate_mutants() <span class="pill">38 mutants</span></div>
+        <h3>AST Mutation Engine</h3>
+        <p>Seven operator families - arithmetic, comparison, boolean, condition-negation, constant, boundary, return-value. Compile-validated; provably-equivalent clamp swaps excluded so the bank never lies.</p>
+        <div class="ticker" id="tickMut">M001 · ArithmeticOperatorSwap</div>
+        <div class="emit" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i><i style="--i:10"></i><i style="--i:11"></i></div>
+      </div>
+
+      <div class="node src-pert" id="nodePert">
+        <div class="fn">enumerate_perturbations() <span class="pill arc">12 attacks</span></div>
+        <h3>Prompt Perturbation Fleet</h3>
+        <p>Role stripping, JSON-only directive removal, schema key renames, zero-width whitespace, few-shot drop - hallucination paths your happy-path tests never touch.</p>
+        <div class="ticker" id="tickPert">P001 · RoleStripping</div>
+        <div class="emit" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i><i style="--i:10"></i><i style="--i:11"></i></div>
+      </div>
+
+      <div class="node core" id="nodeCore">
+        <div class="ring" aria-hidden="true"><div class="ring-inner"><div><div class="big" id="coreN">50</div><div class="lbl">bugs in flight</div></div></div></div>
+        <div class="fn">evaluate_many() <span class="pill arc">parallel</span></div>
+        <h3>Sandboxed Execution</h3>
+        <p>Fresh project copy per bug, parallel workers, hard timeouts. Exit codes map to outcomes - loud failures count, silence never does.</p>
+        <div class="outcomes"><span class="k">● killed</span><span class="s">● survived</span><span class="t">● timeout / error</span></div>
+      </div>
+
+      <div class="node heal" id="nodeHeal">
+        <div class="fn">heal_survivors() <span class="pill up">verified</span></div>
+        <h3>Differential Auto-Healing</h3>
+        <p>Subprocess probes over boundary-aware inputs - type-hint pools, harvested literals, anchored sweeps, the module's own API. Only a re-verified discriminating input becomes a test, and it loops back to kill the survivor.</p>
+        <div class="probe" aria-hidden="true">
+          <div class="row"><span>original</span><div class="bar"><i class="a"></i></div></div>
+          <div class="row"><span>mutant</span><div class="bar"><i class="b"></i></div></div>
+        </div>
+        <div class="ticker" id="tickHeal">assert final_total(7.0, 'enterprise', 'us', -3.0) == 5.74</div>
+      </div>
     </div>
     <div class="quals">
       <div class="card"><span class="dot" style="background:var(--arc)"></span><div><h3>Deterministic</h3><p>Same seed → identical bank, identical scores, on any machine, at any parallelism. Reports are byte-stable.</p></div></div>
@@ -397,6 +483,104 @@
     $('resHealed').textContent = String(healed);
     $('resEq').textContent = String(eq);
   } catch (e) { /* engine not run yet - placeholders stand */ }
+})();
+</script>
+<script>
+'use strict';
+(() => {
+  const $ = id => document.getElementById(id);
+  const pipeline = $('pipeline'), svg = $('wires');
+  if (!pipeline || !svg) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Wires are drawn from the real card edges so they line up at any width.
+  function anchors() {
+    const box = pipeline.getBoundingClientRect();
+    const rect = el => { const b = el.getBoundingClientRect();
+      return { l: b.left - box.left, r: b.right - box.left, cy: (b.top + b.bottom) / 2 - box.top }; };
+    return { box, mut: rect($('nodeMut')), pert: rect($('nodePert')), core: rect($('nodeCore')), heal: rect($('nodeHeal')) };
+  }
+  const curve = (x1, y1, x2, y2) => { const mx = (x1 + x2) / 2; return `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`; };
+  function wire(id, d, color, back, count, dur) {
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('id', id); p.setAttribute('d', d); p.setAttribute('class', 'wire' + (back ? ' back' : ''));
+    p.style.stroke = color;
+    svg.appendChild(p);
+    if (reduced) return;
+    for (let i = 0; i < count; i++) {
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('r', '3.5'); c.setAttribute('fill', color); c.setAttribute('color', color);
+      const am = document.createElementNS(NS, 'animateMotion');
+      am.setAttribute('dur', dur + 's'); am.setAttribute('repeatCount', 'indefinite');
+      am.setAttribute('begin', (i * dur / count).toFixed(2) + 's');
+      if (back) { am.setAttribute('keyPoints', '1;0'); am.setAttribute('keyTimes', '0;1'); am.setAttribute('calcMode', 'linear'); }
+      const mp = document.createElementNS(NS, 'mpath');
+      mp.setAttribute('href', '#' + id); mp.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', '#' + id);
+      am.appendChild(mp); c.appendChild(am); svg.appendChild(c);
+    }
+  }
+  function draw() {
+    if (getComputedStyle(svg).display === 'none') return;
+    const a = anchors();
+    // Exact pixel mapping: the viewBox equals the rendered box, so a late
+    // layout shift (web font swap, resize) can never scale the wires away
+    // from the card edges; the observer below redraws on any size change.
+    svg.setAttribute('viewBox', `0 0 ${a.box.width} ${a.box.height}`);
+    svg.setAttribute('preserveAspectRatio', 'none');
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    wire('w-mut',  curve(a.mut.r,  a.mut.cy,        a.core.l, a.core.cy - 30), '#9d85ff', false, 4, 3.2);
+    wire('w-pert', curve(a.pert.r, a.pert.cy,       a.core.l, a.core.cy + 30), '#22d3ee', false, 3, 3.6);
+    wire('w-surv', curve(a.core.r, a.core.cy - 28,  a.heal.l, a.heal.cy - 28), '#fb7185', false, 2, 3.0);
+    wire('w-heal', curve(a.core.r, a.core.cy + 36,  a.heal.l, a.heal.cy + 36), '#34d399', true,  2, 3.4);
+  }
+  let timer; const redraw = () => { clearTimeout(timer); timer = setTimeout(draw, 60); };
+  window.addEventListener('resize', redraw);
+  window.addEventListener('load', redraw);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(redraw);
+    ro.observe(pipeline);
+    for (const id of ['nodeMut', 'nodePert', 'nodeCore', 'nodeHeal']) ro.observe($(id));
+  }
+  draw();
+  setTimeout(draw, 400);
+  setTimeout(draw, 1500);
+
+  // Live tickers: real bank entries and healed tests once a report exists.
+  const fallback = {
+    mut: ['M001 · ArithmeticOperatorSwap', 'M009 · BoundaryValueMutation', 'M017 · ComparisonOperatorSwap', 'M025 · BooleanOperatorSwap'],
+    pert: ['P001 · RoleStripping', 'P004 · SchemaKeyRename', 'P009 · SectionMarkerCorruption', 'P011 · WhitespaceNoise'],
+    heal: ["assert final_total(7.0, 'enterprise', 'us', -3.0) == 5.74", 'assert priority_score(-3, 1.0) == 28.0'],
+  };
+  function cycle(el, items, ms) {
+    if (!el || !items.length) return;
+    let i = 0; el.textContent = items[0];
+    if (reduced || items.length < 2) return;
+    setInterval(() => {
+      i = (i + 1) % items.length;
+      el.classList.remove('swap'); void el.offsetWidth; el.classList.add('swap');
+      el.textContent = items[i];
+    }, ms);
+  }
+  (async () => {
+    let lists = fallback;
+    try {
+      const r = await (await fetch('/api/reports')).json(); const m = r.mutation;
+      if (m) {
+        const rows = m.original_results || [];
+        const code = rows.filter(x => x.kind === 'code').map(x => `${x.mutant_id} · ${x.operator_name}`);
+        const prompt = rows.filter(x => x.kind === 'prompt').map(x => `${x.mutant_id} · ${x.operator_name}`);
+        const healed = (m.healed_tests || []).map(h =>
+          `assert ${h.function_name}${String(h.input_repr).replace(/,\)$/, ')')} == ${h.expected_repr}`);
+        lists = { mut: code.length ? code : fallback.mut, pert: prompt.length ? prompt : fallback.pert, heal: healed.length ? healed : fallback.heal };
+        if (m.total_bugs) $('coreN').textContent = m.total_bugs;
+      }
+    } catch (e) { /* offline: fallback lists */ }
+    cycle($('tickMut'), lists.mut, 1700);
+    cycle($('tickPert'), lists.pert, 2100);
+    cycle($('tickHeal'), lists.heal, 2600);
+  })();
 })();
 </script>
 </body>
