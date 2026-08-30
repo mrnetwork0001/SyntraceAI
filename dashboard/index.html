@@ -143,7 +143,8 @@
   .stack { display: grid; gap: clamp(18px, 2vw, 22px); }
   .stack > * { min-width: 0; }
 
-  .card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(22px, 2.4vw, 28px); }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: clamp(22px, 2.4vw, 28px); min-width: 0; }
   .card h2 { margin: 0 0 20px; font-size: 19px; font-weight: 500; line-height: 1.25; letter-spacing: -.015em; color: var(--text); }
 
   button { font: 500 14px/1 var(--sans); color: var(--text); background: var(--paper); border: 1px solid var(--line);
@@ -363,7 +364,10 @@
   .main { min-width: 0; padding: clamp(22px, 2.6vw, 32px) clamp(18px, 2.6vw, 36px) 72px; }
   .kpis { padding-bottom: clamp(22px, 2.6vw, 30px); margin-bottom: clamp(22px, 2.6vw, 30px);
     border-bottom: 1px solid var(--line); }
-  .view { display: grid; gap: clamp(18px, 2vw, 22px); }
+  /* minmax(0, 1fr), not the default: a grid item's automatic minimum is its
+     content, so a wide table stretched the track past the viewport and the
+     card's own overflow-x never got the chance to scroll it. */
+  .view { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(18px, 2vw, 22px); }
   .view[hidden] { display: none; }
   /* Long tables scroll inside their panel instead of stretching the page. */
   .panel-scroll { max-height: calc(100vh - 330px); min-height: 220px; overflow: auto; }
