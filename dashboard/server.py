@@ -4,7 +4,8 @@ Serves the landing page, the dashboard SPA, and a small JSON API over the engine
 
     GET  /               landing page
     GET  /app            Mission Control dashboard UI
-    GET  /api/reports    latest baseline + mutation reports (+ trajectory list)
+    GET  /api/targets    report sets available (demo, humanize, humanize exhaustive)
+    GET  /api/reports    latest baseline + mutation reports (?target=<id>)
     POST /api/run/{kind} launch `python main.py <kind>` (baseline | mutate | full)
     GET  /api/status     run state + live log tail
 
@@ -22,6 +23,7 @@ if str(REPO_ROOT) not in sys.path:
 
 import argparse
 import json
+import re
 import subprocess
 import threading
 from collections import deque
@@ -73,13 +75,39 @@ def mission_control() -> FileResponse:
     return FileResponse(Path(__file__).parent / "index.html")
 
 
+_TARGET_RE = re.compile(r"^[a-z0-9_]{0,40}$")
+
+
+def _report_prefixes() -> list[str]:
+    """Report-set prefixes present in reports/ ("" is the demo target)."""
+    reports_dir = REPO_ROOT / "reports"
+    prefixes: set[str] = set()
+    for path in reports_dir.glob("*mutation_report.json") if reports_dir.is_dir() else []:
+        prefixes.add(path.name[: -len("mutation_report.json")].rstrip("_"))
+    return sorted(prefixes, key=lambda p: (p != "", p))
+
+
+@app.get("/api/targets")
+def targets() -> JSONResponse:
+    labels = {"": "sample_app (demo)", "humanize": "humanize 4.16.0 (38-bank)",
+              "humanize_full": "humanize 4.16.0 (exhaustive)"}
+    return JSONResponse([
+        {"id": prefix, "label": labels.get(prefix, prefix)} for prefix in _report_prefixes()
+    ])
+
+
 @app.get("/api/reports")
-def reports() -> JSONResponse:
+def reports(target: str = "") -> JSONResponse:
+    if not _TARGET_RE.match(target):
+        return JSONResponse({"error": "invalid target"}, status_code=400)
+    prefix = f"{target}_" if target else ""
+    baseline_prefix = "humanize_" if target.startswith("humanize") else prefix
     traj_dir = REPO_ROOT / "trajectories"
     trajectories = sorted(p.name for p in traj_dir.glob("*.json")) if traj_dir.is_dir() else []
     return JSONResponse({
-        "baseline": _read_json(REPO_ROOT / "reports" / "baseline_report.json"),
-        "mutation": _read_json(REPO_ROOT / "reports" / "mutation_report.json"),
+        "target": target,
+        "baseline": _read_json(REPO_ROOT / "reports" / f"{baseline_prefix}baseline_report.json"),
+        "mutation": _read_json(REPO_ROOT / "reports" / f"{prefix}mutation_report.json"),
         "trajectories": trajectories,
     })
 

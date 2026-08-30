@@ -214,6 +214,13 @@
       <div class="feature"><div class="ico">🎛️</div><h3>Mission Control</h3>
         <p>A local dashboard to launch campaigns, stream the engine log live, and explore scores,
         survivors and healed tests — plus JSON and self-contained HTML reports for CI.</p></div>
+      <div class="feature"><div class="ico">🌍</div><h3>Validated on code we didn't write</h3>
+        <p>A one-file target adapter points the unchanged engine at any Python package. On humanize
+        4.16.0 it confirmed a strong suite (94.7%, both survivors provably equivalent) and, at
+        exhaustive depth, wrote 12 tests the library's own suite lacked.</p></div>
+      <div class="feature"><div class="ico">🚦</div><h3>CI gate</h3>
+        <p><code>--fail-under</code> fails the build when the auto-healed mutation score drops
+        below your threshold; the bundled GitHub Actions workflow gates both targets on every push.</p></div>
     </div>
   </section>
 

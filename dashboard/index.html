@@ -96,6 +96,7 @@
       <div class="sub">Autonomous Agentic Mutation Testing &amp; Hallucination Stress-Tester</div>
     </div>
     <div id="statusPill" class="pill">idle</div>
+    <select id="targetSelect" class="pill" onchange="refreshReports()" title="report set"></select>
     <a href="/" class="pill" style="text-decoration:none">← Landing</a>
   </header>
 
@@ -258,9 +259,20 @@ function renderBaseline(b) {
   $('baseline').innerHTML = html;
 }
 
+async function loadTargets() {
+  try {
+    const list = await (await fetch('/api/targets')).json();
+    const sel = $('targetSelect');
+    const current = sel.value;
+    sel.innerHTML = list.map(t => `<option value="${esc(t.id)}">${esc(t.label)}</option>`).join('');
+    if ([...sel.options].some(o => o.value === current)) sel.value = current;
+  } catch (e) { /* ignore */ }
+}
+
 async function refreshReports() {
   try {
-    const r = await (await fetch('/api/reports')).json();
+    const target = $('targetSelect').value || '';
+    const r = await (await fetch('/api/reports?target=' + encodeURIComponent(target))).json();
     renderMutation(r.mutation);
     renderBaseline(r.baseline);
     $('trajectories').innerHTML = (r.trajectories || []).map(t => `<span class="mono">${esc(t)}</span>`)
@@ -287,7 +299,7 @@ async function poll() {
       if (s.returncode === null || s.returncode === undefined) { pill.className = 'pill'; pill.textContent = 'idle'; }
       else if (s.returncode === 0) { pill.className = 'pill ok'; pill.textContent = `last run: ${s.kind} ✓`; }
       else { pill.className = 'pill fail'; pill.textContent = `last run: ${s.kind} failed (${s.returncode})`; }
-      if (polling) { clearInterval(polling); polling = null; await refreshReports(); }
+      if (polling) { clearInterval(polling); polling = null; await loadTargets(); await refreshReports(); }
     }
   } catch (e) { /* ignore */ }
 }
@@ -305,7 +317,7 @@ function toggleLog(force) {
   $('logCard').hidden = !logVisible;
 }
 
-refreshReports();
+loadTargets().then(refreshReports);
 poll();
 </script>
 </body>
