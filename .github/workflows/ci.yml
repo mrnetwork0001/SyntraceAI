@@ -41,7 +41,7 @@ jobs:
           python advanced/run_mutation.py --target targets/humanize
           --json reports/humanize_mutation_report.json
           --html reports/humanize_mutation_report.html
-          --trajectory trajectories/agent_trace_03.json
+          --trajectory trajectories/campaign_trace_humanize.json
           --fail-under 85
 
       # Exhaustive campaign over every humanize mutation site (measured 90.9%
@@ -53,7 +53,7 @@ jobs:
           --max-code-mutants 400
           --json reports/humanize_full_mutation_report.json
           --html reports/humanize_full_mutation_report.html
-          --trajectory trajectories/agent_trace_04.json
+          --trajectory trajectories/campaign_trace_humanize_full.json
           --fail-under 88
 
       - name: Upload reports

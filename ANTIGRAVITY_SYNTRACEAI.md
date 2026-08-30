@@ -19,7 +19,7 @@
    - **Third-party validation:** `targets/humanize/` (vendored humanize 4.16.0, declared
      via `syntrace_target.json`); CI gates in `.github/workflows/ci.yml`.
    - **Agent Trajectories:** Build-history trace in `trajectories/agent_trace_01.json`;
-     campaign traces regenerated into `trajectories/agent_trace_02.json` by the engine.
+     campaign traces regenerated into `trajectories/campaign_trace_demo.json` by the engine.
 
 3. **Submission Requirements Checklist:**
    - Public GitHub repository under Apache 2.0 / MIT License.

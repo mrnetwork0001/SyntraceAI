@@ -670,11 +670,11 @@ assert humanize.number.metric(1e+33, '', 3) == '1.00 x 10³³'</code></pre>
 
 python advanced/run_mutation.py --target targets/humanize \
     --json reports/humanize_mutation_report.json \
-    --trajectory trajectories/agent_trace_03.json
+    --trajectory trajectories/campaign_trace_humanize.json
 
 python advanced/run_mutation.py --target targets/humanize --max-code-mutants 400 \
     --json reports/humanize_full_mutation_report.json \
-    --trajectory trajectories/agent_trace_04.json</code></pre>
+    --trajectory trajectories/campaign_trace_humanize_full.json</code></pre>
     </section>
 
     <!-- ==================== ARTIFACTS ==================== -->
@@ -850,7 +850,8 @@ targets/humanize/        third-party validation target (humanize 4.16.0, vendore
 dashboard/               FastAPI: landing page, Mission Control, these docs
 selftests/               the engine's own test suite (135 tests)
 docs/ARCHITECTURE.md     frozen module contract the engine is built against
-trajectories/            agent execution traces (real runs)
+trajectories/            agent_trace_01 (coding-agent trace) + campaign_trace_*
+                         (engine output, regenerated per run) - see its README
 reports/                 generated JSON/HTML reports (committed as evidence)
 .github/workflows/       CI: selftests + mutation-score gates on both targets</code></pre>
 

@@ -67,9 +67,9 @@ def _write_set(repo: Path, prefix: str, target: Path | str, *, healed: bool = Tr
     reports = repo / "reports"
     (reports / f"{pre}mutation_report.json").write_text(json.dumps({"target": str(target)}))
     (reports / f"{pre}mutation_report.html").write_text("<html></html>")
-    stem = f"{pre}mutation_report".removesuffix("_mutation_report") or "agent_trace_02"
+    stem = f"{pre}mutation_report".removesuffix("_mutation_report")
     trajectory = repo / "trajectories" / (
-        "agent_trace_02.json" if not prefix else f"{stem}_trace.json"
+        "campaign_trace_demo.json" if not prefix else f"campaign_trace_{stem}.json"
     )
     trajectory.write_text("{}")
     if healed:
@@ -136,7 +136,7 @@ def test_plan_lists_only_files_that_exist(fake_repo: Path) -> None:
     files = _payload(server.reset_plan(target="solo_9f0011"))["files"]
     assert files == [
         "reports/solo_9f0011_mutation_report.json",
-        "trajectories/solo_9f0011_trace.json",
+        "trajectories/campaign_trace_solo_9f0011.json",
     ]
 
 

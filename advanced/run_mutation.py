@@ -50,7 +50,7 @@ from advanced.trajectory_logger import TrajectoryLogger
 
 HEALED_TEST_BASENAME = "test_healed_assertions.py"
 DEFAULT_JSON = "reports/mutation_report.json"
-DEFAULT_TRAJECTORY = "trajectories/agent_trace_02.json"
+DEFAULT_TRAJECTORY = "trajectories/campaign_trace_demo.json"
 DEFAULT_TARGET = "targets/sample_app"
 #: The demo target owns the unprefixed report names (the committed evidence).
 DEMO_TARGET_NAME = "sample_app"
@@ -130,10 +130,12 @@ def sibling_output_paths(json_arg: str, html_arg: str | None, trajectory_arg: st
         trajectory = DEFAULT_TRAJECTORY
     else:
         stem = json_path.stem.removesuffix("_mutation_report").removesuffix("_report")
+        # "campaign_trace_", not "agent_trace_": these are the engine narrating its
+        # own run, and must never be mistaken for a coding-agent trajectory.
         if json_path.is_absolute():
-            trajectory = str(json_path.parent / f"{stem}_trace.json")  # stay out of tree
+            trajectory = str(json_path.parent / f"campaign_trace_{stem}.json")  # stay out of tree
         else:
-            trajectory = f"trajectories/{stem}_trace.json"
+            trajectory = f"trajectories/campaign_trace_{stem}.json"
     return html, trajectory
 
 
@@ -274,7 +276,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--html", default=None,
                         help="default: the --json path with an .html suffix")
     parser.add_argument("--trajectory", default=None,
-                        help="default: trajectories/agent_trace_02.json for the default "
+                        help="default: trajectories/campaign_trace_demo.json for the default "
                              "report path, otherwise trajectories/<json stem>_trace.json")
     parser.add_argument("--fail-under", type=float, default=None,
                         help="exit 1 if final mutation score falls below this percent")

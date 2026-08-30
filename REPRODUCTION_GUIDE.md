@@ -61,7 +61,7 @@ python main.py full
 python baseline/run_baseline.py --target targets/humanize --json reports/humanize_baseline_report.json
 python advanced/run_mutation.py --target targets/humanize \
     --json reports/humanize_mutation_report.json --html reports/humanize_mutation_report.html \
-    --trajectory trajectories/agent_trace_03.json
+    --trajectory trajectories/campaign_trace_humanize.json
 ```
 *Expected (key lines):*
 ```
@@ -81,7 +81,7 @@ Exhaustive campaign over every mutation site (~25s):
 ```bash
 python advanced/run_mutation.py --target targets/humanize --max-code-mutants 400 \
     --json reports/humanize_full_mutation_report.json --html reports/humanize_full_mutation_report.html \
-    --trajectory trajectories/agent_trace_04.json
+    --trajectory trajectories/campaign_trace_humanize_full.json
 ```
 *Expected (key lines):*
 ```
@@ -138,10 +138,10 @@ copies locally.
 | `reports/mutation_report.json` | full campaign result (pre/post-heal, survivors, healed tests) |
 | `reports/mutation_report.html` | self-contained visual report |
 | `targets/sample_app/tests/test_healed_assertions.py` | the auto-generated hardened suite |
-| `trajectories/agent_trace_02.json` | the campaign's own execution trajectory |
+| `trajectories/campaign_trace_demo.json` | the campaign's own execution trajectory (engine output, not a coding-agent trace) |
 | `reports/humanize_*_report.json` / `.html` | third-party target: baseline, 38-bank campaign, exhaustive campaign |
 | `targets/humanize/tests/test_healed_assertions.py` | 12 tests SyntraceAI wrote for humanize |
-| `trajectories/agent_trace_03.json`, `agent_trace_04.json` | humanize campaign trajectories |
+| `trajectories/campaign_trace_humanize*.json` | humanize campaign trajectories |
 
 ## 7. Runtime & cost
 

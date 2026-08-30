@@ -124,6 +124,44 @@ changes, here are the 26 bugs that slipped through, and here are 24 generated te
 each proven to kill a specific one." The diagnosis, the evidence, and the repair ship
 together, deterministically, in seconds, for $0.
 
+## How this was built: agents, tools, and what pre-existed
+
+**Coding agents are how this exists.** The engine was not hand-written module by
+module: a frozen module contract (`docs/ARCHITECTURE.md`) was written first, then six
+implementation subagents built their module sets against it in parallel, and the
+integration, adversarial review and repair passes ran as further agent sessions.
+
+| | |
+| :--- | :--- |
+| **Coding agent** | [Claude Code](https://claude.com/claude-code) - an orchestrator session plus parallel implementation subagents |
+| **Agent instructions** | `ANTIGRAVITY_SYNTRACEAI.md` (master project directive), `CLAUDE_SYNTRACEAI.md` (redirect to it), `.agents/skills/syntraceai-micro1/SKILL.md` (architecture and rules loaded into every session), and `docs/ARCHITECTURE.md` (the frozen module contract each implementation agent built against) |
+| **Coding-agent trajectory** | `trajectories/agent_trace_01.json` - instructions, actions, tool responses and the human checkpoints that redirected the work. See `trajectories/README.md`. |
+| **Engine output, not agent traces** | `trajectories/campaign_trace_*.json` are written by the tool itself during a campaign and regenerated on every run |
+
+Human checkpoints are recorded in the trajectory rather than implied. The
+load-bearing one is step 3: the first end-to-end campaign came back at 78%, and
+every miss was root-caused at its code site before a line was changed - which is
+how the clamp-equivalence proof and the healer's cross-function input synthesis
+came to exist instead of a bank that had been quietly trimmed.
+
+### What existed before, and what was added
+
+Everything in `advanced/`, `baseline/`, `dashboard/`, `selftests/`, `docs/`,
+`targets/sample_app/`, `main.py` and every report and trajectory in this repository
+was written for this challenge. Nothing was carried in from earlier work.
+
+The exceptions are declared:
+
+- **`targets/humanize/`** is [humanize](https://github.com/python-humanize/humanize)
+  **4.16.0**, MIT-licensed, vendored verbatim as a third-party validation target
+  together with the dependency-free part of its own test suite. Its licence is kept
+  at `targets/humanize/LICENSE-humanize`. It is the code under test, not code that
+  was written here - which is the point of it.
+- **Dependencies** are the six packages in `requirements.txt` (fastapi, uvicorn,
+  pytest, coverage, pydantic, rich), used under their own licences.
+- The two generated files inside targets - `test_healed_assertions.py` - are
+  written by the engine, not by hand, and are deleted and regenerated on every run.
+
 ## Quickstart
 
 ```bash
@@ -131,10 +169,10 @@ pip install -r requirements.txt
 python main.py full          # baseline audit (~3s) + full campaign (~8s) on the demo target
 python advanced/run_mutation.py --target targets/humanize \
     --json reports/humanize_mutation_report.json \
-    --trajectory trajectories/agent_trace_03.json     # third-party target, frozen bank (~4s)
+    --trajectory trajectories/campaign_trace_humanize.json     # third-party target, frozen bank (~4s)
 python advanced/run_mutation.py --target targets/humanize --max-code-mutants 400 \
     --json reports/humanize_full_mutation_report.json \
-    --trajectory trajectories/agent_trace_04.json     # exhaustive: writes the 12 healed tests (~25s)
+    --trajectory trajectories/campaign_trace_humanize_full.json     # exhaustive: writes the 12 healed tests (~25s)
 python dashboard/server.py   # Mission Control UI at http://127.0.0.1:8377
 ```
 
@@ -257,7 +295,8 @@ dashboard/               FastAPI Mission Control (landing page + live dashboard)
 .github/workflows/       CI: selftests + mutation-score gates on both targets
 selftests/               the engine's own test suite (135 tests)
 docs/ARCHITECTURE.md     frozen module contract the engine is built against
-trajectories/            agent execution traces (real runs)
+trajectories/            agent_trace_01 (coding-agent trace) + campaign_trace_*
+                         (engine output, regenerated per run) - see its README
 reports/                 generated JSON/HTML reports (committed as evidence)
 ```
 

@@ -75,13 +75,13 @@ def test_default_json_keeps_demo_paths() -> None:
 def test_custom_json_never_touches_demo_artifacts() -> None:
     html, traj = sibling_output_paths("reports/humanize_mutation_report.json", None, None)
     assert html == "reports/humanize_mutation_report.html"
-    assert traj == "trajectories/humanize_trace.json"
+    assert traj == "trajectories/campaign_trace_humanize.json"
 
 
 def test_full_campaign_stem() -> None:
     html, traj = sibling_output_paths("reports/humanize_full_mutation_report.json", None, None)
     assert html == "reports/humanize_full_mutation_report.html"
-    assert traj == "trajectories/humanize_full_trace.json"
+    assert traj == "trajectories/campaign_trace_humanize_full.json"
 
 
 def test_explicit_values_win() -> None:

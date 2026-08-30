@@ -104,7 +104,7 @@ def test_sibling_paths_out_of_tree_and_dot_prefixed(tmp_path: Path) -> None:
     html, traj = sibling_output_paths(str(tmp_path / "out.json"), None, None)
     assert Path(traj).parent == tmp_path and Path(html).parent == tmp_path
     _, traj2 = sibling_output_paths("./reports/mutation_report.json", None, None)
-    assert traj2 == "trajectories/agent_trace_02.json"
+    assert traj2 == "trajectories/campaign_trace_demo.json"
 
 
 HASH_MODULE = '''
