@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SyntraceAI - Autonomous Mutation Testing & Hallucination Stress-Tester</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141417'/%3E%3Cpath d='M16 3.8 27.2 10.3v13.4L16 30.2 4.8 23.7V10.3z' fill='none' stroke='%23f2f2f0' stroke-width='1.5' opacity='.4'/%3E%3Cpath d='M18.4 7.6 10.8 17.6h4.6L13.6 24.4l7.6-10h-4.6z' fill='%23f2f2f0'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
 <meta name="description" content="SyntraceAI breaks your code faster than your tests notice. Adversarial AST mutation, prompt perturbation, sandboxed scoring and differential auto-healing - deterministic, $0, one command.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -162,7 +163,11 @@
     padding-top: 15px; padding-bottom: 15px; }
   .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 17px;
     letter-spacing: -.02em; }
-  .brand svg { width: 22px; height: 22px; flex: none; }
+  /* The lockup is bitmap artwork on a transparent ground: it works only on the
+     dark surfaces it is used on (nav and footer), and its height sets the scale. */
+  .lockup { display: block; height: 34px; width: auto; }
+  .lockup-lg { height: 44px; }
+  @media (max-width: 620px) { .lockup { height: 28px; } .lockup-lg { height: 34px; } }
   .nav-links { display: flex; align-items: center; gap: clamp(14px, 2vw, 28px); font-size: 14px;
     color: var(--on-dark-muted); }
   .nav-links a:hover { color: var(--on-dark); }
@@ -487,12 +492,9 @@
 
 <header class="nav">
   <div class="wrap navbar">
-    <a class="brand" href="/">
-      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <path d="M16 2 28 9v14l-12 7L4 23V9z" stroke="currentColor" stroke-width="1.4" opacity=".5"/>
-        <path d="M18 8 11 17h5l-2 7 7-9h-5z" fill="currentColor"/>
-      </svg>
-      SyntraceAI
+    <a class="brand" href="/" aria-label="SyntraceAI - adversarial testing">
+      <img class="lockup" src="/static/syntraceai-lockup.png"
+           alt="SyntraceAI - Adversarial Testing" width="525" height="96">
     </a>
     <nav class="nav-links" id="navlinks">
       <a class="opt" href="#loop">The loop</a>
@@ -895,12 +897,9 @@
   <div class="wrap">
     <div class="foot">
       <div>
-        <a class="brand" href="/">
-          <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" style="width:22px;height:22px">
-            <path d="M16 2 28 9v14l-12 7L4 23V9z" stroke="currentColor" stroke-width="1.4" opacity=".5"/>
-            <path d="M18 8 11 17h5l-2 7 7-9h-5z" fill="currentColor"/>
-          </svg>
-          SyntraceAI
+        <a class="brand" href="/" aria-label="SyntraceAI - adversarial testing">
+          <img class="lockup lockup-lg" src="/static/syntraceai-lockup.png"
+               alt="SyntraceAI - Adversarial Testing" width="525" height="96">
         </a>
         <div>Autonomous Agentic Mutation Testing &amp; Hallucination Stress-Tester.</div>
         <div style="margin-top:12px"><a href="https://github.com/mrnetwork0001/SyntraceAI" target="_blank" rel="noopener">GitHub ↗</a></div>

@@ -5,6 +5,7 @@ Serves the landing page, the dashboard SPA, and a small JSON API over the engine
     GET  /               landing page
     GET  /app            Mission Control dashboard UI
     GET  /docs           documentation (Swagger API reference is at /api/docs)
+    GET  /static/*       brand assets (logo lockup, mark, favicons)
     GET  /api/targets    report sets available (demo, humanize, humanize exhaustive)
     GET  /api/reports    latest baseline + mutation reports (?target=<id>)
     GET  /api/reset      what a reset of ?target=<id> would delete, and whether
@@ -46,6 +47,7 @@ from advanced.target_config import CONFIG_FILENAME, TargetConfigError, load_targ
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 # FastAPI serves its own Swagger UI at /docs by default, which would shadow the
 # documentation page. The generated API reference moves to /api/docs.
@@ -100,6 +102,9 @@ def _pump_output(proc: subprocess.Popen, kind: str) -> None:
         _state["running"] = False
         _state["returncode"] = proc.returncode
         _state["log"].append(f"--- {kind} finished with exit code {proc.returncode} ---")
+
+
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 
 @app.get("/")
