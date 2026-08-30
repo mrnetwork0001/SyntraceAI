@@ -4,107 +4,117 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SyntraceAI Mission Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0b1020; --panel: #121a30; --panel2: #0e1527; --line: #223052;
-    --text: #e6ecff; --dim: #8fa0c6; --accent: #6ea8ff; --good: #34d399;
-    --bad: #f87171; --warn: #fbbf24; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    --bg: #05060c; --bg-900: #0a0c16; --bg-700: #1e2338;
+    --text: #e2e8f0; --muted: #94a3b8; --dim: #64748b;
+    --volt: #7c5cff; --volt-bright: #9d85ff; --arc: #22d3ee; --up: #34d399; --down: #fb7185; --warn: #fbbf24;
+    --line: rgba(255,255,255,.06); --line2: rgba(255,255,255,.1); --card: rgba(255,255,255,.04);
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; background: radial-gradient(1200px 600px at 70% -10%, #16224a 0%, var(--bg) 55%);
-    color: var(--text); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    min-height: 100vh;
-  }
-  .wrap { max-width: 1200px; margin: 0 auto; padding: 28px 24px 64px; }
-  header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
-  .logo { font-size: 26px; }
-  h1 { font-size: 20px; margin: 0; letter-spacing: .2px; }
-  .sub { color: var(--dim); font-size: 12.5px; margin-top: 2px; }
-  .pill {
-    margin-left: auto; padding: 5px 12px; border-radius: 999px; font-size: 12px;
-    border: 1px solid var(--line); background: var(--panel); color: var(--dim);
-  }
-  .pill.running { color: var(--warn); border-color: #5a4a17; animation: pulse 1.2s infinite; }
-  .pill.ok { color: var(--good); border-color: #1d4a3a; }
-  .pill.fail { color: var(--bad); border-color: #5a2626; }
-  @keyframes pulse { 50% { opacity: .55; } }
+  body { margin: 0; background: var(--bg) radial-gradient(ellipse at top, rgba(124,92,255,.14), transparent 60%) no-repeat; color: var(--text);
+    font: 14px/1.55 var(--sans); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 24px 64px; }
+  .label { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+  .mono { font-family: var(--mono); font-size: 12px; }
+
+  @keyframes bolt { 0%, to { opacity: .45; filter: drop-shadow(0 0 0 transparent); } 45% { opacity: 1; filter: drop-shadow(0 0 6px rgba(157,133,255,.9)); } }
+  @keyframes ping-slow { 0% { transform: scale(1); opacity: .7; } 70%, to { transform: scale(1.9); opacity: 0; } }
+  @keyframes rise { 0% { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .rise { animation: rise .55s cubic-bezier(.16,1,.3,1) both; }
+  .bolt { animation: bolt 2.2s ease-in-out infinite; }
+
+  header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 6px 0 22px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+  .brand svg { width: 24px; height: 24px; }
+  .sub { color: var(--dim); font-size: 12px; }
+  .right { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; font-family: var(--mono); font-size: 11px;
+    letter-spacing: .08em; text-transform: uppercase; border: 1px solid var(--line2); background: rgba(255,255,255,.05); color: var(--muted); }
+  .pill.running { color: var(--warn); border-color: rgba(251,191,36,.4); background: rgba(251,191,36,.08); }
+  .pill.ok { color: var(--up); border-color: rgba(52,211,153,.4); background: rgba(52,211,153,.1); }
+  .pill.fail { color: var(--down); border-color: rgba(251,113,133,.4); background: rgba(251,113,133,.1); }
+  .live { position: relative; display: inline-block; width: 7px; height: 7px; border-radius: 999px; background: currentColor; }
+  .pill.running .live::after { content: ""; position: absolute; inset: 0; border-radius: 999px; background: currentColor; animation: ping-slow 1.6s cubic-bezier(0,0,.2,1) infinite; }
+  select.pill { appearance: none; -webkit-appearance: none; cursor: pointer; color: var(--text); padding-right: 26px;
+    background: rgba(255,255,255,.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' fill='none'/%3E%3C/svg%3E") no-repeat right 10px center; }
+  select.pill option { background: var(--bg-900); color: var(--text); text-transform: none; }
 
   .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
-  button {
-    background: linear-gradient(180deg, #1c2b55, #16224a); color: var(--text);
-    border: 1px solid #2c3f74; border-radius: 9px; padding: 9px 16px; font-size: 13.5px;
-    cursor: pointer; font-weight: 600;
-  }
-  button:hover:not(:disabled) { border-color: var(--accent); }
-  button:disabled { opacity: .45; cursor: not-allowed; }
-  button.primary { background: linear-gradient(180deg, #2b57b0, #234a99); border-color: #3d6ccc; }
+  button { font: 600 13px/1 var(--sans); color: var(--text); border: 1px solid var(--line2); background: rgba(255,255,255,.05); border-radius: 12px;
+    padding: 11px 16px; cursor: pointer; transition: border-color .2s, background .2s, transform .2s; }
+  button:hover:not(:disabled) { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.08); }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  button.primary { background: linear-gradient(90deg, var(--volt), #6a4de6); border-color: rgba(124,92,255,.4); box-shadow: 0 0 24px -4px rgba(124,92,255,.45); }
+  button.primary:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
+  button.arc { border-color: rgba(34,211,238,.35); color: var(--arc); }
 
-  .card {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
-    padding: 18px 20px; margin-bottom: 18px;
-  }
-  .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; color: var(--dim); margin: 0 0 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin-bottom: 16px; }
+  .card h2 { margin: 0 0 14px; font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); font-weight: 500; }
 
   .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
-  .tile { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
-  .tile .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .tile .l { color: var(--dim); font-size: 12px; margin-top: 3px; }
-  .v.good { color: var(--good); } .v.bad { color: var(--bad); } .v.accent { color: var(--accent); }
+  .tile { background: rgba(5,6,12,.55); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .tile .v { font-family: var(--mono); font-size: 26px; font-weight: 600; letter-spacing: -.02em; }
+  .tile .l { color: var(--dim); font-size: 11.5px; margin-top: 4px; }
+  .v.good { color: var(--up); } .v.bad { color: var(--down); } .v.accent { color: var(--arc); } .v.volt { color: var(--volt-bright); }
 
-  .gap-callout {
-    border-left: 3px solid var(--warn); background: #191d2e; padding: 12px 16px;
-    border-radius: 0 10px 10px 0; margin-top: 14px; color: #ffe9b8; font-size: 13.5px;
-  }
+  .gap-callout { border: 1px solid rgba(251,191,36,.3); background: rgba(251,191,36,.06); padding: 12px 16px; border-radius: 12px; margin-top: 14px; color: #ffe3a3; font-size: 13px; }
 
   .bars .row { display: grid; grid-template-columns: 220px 1fr 90px; gap: 12px; align-items: center; margin-bottom: 9px; }
-  .bars .name { color: var(--dim); font-size: 12.5px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .bar { display: flex; height: 16px; border-radius: 5px; overflow: hidden; background: #1a2340; }
-  .bar .k { background: var(--good); } .bar .s { background: var(--bad); }
-  .bars .n { font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .bars .name { color: var(--muted); font-size: 12px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--mono); }
+  .bar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.06); }
+  .bar .k { background: linear-gradient(90deg, #1f9d6d, var(--up)); } .bar .s { background: linear-gradient(90deg, #d84c68, var(--down)); }
+  .bars .n { font-size: 11px; color: var(--dim); font-family: var(--mono); }
 
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; color: var(--dim); font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em;
-       padding: 7px 10px; border-bottom: 1px solid var(--line); }
-  td { padding: 7px 10px; border-bottom: 1px solid #1a2444; vertical-align: top; }
+  th { text-align: left; color: var(--dim); font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .12em; font-weight: 500;
+       padding: 8px 10px; border-bottom: 1px solid var(--line2); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
   tr:last-child td { border-bottom: none; }
-  .mono { font-family: var(--mono); font-size: 12px; }
-  .tag { display: inline-block; padding: 1.5px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
-  .tag.survived { background: #3a1a1e; color: var(--bad); }
-  .tag.detected { background: #123328; color: var(--good); }
-  .tag.kind { background: #1a2547; color: var(--accent); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 999px; font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+  .tag.survived { background: rgba(251,113,133,.1); color: var(--down); border: 1px solid rgba(251,113,133,.3); }
+  .tag.detected { background: rgba(52,211,153,.1); color: var(--up); border: 1px solid rgba(52,211,153,.35); }
+  .tag.kind { background: rgba(124,92,255,.1); color: var(--volt-bright); border: 1px solid rgba(124,92,255,.25); }
 
   .scroll { overflow-x: auto; }
-  #log {
-    background: #070b16; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
-    font-family: var(--mono); font-size: 12px; color: #b8c6ea; max-height: 320px; overflow-y: auto;
-    white-space: pre-wrap; word-break: break-word;
-  }
-  .empty { color: var(--dim); text-align: center; padding: 34px 0; font-size: 13.5px; }
-  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
-  .footnote { color: var(--dim); font-size: 12px; margin-top: 6px; }
+  #log { background: rgba(5,6,12,.8); border: 1px solid var(--line2); border-radius: 12px; padding: 12px 14px; font-family: var(--mono); font-size: 12px;
+    color: #b8c6ea; max-height: 320px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
+  .empty { color: var(--dim); text-align: center; padding: 34px 0; font-size: 13px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } .bars .row { grid-template-columns: 140px 1fr 70px; } }
+  .footnote { color: var(--dim); font-size: 12px; margin-top: 8px; }
   [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="logo">🧪</div>
-    <div>
-      <h1>SyntraceAI — Mission Control</h1>
-      <div class="sub">Autonomous Agentic Mutation Testing &amp; Hallucination Stress-Tester</div>
+  <header class="rise">
+    <a class="brand" href="/">
+      <svg class="bolt" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9d85ff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+        <path d="M16 2 28 9v14l-12 7L4 23V9z" stroke="url(#g)" stroke-width="1.6"/>
+        <path d="M18 8 11 17h5l-2 7 7-9h-5z" fill="url(#g)"/>
+      </svg>
+      SyntraceAI <span class="sub">/ Mission Control</span>
+    </a>
+    <div class="right">
+      <select id="targetSelect" class="pill" onchange="refreshReports()" title="report set"></select>
+      <div id="statusPill" class="pill"><span class="live"></span> idle</div>
+      <a href="/" class="pill">← Landing</a>
     </div>
-    <div id="statusPill" class="pill">idle</div>
-    <select id="targetSelect" class="pill" onchange="refreshReports()" title="report set"></select>
-    <a href="/" class="pill" style="text-decoration:none">← Landing</a>
   </header>
 
-  <div class="actions">
-    <button id="btnBaseline" onclick="launch('baseline')">▶ Run Baseline Audit</button>
+  <div class="actions rise">
+    <button id="btnBaseline" onclick="launch('baseline')">Run Baseline Audit</button>
     <button id="btnMutate" class="primary" onclick="launch('mutate')">⚡ Run Mutation Campaign</button>
-    <button id="btnFull" onclick="launch('full')">⛓ Run Full (Baseline + Campaign)</button>
-    <button id="btnLog" onclick="toggleLog()">📜 Log</button>
+    <button id="btnFull" onclick="launch('full')">Run Full (Baseline + Campaign)</button>
+    <button id="btnLog" class="arc" onclick="toggleLog()">Log</button>
   </div>
 
   <div class="card" id="logCard" hidden>
@@ -112,40 +122,37 @@
     <div id="log"></div>
   </div>
 
-  <div class="card">
+  <div class="card rise">
     <h2>Campaign scoreboard</h2>
     <div id="tiles" class="tiles"></div>
     <div id="gap" class="gap-callout" hidden></div>
-    <div id="emptyMain" class="empty" hidden>
-      No campaign data yet — run the mutation engine to populate the scoreboard.
-    </div>
+    <div id="emptyMain" class="empty" hidden>No campaign data yet — run the mutation engine to populate the scoreboard.</div>
   </div>
 
   <div class="cols">
-    <div class="card">
+    <div class="card rise">
       <h2>Detection by mutation operator</h2>
       <div id="bars" class="bars"></div>
-      <div class="footnote"><span style="color:var(--good)">■</span> detected &nbsp;
-        <span style="color:var(--bad)">■</span> survived</div>
+      <div class="footnote"><span style="color:var(--up)">■</span> detected &nbsp; <span style="color:var(--down)">■</span> survived</div>
     </div>
-    <div class="card">
-      <h2>Baseline audit (coverage.py mindset)</h2>
+    <div class="card rise">
+      <h2>Baseline audit · coverage.py mindset</h2>
       <div id="baseline"></div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>Surviving bugs (pre-heal)</h2>
+  <div class="card rise">
+    <h2>Surviving bugs · pre-heal</h2>
     <div class="scroll"><div id="survivors"></div></div>
   </div>
 
-  <div class="card">
+  <div class="card rise">
     <h2>Auto-healed assertion tests</h2>
     <div class="scroll"><div id="healed"></div></div>
     <div id="unhealable" class="footnote"></div>
   </div>
 
-  <div class="card">
+  <div class="card rise">
     <h2>Agent trajectories</h2>
     <div id="trajectories" class="footnote">—</div>
   </div>
@@ -176,14 +183,14 @@ function renderMutation(m) {
   if (!m) { tiles.innerHTML = ''; gap.hidden = true; empty.hidden = false;
             $('bars').innerHTML = '<div class="empty">—</div>';
             $('survivors').innerHTML = '<div class="empty">—</div>';
-            $('healed').innerHTML = '<div class="empty">—</div>'; return; }
+            $('healed').innerHTML = '<div class="empty">—</div>'; $('unhealable').textContent = ''; return; }
   empty.hidden = true;
 
   const cov = num(m.line_coverage_pct);
   const pre = num(m.score_original), fin = num(m.score_final);
   const healedCount = (m.healed_tests || []).length;
   tiles.innerHTML =
-    tile(cov !== null ? cov.toFixed(1) + '%' : '—', 'line coverage (before SyntraceAI)') +
+    tile(cov !== null ? cov.toFixed(1) + '%' : '—', 'line coverage (before SyntraceAI)', 'volt') +
     tile(pre !== null ? pre.toFixed(1) + '%' : '—',
          `pre-heal detection (${m.detected_original}/${m.total_bugs})`, pre !== null && pre < 60 ? 'bad' : '') +
     tile(fin !== null ? fin.toFixed(1) + '%' : '—',
@@ -247,7 +254,7 @@ function renderBaseline(b) {
   const det = num(b.detected), tot = num(b.total);
   const pct = det !== null && tot ? (100 * det / tot) : null;
   let html = '<div class="tiles">' +
-    tile(cov !== null ? cov.toFixed(1) + '%' : '—', 'line coverage') +
+    tile(cov !== null ? cov.toFixed(1) + '%' : '—', 'line coverage', 'volt') +
     tile(det !== null && tot !== null ? `${det}/${tot}` : '—',
          `bugs detected${pct !== null ? ' (' + pct.toFixed(0) + '%)' : ''}`, 'bad') +
     '</div>';
@@ -292,13 +299,13 @@ async function poll() {
     logEl.textContent = (s.log_tail || []).join('\n');
     if (logVisible) logEl.scrollTop = logEl.scrollHeight;
     if (s.running) {
-      pill.className = 'pill running'; pill.textContent = `running: ${s.kind}…`; setButtons(true);
+      pill.className = 'pill running'; pill.innerHTML = `<span class="live"></span> running: ${esc(s.kind)}…`; setButtons(true);
       if (!logVisible) toggleLog(true);
     } else {
       setButtons(false);
-      if (s.returncode === null || s.returncode === undefined) { pill.className = 'pill'; pill.textContent = 'idle'; }
-      else if (s.returncode === 0) { pill.className = 'pill ok'; pill.textContent = `last run: ${s.kind} ✓`; }
-      else { pill.className = 'pill fail'; pill.textContent = `last run: ${s.kind} failed (${s.returncode})`; }
+      if (s.returncode === null || s.returncode === undefined) { pill.className = 'pill'; pill.innerHTML = '<span class="live"></span> idle'; }
+      else if (s.returncode === 0) { pill.className = 'pill ok'; pill.innerHTML = `<span class="live"></span> last run: ${esc(s.kind)} ✓`; }
+      else { pill.className = 'pill fail'; pill.innerHTML = `<span class="live"></span> last run: ${esc(s.kind)} failed (${s.returncode})`; }
       if (polling) { clearInterval(polling); polling = null; await loadTargets(); await refreshReports(); }
     }
   } catch (e) { /* ignore */ }
