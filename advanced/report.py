@@ -187,10 +187,19 @@ def render_terminal(campaign: CampaignResult, *, console: Console | None = None)
 # ---------------------------------------------------------------------------
 
 def write_json(campaign: CampaignResult, path: Path) -> None:
-    """Write ``CampaignResult.to_dict()`` as pretty-printed JSON."""
+    """Write ``CampaignResult.to_dict()`` as pretty-printed JSON.
+
+    Per-bug ``duration_s`` timing fields are stripped so the report is
+    byte-stable across identical runs — two runs with the same seed diff
+    clean except for the single top-level ``wall_time_s`` field.
+    """
+    data = campaign.to_dict()
+    for key in ("original_results", "rerun_results", "final_results"):
+        for result in data.get(key, []):
+            result.pop("duration_s", None)
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(campaign.to_dict(), indent=2) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
