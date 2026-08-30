@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SyntraceAI - Documentation</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141417'/%3E%3Cpath d='M16 3.8 27.2 10.3v13.4L16 30.2 4.8 23.7V10.3z' fill='none' stroke='%23f2f2f0' stroke-width='1.5' opacity='.4'/%3E%3Cpath d='M18.4 7.6 10.8 17.6h4.6L13.6 24.4l7.6-10h-4.6z' fill='%23f2f2f0'/%3E%3C/svg%3E">
+<meta name="description" content="SyntraceAI documentation: the measurement, the engine, the measured results on two targets, and the limits - written from real runs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ------------------------------------------------------------------
+     Documentation surface.
+
+     A third view onto the same product, and deliberately the quietest of
+     the three: the marketing page is light and editorial, Mission Control
+     is a dark instrument panel, and this is a dark reading surface. Long
+     measure, generous leading, one column, no cards. Type carries the
+     hierarchy - there is nothing here to click except the nav.
+     ------------------------------------------------------------------ */
+  :root {
+    --bg:          #08080a;
+    --bg-raised:   #121215;
+    --text:        #ededea;
+    --text-body:   #b9bcc2;
+    --text-muted:  #8a8e96;
+    --text-faint:  #63666e;
+    --line:        rgba(255,255,255,.09);
+    --line-2:      rgba(255,255,255,.16);
+    --good:        #4ade80;
+    --bad:         #f87171;
+    --warn:        #fbbf24;
+    --info:        #8ab4ff;
+    --sidebar-w:   282px;
+    --sans: "Inter Tight", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text-body);
+    font: 400 16.5px/1.72 var(--sans); -webkit-font-smoothing: antialiased;
+    /* The faint dot field keeps a very dark page from reading as a void. */
+    background-image: radial-gradient(circle, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size: 46px 46px;
+  }
+  a { color: inherit; text-decoration: none; }
+  :focus-visible { outline: 2px solid var(--info); outline-offset: 3px; border-radius: 3px; }
+  [hidden] { display: none !important; }
+
+  /* ---------------- layout ---------------- */
+  .layout { display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); align-items: start; }
+
+  .sidebar {
+    position: sticky; top: 0; height: 100vh; overflow-y: auto; overscroll-behavior: contain;
+    padding: 40px 24px 60px 40px; scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.14) transparent;
+  }
+  .sidebar::-webkit-scrollbar { width: 7px; }
+  .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.13); border-radius: 4px; }
+
+  .docbrand { display: flex; align-items: center; gap: 9px; margin-bottom: 34px;
+    font-size: 16px; font-weight: 600; letter-spacing: -.02em; color: var(--text); }
+  .docbrand svg { width: 20px; height: 20px; flex: none; }
+
+  .navgroup { margin-bottom: 26px; }
+  .navgroup > h3 {
+    margin: 0 0 10px; font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--text-faint);
+  }
+  /* The hairline rail is the group's spine; the active item brightens its own
+     segment of it, which is how the reader keeps their place while scrolling. */
+  .navgroup ul { margin: 0; padding: 0 0 0 1px; list-style: none; border-left: 1px solid var(--line); }
+  .navgroup a {
+    display: block; padding: 5.5px 0 5.5px 17px; margin-left: -1px;
+    border-left: 1px solid transparent; font-size: 14.5px; color: var(--text-muted);
+    transition: color .13s ease, border-color .13s ease;
+  }
+  .navgroup a:hover { color: var(--text); }
+  .navgroup a[aria-current="true"] { color: var(--text); border-left-color: var(--text); }
+
+  .sidefoot { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--line);
+    font-size: 13px; line-height: 1.75; color: var(--text-faint); }
+  .sidefoot a { color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px;
+    text-decoration-color: var(--line-2); }
+  .sidefoot a:hover { color: var(--text); }
+
+  /* ---------------- article ---------------- */
+  .doc { max-width: 812px; padding: 56px 48px 200px; }
+
+  .doc h1 { margin: 0 0 26px; font-size: clamp(38px, 5vw, 56px); font-weight: 500;
+    line-height: 1.04; letter-spacing: -.035em; color: var(--text); }
+  .doc h2 { margin: 0 0 24px; font-size: clamp(29px, 3.4vw, 38px); font-weight: 500;
+    line-height: 1.1; letter-spacing: -.03em; color: var(--text); }
+  /* Mono micro-label: a subhead that never competes with the section title. */
+  .doc h3 { margin: 40px 0 16px; font-family: var(--mono); font-size: 12px; font-weight: 500;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted); }
+  .doc h4 { margin: 30px 0 10px; font-size: 17px; font-weight: 600; letter-spacing: -.01em;
+    color: var(--text); }
+  .doc p { margin: 0 0 20px; }
+  .doc > section { scroll-margin-top: 32px; padding-bottom: 26px; }
+  .doc > section + section { border-top: 1px solid var(--line); padding-top: 62px; }
+  .doc b, .doc strong { color: var(--text); font-weight: 600; }
+
+  .doc a.link { color: var(--text); text-decoration: underline; text-underline-offset: 3.5px;
+    text-decoration-color: var(--line-2); text-decoration-thickness: 1px; }
+  .doc a.link:hover { text-decoration-color: var(--text); }
+
+  .lede { font-size: 18.5px; line-height: 1.68; color: var(--text); }
+
+  code { font-family: var(--mono); font-size: .855em; background: var(--bg-raised);
+    border: 1px solid var(--line); border-radius: 5px; padding: 2px 6px; color: var(--text); }
+  pre { margin: 0 0 22px; padding: 18px 20px; overflow-x: auto; background: var(--bg-raised);
+    border: 1px solid var(--line); border-radius: 12px; }
+  pre code { background: none; border: 0; padding: 0; font-size: 13px; line-height: 1.75;
+    color: var(--text-body); white-space: pre; }
+  .c-dim { color: var(--text-faint); }
+  .c-good { color: var(--good); }
+  .c-bad { color: var(--bad); }
+
+  ul.body, ol.body { margin: 0 0 22px; padding-left: 21px; }
+  ul.body li, ol.body li { margin-bottom: 11px; padding-left: 4px; }
+  ul.body li::marker { color: var(--text-faint); }
+  ol.body li::marker { color: var(--text-faint); font-variant-numeric: tabular-nums; }
+
+  /* Definition rows - the reference's "Pool contract: 0x… on mainnet" pattern. */
+  .facts { margin: 0 0 22px; }
+  .facts div { padding: 7px 0; }
+  .facts .k { color: var(--text-muted); }
+
+  table { width: 100%; margin: 0 0 22px; border-collapse: collapse; font-size: 14.5px; }
+  .tablewrap { overflow-x: auto; margin-bottom: 22px; }
+  .tablewrap table { margin-bottom: 0; }
+  th, td { text-align: left; padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line);
+    vertical-align: top; }
+  th { font-family: var(--mono); font-size: 10.5px; font-weight: 500; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--text-faint); padding-bottom: 9px; }
+  td.num { font-family: var(--mono); font-size: 13px; white-space: nowrap; color: var(--text); }
+
+  /* Callouts. Colour is the only signal that separates them, so each one also
+     says what it is in its label - never colour alone. */
+  .note { margin: 0 0 22px; padding: 15px 18px; border-left: 2px solid var(--line-2);
+    background: var(--bg-raised); border-radius: 0 10px 10px 0; font-size: 15px; line-height: 1.66; }
+  .note.warn { border-left-color: var(--warn); }
+  .note.good { border-left-color: var(--good); }
+  .note .label { display: block; margin-bottom: 5px; font-family: var(--mono); font-size: 10.5px;
+    font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted); }
+  .note.warn .label { color: var(--warn); }
+  .note.good .label { color: var(--good); }
+
+  .mobnav { display: none; }
+
+  @media (max-width: 1080px) {
+    :root { --sidebar-w: 240px; }
+    .sidebar { padding-left: 26px; }
+    .doc { padding: 48px 32px 160px; }
+  }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: minmax(0, 1fr); }
+    .sidebar { position: static; height: auto; padding: 30px 24px 6px; }
+    .doc { padding: 20px 24px 120px; }
+    /* Collapsed to a disclosure on small screens: a 16-item rail above the
+       article would bury the article. */
+    .mobnav { display: block; width: 100%; padding: 11px 15px; text-align: left;
+      font: 500 14px/1 var(--sans); color: var(--text); background: var(--bg-raised);
+      border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+    .navwrap[hidden] { display: none !important; }
+    .navwrap { margin-top: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <a class="docbrand" href="/">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 2.6 28.4 9.7v14.6L16 31.4 3.6 24.3V9.7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" opacity=".38"/>
+        <path d="M18.4 7.6 10.8 17.6h4.6L13.6 24.4l7.6-10h-4.6z" fill="currentColor"/>
+      </svg>
+      SyntraceAI
+    </a>
+
+    <button class="mobnav" id="mobnav" aria-expanded="false" aria-controls="navwrap">Contents</button>
+
+    <div class="navwrap" id="navwrap">
+      <nav class="navgroup">
+        <h3>Getting started</h3>
+        <ul>
+          <li><a href="#welcome">Welcome to SyntraceAI</a></li>
+          <li><a href="#how-it-works">How it works</a></li>
+          <li><a href="#install">Install and run</a></li>
+        </ul>
+      </nav>
+      <nav class="navgroup">
+        <h3>Targets</h3>
+        <ul>
+          <li><a href="#demo-target">The demo target</a></li>
+          <li><a href="#humanize">humanize 4.16.0</a></li>
+          <li><a href="#own-project">Your own project</a></li>
+        </ul>
+      </nav>
+      <nav class="navgroup">
+        <h3>Engine</h3>
+        <ul>
+          <li><a href="#ast-mutation">AST mutation</a></li>
+          <li><a href="#prompt-perturbation">Prompt perturbation</a></li>
+          <li><a href="#sandbox">Sandboxed evaluation</a></li>
+          <li><a href="#healing">Differential healing</a></li>
+        </ul>
+      </nav>
+      <nav class="navgroup">
+        <h3>Results</h3>
+        <ul>
+          <li><a href="#reading-the-score">Reading the score</a></li>
+          <li><a href="#measured">Measured results</a></li>
+          <li><a href="#artifacts">Reports and artifacts</a></li>
+        </ul>
+      </nav>
+      <nav class="navgroup">
+        <h3>Dashboard</h3>
+        <ul>
+          <li><a href="#mission-control">Mission Control</a></li>
+          <li><a href="#report-sets">Report sets and reset</a></li>
+        </ul>
+      </nav>
+      <nav class="navgroup">
+        <h3>Trust</h3>
+        <ul>
+          <li><a href="#determinism">Determinism</a></li>
+          <li><a href="#threats">Threats to validity</a></li>
+          <li><a href="#known-limits">Known limits</a></li>
+          <li><a href="#repo-map">Repository map</a></li>
+        </ul>
+      </nav>
+
+      <div class="sidefoot">
+        <div><a href="/">Landing page</a></div>
+        <div><a href="/app">Mission Control</a></div>
+        <div style="margin-top:10px">Apache 2.0</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="doc">
+
+    <!-- ==================== GETTING STARTED ==================== -->
+    <section id="welcome">
+      <h1>Welcome to SyntraceAI</h1>
+      <p class="lede">SyntraceAI is an adversarial mutation-testing agent for AI applications. It
+        injects a deterministic bank of small bugs into a target codebase, runs that project's own
+        test suite against every one of them in an isolated sandbox, and measures what the suite
+        actually catches. Bugs that survive are auto-healed: it synthesizes assertion tests proven
+        to kill them, and re-runs the campaign to show they do.</p>
+
+      <p>It exists because line coverage measures the wrong thing. Coverage counts <b>lines
+        executed</b>; it says nothing about <b>behavior defended</b>. A suite can visit 90% of your
+        code while asserting almost nothing about it, and prompt regressions - a lost instruction
+        line, a renamed schema key, dropped few-shot examples - are invisible to line coverage by
+        construction.</p>
+
+      <p>Every number in this documentation comes from a real, seeded, reproducible run. Nothing
+        here is a projection, and nothing rendered in the app is a mock number.</p>
+
+      <h3>Where everything lives</h3>
+      <div class="facts">
+        <div><span class="k">The engine:</span> <code>advanced/</code> · baseline auditor: <code>baseline/</code></div>
+        <div><span class="k">The app itself:</span> <a class="link" href="/app">/app</a> · these docs: <a class="link" href="/docs">/docs</a></div>
+        <div><span class="k">Committed evidence:</span> <code>reports/</code> and <code>trajectories/</code></div>
+        <div><span class="k">Frozen module contract:</span> <code>docs/ARCHITECTURE.md</code></div>
+        <div><span class="k">Licence:</span> Apache 2.0 · author: Ifeanyichukwu Onwo</div>
+      </div>
+
+      <h3>The stack, in one paragraph</h3>
+      <p>Python 3.11+ and nothing else that matters. The mutator is <code>ast</code> plus
+        <code>ast.unparse</code>; the sandbox is <code>shutil.copytree</code> plus a
+        <code>pytest</code> subprocess; the healer is a differential prober running candidate
+        inputs through both the original and mutated module. There is no model call anywhere in the
+        engine, no network access, and no API key. A campaign against the demo target costs
+        <b>$0.00</b> and takes about ten seconds.</p>
+    </section>
+
+    <!-- ==================== HOW IT WORKS ==================== -->
+    <section id="how-it-works">
+      <h2>How it works</h2>
+      <p>Four stages. The first three diagnose, the fourth repairs.</p>
+
+      <h4>1. Inject</h4>
+      <p>Seven AST operator families produce code mutants - one mutation site per mutant - and
+        twelve prompt perturbations attack the target's prompt module if it has one. Every mutant
+        must survive <code>compile()</code> before it is allowed near a sandbox. Mutations that can
+        be <em>proven</em> semantically inert are excluded from the bank up front, because an
+        unkillable bug in the denominator would misstate every downstream score.</p>
+
+      <h4>2. Isolate</h4>
+      <p>Each bug is applied to its own fresh copy of the project in a temporary directory, and the
+        project's real suite runs against it under a timeout, in parallel. Exit codes map to
+        verdicts: <code>0</code> means the bug survived, <code>1</code> means the suite caught it,
+        a timeout or a collection error counts as caught because the suite broke loudly. Silence
+        never counts as detection.</p>
+
+      <h4>3. Score</h4>
+      <p>Killed over the frozen bank is the mutation score. Alongside it the baseline auditor
+        measures line coverage on the same code with the same suite, so the two numbers sit side by
+        side and the gap between them is the finding.</p>
+
+      <h4>4. Heal</h4>
+      <p>For every survivor, the healer searches for an input on which the original and the mutant
+        disagree. If it finds one, it re-verifies that input in both project copies and only then
+        writes a test. Survivors with no discriminating input are reported as likely-equivalent -
+        never hidden, never quietly dropped from the denominator.</p>
+
+      <div class="note good">
+        <span class="label">The shape of the result</span>
+        One command turns "we have 87% coverage" into "our tests catch 48% of real behavior
+        changes, here are the 26 that slipped through, and here are 24 generated tests, each proven
+        to kill a specific one." Diagnosis, evidence and repair ship together.
+      </div>
+    </section>
+
+    <!-- ==================== INSTALL ==================== -->
+    <section id="install">
+      <h2>Install and run</h2>
+      <p>Python 3.11+ (developed and verified on 3.14). No API keys, no network access.</p>
+<pre><code>pip install -r requirements.txt
+
+python main.py full          <span class="c-dim"># baseline audit (~3s) + full campaign (~8s)</span>
+python main.py baseline      <span class="c-dim"># the coverage.py audit on its own</span>
+python main.py mutate        <span class="c-dim"># the campaign on its own</span>
+
+python dashboard/server.py   <span class="c-dim"># Mission Control at http://127.0.0.1:8377</span></code></pre>
+
+      <h3>Campaign flags</h3>
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Flag</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td class="num">--target</td><td>Project directory to attack. Relative paths resolve against your current directory, so <code>.</code> is your project.</td></tr>
+          <tr><td class="num">--seed</td><td>Bank selection seed. Default <code>1337</code>; the same seed gives the identical bank on any machine.</td></tr>
+          <tr><td class="num">--jobs</td><td>Sandbox parallelism. Default <code>min(8, cpu_count())</code>. Changing it never changes a verdict.</td></tr>
+          <tr><td class="num">--max-code-mutants</td><td>Bank depth. Default 38; raise it to enumerate every mutation site in the project.</td></tr>
+          <tr><td class="num">--no-heal</td><td>Diagnose only - skip the healing phase and write no test files.</td></tr>
+          <tr><td class="num">--fail-under</td><td>Exit 1 if the final score falls below this percent. This is the CI gate.</td></tr>
+          <tr><td class="num">--json / --html / --trajectory</td><td>Output paths. HTML and trajectory follow <code>--json</code> unless set explicitly, so a second target never overwrites the first one's artifacts.</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>Engine selftests</h3>
+      <p>The engine has its own suite, separate from any target's:</p>
+<pre><code>python -m pytest selftests/ -q
+<span class="c-dim">135 passed</span></code></pre>
+    </section>
+
+    <!-- ==================== DEMO TARGET ==================== -->
+    <section id="demo-target">
+      <h2>The demo target</h2>
+      <p><code>targets/sample_app</code> is a deterministic AI ticket-triage pipeline: prompt
+        templates, a rule-based <b>mock LLM that reads its own instructions</b>, pydantic contract
+        validation with a deliberately lenient salvage path, and boundary-rich pricing and scoring
+        logic. Its 48-test suite is green at 87.1% coverage with realistic blind spots - the suite
+        a rushed team actually ships.</p>
+
+      <p>The mock LLM matters. Each contract line in the prompt has a real behavioral consequence:
+        remove the JSON-only directive and it wraps its output in chatty prose; drop the few-shot
+        examples and it forgets the <code>summary</code> field. That makes prompt perturbation
+        measurable without a model call, deterministically, at zero cost.</p>
+
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>Baseline mindset</th><th>SyntraceAI</th></tr></thead>
+        <tbody>
+          <tr><td>Line coverage</td><td class="num">87.1%</td><td class="num">87.1%</td></tr>
+          <tr><td>AST code mutants detected</td><td class="num c-bad">18/38 (47.4%)</td><td class="num c-good">37/38 (97.4%)</td></tr>
+          <tr><td>Prompt perturbations detected</td><td class="num c-bad">6/12</td><td class="num c-good">12/12</td></tr>
+          <tr><td>Overall injected bugs</td><td class="num c-bad">24/50 (48.0%)</td><td class="num c-good">49/50 (98.0%)</td></tr>
+          <tr><td>Fixing the gaps</td><td>manual</td><td>24 auto-healed tests, verified by re-run</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p>That 39-point spread between 87% coverage and 48% detection is the number line coverage
+        was hiding. The <b>diagnosis</b> is the 48%; the 98% is what the suite looks like after
+        SyntraceAI repairs it.</p>
+
+      <p>The single surviving mutant, <code>M010</code>, is reported as likely-equivalent, and
+        manual analysis confirms it is a true equivalent: <code>coupon_pct &lt;= 0.0</code> becomes
+        <code>&lt; 0.0</code> around a guard whose fall-through computes the identical value at the
+        boundary. It is left in the denominator rather than excused.</p>
+    </section>
+
+    <!-- ==================== HUMANIZE ==================== -->
+    <section id="humanize">
+      <h2>humanize 4.16.0</h2>
+      <p>A benchmark on a self-authored target proves the harness works. It does not prove the tool
+        finds anything in code we did not write. So the same engine, unchanged, runs against
+        <a class="link" href="https://github.com/python-humanize/humanize" target="_blank" rel="noopener">humanize</a>
+        4.16.0 - a mature MIT-licensed library vendored verbatim in <code>targets/humanize/</code>
+        together with the dependency-free part of its own suite (311 of its 784 tests; the
+        <code>freezegun</code> and <code>pytest-benchmark</code> modules are omitted and the code
+        they cover is excluded from mutation).</p>
+
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Measured</th><th>Frozen 38-mutant bank</th><th>Exhaustive: all 253 sites</th></tr></thead>
+        <tbody>
+          <tr><td>Line coverage (mutated modules)</td><td class="num">98.1%</td><td class="num">98.1%</td></tr>
+          <tr><td>Detected by humanize's own suite</td><td class="num">36/38 (94.7%)</td><td class="num">218/253 (86.2%)</td></tr>
+          <tr><td>Auto-healed tests generated</td><td class="num">0 needed</td><td class="num">12</td></tr>
+          <tr><td>After healing</td><td class="num">94.7%</td><td class="num c-good">230/253 (90.9%)</td></tr>
+          <tr><td>Wall time</td><td class="num">4.0s</td><td class="num">24.2s</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p>Two things this shows. First, SyntraceAI does <b>not manufacture findings</b> on a
+        well-tested library: at standard bank depth humanize catches 94.7%, and both survivors are
+        sign comparisons inside <code>_format_not_finite</code> guarded by
+        <code>math.isinf(value)</code> - only ±inf ever reaches them, so neither change is
+        observable. Second, at exhaustive depth that 98%-coverage suite still misses 35 behavior
+        changes, and the healer wrote 12 tests humanize's own suite lacks, pinning unit-scaling
+        thresholds nobody had asserted:</p>
+
+<pre><code>assert humanize.number.intword(1e+27, '%.1f') == '1.0 octillion'
+assert humanize.number.intword(1e+18, '%.1f') == '1.0 quintillion'
+assert humanize.filesize.naturalsize(1e+33, False, False, '%.1f') == '1000.0 QB'
+assert humanize.number.metric(1e+33, '', 3) == '1.00 x 10³³'</code></pre>
+
+      <p>The 23 remaining survivors at exhaustive depth are reported, not hidden: the
+        <code>isinf</code>-guarded family, a mutant reachable only through a
+        <code>list[Any]</code> signature the healer refuses, one <code>intword</code> power-table
+        entry no probed magnitude reaches, and threshold arithmetic inside <code>metric</code>,
+        <code>intcomma</code>, <code>ordinal</code> and <code>fractional</code> that the current
+        input pools cannot discriminate.</p>
+    </section>
+
+    <!-- ==================== OWN PROJECT ==================== -->
+    <section id="own-project">
+      <h2>Your own project</h2>
+      <p>SyntraceAI is a local developer tool, not a hosted service. There is no account, no upload
+        and no API key. It reads your source, mutates temporary copies, runs your suite against
+        them, and deletes them. <b>Your code never leaves your machine.</b></p>
+
+<pre><code>python advanced/run_mutation.py --target ~/code/my-app</code></pre>
+
+      <p>If your layout is not <code>app/</code> plus <code>tests/</code>, drop one file in your
+        project root. This is the entire integration:</p>
+
+<pre><code>{ "source_package": "myapp", "tests_dir": "tests", "prompt_templates": null }</code></pre>
+
+      <p><code>syntrace_target.json</code> also takes an <code>exclude</code> list for modules you
+        do not want mutated. <code>prompt_templates</code> points at your prompt module if you have
+        one, which switches on the twelve prompt perturbations; leave it <code>null</code> for a
+        code-only campaign.</p>
+
+      <p>You get back a terminal report, JSON and self-contained HTML under <code>reports/</code>
+        named for your project, and - the part you keep - <b>new test files written into your
+        project's own tests directory</b>, each pinning behavior on an input verified to catch a
+        specific bug. Review them and commit the ones you want.</p>
+
+      <div class="note warn">
+        <span class="label">Regenerated every run</span>
+        <code>test_healed_assertions.py</code> is deleted and rewritten at the start of every
+        campaign, which is what makes runs reproducible. Copy anything you edit into a test file of
+        your own before running again.
+      </div>
+
+      <h3>As a CI gate</h3>
+<pre><code>python /path/to/SyntraceAI/advanced/run_mutation.py --target . --fail-under 90</code></pre>
+      <p>This repo gates itself the same way. <code>.github/workflows/ci.yml</code> runs the
+        selftests and three campaigns on Python 3.11 and 3.12 for every push to <code>main</code>
+        and every pull request: the demo campaign at <b>≥95%</b>, the humanize frozen bank at
+        <b>≥85%</b>, and the humanize exhaustive campaign at <b>≥88%</b>.</p>
+    </section>
+
+    <!-- ==================== AST MUTATION ==================== -->
+    <section id="ast-mutation">
+      <h2>AST mutation</h2>
+      <p>Seven operator families, applied one site per mutant through
+        <code>ast.NodeTransformer</code> and re-emitted with <code>ast.unparse</code>:</p>
+
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Operator</th><th>Transformation</th></tr></thead>
+        <tbody>
+          <tr><td class="num">ArithmeticOperatorSwap</td><td>+ ↔ - · * ↔ / · // → / · % → *</td></tr>
+          <tr><td class="num">ComparisonOperatorSwap</td><td>== ↔ != · &lt; ↔ &lt;= · &gt; ↔ &gt;=</td></tr>
+          <tr><td class="num">BooleanOperatorSwap</td><td>and ↔ or</td></tr>
+          <tr><td class="num">ConditionNegation</td><td><code>if c:</code> → <code>if not c:</code></td></tr>
+          <tr><td class="num">ConstantMutation</td><td>n → n+1 · 0 → 1 · True ↔ False (docstrings skipped)</td></tr>
+          <tr><td class="num">BoundaryValueMutation</td><td>numeric constant inside a comparison → ±1</td></tr>
+          <tr><td class="num">ReturnValueMutation</td><td><code>return expr</code> → <code>return None</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p>Enumeration is deterministic, ordered by file path, line, column and operator name. Bank
+        selection is a seeded round-robin stratified across file and operator, so a 38-mutant bank
+        spans every file and every operator family rather than clustering in whichever module
+        happens to have the most arithmetic. IDs <code>M001…</code> are assigned after selection,
+        in selection order.</p>
+
+      <h3>Equivalence exclusions</h3>
+      <p>Two patterns are provably inert and are excluded before they can enter the bank:</p>
+      <ul class="body">
+        <li>An ordering-comparison swap inside a <b>clamp pattern</b> - <code>if x &gt; C: x = C</code>
+          with no else, a plain name and the same non-zero constant - is a semantic no-op under
+          standard numeric semantics.</li>
+        <li>The <b>TYPE_CHECKING idiom</b>: <code>if TYPE_CHECKING:</code> guards are never negated
+          and the constant in <code>TYPE_CHECKING = False</code> is never mutated, because those
+          blocks are import-only at runtime.</li>
+      </ul>
+      <p>Everything the provers cannot settle statically stays in the bank and is judged
+        empirically. Equivalents that slip through surface honestly as unhealable survivors rather
+        than being quietly removed from the denominator.</p>
+    </section>
+
+    <!-- ==================== PROMPT PERTURBATION ==================== -->
+    <section id="prompt-perturbation">
+      <h2>Prompt perturbation</h2>
+      <p>Twelve perturbations, <code>P001</code> through <code>P012</code>, each rewriting a
+        constant in the target's prompt module through an AST-based
+        <code>replace_constant</code> rather than string surgery. Code-only targets return none of
+        them.</p>
+
+      <ol class="body">
+        <li><b>RoleStripping</b> - remove the role line from the system prompt.</li>
+        <li><b>JsonOnlyDirectiveRemoval</b> - remove the "respond only with JSON" directive.</li>
+        <li><b>InstructionNegation</b> - replace that directive with one inviting commentary.</li>
+        <li><b>SchemaKeyRename</b> - <code>confidence</code> → <code>certainty</code>.</li>
+        <li><b>SchemaKeyRename</b> - <code>summary</code> → <code>synopsis</code>.</li>
+        <li><b>SchemaKeyRename</b> - <code>category</code> → <code>topic</code>.</li>
+        <li><b>TypeRuleRemoval</b> - drop the integer-type rule for <code>priority</code>.</li>
+        <li><b>RangeRuleRemoval</b> - drop the numeric-range rule for <code>confidence</code>.</li>
+        <li><b>SectionMarkerCorruption</b> - corrupt the <code>### TICKET ###</code> marker.</li>
+        <li><b>SectionMarkerCorruption</b> - remove the output-rules section entirely.</li>
+        <li><b>WhitespaceNoise</b> - insert a zero-width space inside a schema instruction.</li>
+        <li><b>FewShotDrop</b> - blank the few-shot example block.</li>
+      </ol>
+
+      <p>A perturbation may never remove a <code>{placeholder}</code> that the template's
+        <code>.format</code> call needs. That would crash the pipeline rather than degrade it, and
+        a crash is not the failure mode being measured.</p>
+
+      <div class="note">
+        <span class="label">Why this is separate from code mutation</span>
+        A prompt is executable configuration. A renamed schema key or a dropped instruction line
+        changes program behavior exactly the way a code edit does, but no coverage tool will ever
+        register it - the prompt module's lines were "executed" either way.
+      </div>
+    </section>
+
+    <!-- ==================== SANDBOX ==================== -->
+    <section id="sandbox">
+      <h2>Sandboxed evaluation</h2>
+      <p>Every bug is evaluated in isolation. The runner copies the target to a fresh temporary
+        directory, overwrites exactly one file with the patched source, and runs the project's
+        suite there:</p>
+
+<pre><code>python -m pytest -q -x --no-header -p no:cacheprovider</code></pre>
+
+      <p>The subprocess inherits the environment plus <code>PYTHONDONTWRITEBYTECODE=1</code>, is
+        killed at its timeout, and its temporary directory is always cleaned up. Copies ignore
+        <code>__pycache__</code> and <code>.pytest_cache</code>. Nothing is ever mutated in place,
+        so an interrupted campaign cannot leave your working tree damaged.</p>
+
+      <h3>Outcome mapping</h3>
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Exit</th><th>Verdict</th><th>Counts as</th></tr></thead>
+        <tbody>
+          <tr><td class="num">0</td><td class="num">SURVIVED</td><td>the bug slipped through</td></tr>
+          <tr><td class="num">1</td><td class="num">KILLED</td><td class="c-good">detected</td></tr>
+          <tr><td class="num">timeout</td><td class="num">TIMEOUT</td><td class="c-good">detected - runaway mutant, killed by the resource guard</td></tr>
+          <tr><td class="num">other</td><td class="num">ERROR</td><td class="c-good">detected - the suite broke loudly</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p>Loud breakage counting as detection is a deliberate, stated choice: a suite that errors out
+        has noticed something. In the shipped demo run this channel is unexercised - all 49
+        detections are genuine assertion failures, with zero timeouts and zero errors. You can
+        check that yourself in <code>reports/mutation_report.json</code>.</p>
+
+      <p>Sandboxes run in a thread pool over subprocesses, defaulting to
+        <code>min(8, cpu_count())</code>. Parallelism affects wall time only; verdicts are
+        identical at any <code>--jobs</code>.</p>
+    </section>
+
+    <!-- ==================== HEALING ==================== -->
+    <section id="healing">
+      <h2>Differential healing</h2>
+      <p>A survivor is a bug your suite did not notice. Healing turns each one into a test that
+        would have.</p>
+
+      <p>For each survivor the healer generates candidate inputs and runs them through both the
+        original and the mutated module in subprocess probes, looking for an input on which the two
+        disagree. Candidates come from several pools:</p>
+
+      <ul class="body">
+        <li><b>Type-hint pools</b> - scalar, union and alias-resolvable annotations
+          (<code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code>,
+          <code>None</code>, <code>float | str</code>, a <code>NumberOrString</code> alias).</li>
+        <li><b>Harvested literals ±1</b> - the module's own constants and the boundaries either
+          side of them, which is where mutation bugs actually live.</li>
+        <li><b>Pairwise string concatenations</b> and non-integral floats.</li>
+        <li><b>Order-of-magnitude sweeps</b> anchored on the function's own defaults.</li>
+        <li><b>Cross-function synthesis</b> - the module's own <code>str -> str</code> functions
+          compose realistic inputs such as fully rendered prompts, so the probe reaches states no
+          flat pool would.</li>
+      </ul>
+
+      <h3>The honesty gate</h3>
+      <p>A discriminating input is not enough to emit a test. The healer re-verifies it in both
+        project copies first, and only a re-verified input becomes an assertion. <b>No verified
+        input, no test.</b> Survivors with no discriminating input are reported as
+        likely-equivalent or unhealable, with their reason, and they stay in the denominator.</p>
+
+      <div class="note warn">
+        <span class="label">Read the post-heal score correctly</span>
+        Post-heal detection is high <em>by construction</em>: every healed test is synthesized from
+        an input already verified to discriminate its mutant, so the re-run kill is expected. The
+        informative number is the pre-heal detection. The post-heal score measures that the
+        healer's output is real and complete, not that healing is hard.
+      </div>
+    </section>
+
+    <!-- ==================== READING THE SCORE ==================== -->
+    <section id="reading-the-score">
+      <h2>Reading the score</h2>
+      <p>A campaign reports several numbers and they answer different questions. Confusing them is
+        the main way mutation testing gets misread.</p>
+
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Number</th><th>What it answers</th></tr></thead>
+        <tbody>
+          <tr><td class="num">line coverage</td><td>Which lines ran. Says nothing about whether your tests would notice if those lines were wrong.</td></tr>
+          <tr><td class="num">score_original</td><td><b>The diagnosis.</b> How many injected bugs your suite caught before any help. This is the honest measure of what your tests defend.</td></tr>
+          <tr><td class="num">score_final</td><td>The score after healing. Measures that the generated tests are real, not that the code got safer on its own.</td></tr>
+          <tr><td class="num">healed_tests</td><td>How many survivors the healer could pin with a verified discriminating input.</td></tr>
+          <tr><td class="num">survivors</td><td>Everything still uncaught, each with its file, line, operator and a reason if it is believed equivalent.</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p>The gap between the first and second rows is the finding. On the demo target that is 87.1%
+        against 48.0% - thirty-nine points of false confidence.</p>
+    </section>
+
+    <!-- ==================== MEASURED ==================== -->
+    <section id="measured">
+      <h2>Measured results</h2>
+      <p>Both targets, every committed number, seed <code>1337</code>. Wall times are from an
+        8-core laptop and are the only figures that vary between machines.</p>
+
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Run</th><th>Bank</th><th>Coverage</th><th>Pre-heal</th><th>Healed</th><th>Post-heal</th><th>Time</th></tr></thead>
+        <tbody>
+          <tr><td>Demo campaign</td><td class="num">50</td><td class="num">87.1%</td><td class="num c-bad">24/50 · 48.0%</td><td class="num">24</td><td class="num c-good">49/50 · 98.0%</td><td class="num">~10s</td></tr>
+          <tr><td>humanize, frozen bank</td><td class="num">38</td><td class="num">98.1%</td><td class="num">36/38 · 94.7%</td><td class="num">0</td><td class="num">36/38 · 94.7%</td><td class="num">4.0s</td></tr>
+          <tr><td>humanize, exhaustive</td><td class="num">253</td><td class="num">98.1%</td><td class="num">218/253 · 86.2%</td><td class="num">12</td><td class="num c-good">230/253 · 90.9%</td><td class="num">24.2s</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p>Reproducing them takes three commands, documented in full in the reproduction guide:</p>
+<pre><code>python main.py full
+
+python advanced/run_mutation.py --target targets/humanize \
+    --json reports/humanize_mutation_report.json \
+    --trajectory trajectories/agent_trace_03.json
+
+python advanced/run_mutation.py --target targets/humanize --max-code-mutants 400 \
+    --json reports/humanize_full_mutation_report.json \
+    --trajectory trajectories/agent_trace_04.json</code></pre>
+    </section>
+
+    <!-- ==================== ARTIFACTS ==================== -->
+    <section id="artifacts">
+      <h2>Reports and artifacts</h2>
+      <p>Every run writes the same four kinds of artifact.</p>
+
+      <div class="tablewrap">
+      <table>
+        <thead><tr><th>Path</th><th>Contents</th></tr></thead>
+        <tbody>
+          <tr><td class="num">reports/…_baseline_report.json</td><td>Coverage %, detection counts, per-operator breakdown from the original suite.</td></tr>
+          <tr><td class="num">reports/…_mutation_report.json</td><td>The full campaign: pre- and post-heal scores, every mutant with its verdict, every survivor, every healed test.</td></tr>
+          <tr><td class="num">reports/…_mutation_report.html</td><td>A self-contained visual report - one file, no assets, openable anywhere.</td></tr>
+          <tr><td class="num">trajectories/…_trace.json</td><td>The campaign's own execution trajectory: what the agent did, in order, with timings.</td></tr>
+          <tr><td class="num">&lt;target&gt;/tests/test_healed_assertions.py</td><td>The generated hardened suite, written into the target's own tests directory.</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p>Report sets are named from the <em>resolved</em> target path, not the directory name. The
+        bundled demo keeps the unprefixed names; other targets vendored under
+        <code>targets/</code> use their bare name; every other project gets its name plus a short
+        digest of its absolute path, so two projects that merely share a directory name never
+        collide and nothing external can ever land on the demo's committed filenames.</p>
+    </section>
+
+    <!-- ==================== MISSION CONTROL ==================== -->
+    <section id="mission-control">
+      <h2>Mission Control</h2>
+      <p><a class="link" href="/app">/app</a> is the same engine with a face on it. It reads the
+        same report files the CLI writes - nothing rendered there is a mock number.</p>
+
+      <ul class="body">
+        <li><b>Run against</b> takes the path of any local Python project. The demo and humanize
+          are one-click presets.</li>
+        <li><b>Run Mutation Campaign</b>, <b>Baseline</b> and <b>Full</b> launch the same commands
+          the CLI runs, streaming the engine log live.</li>
+        <li>The views in the sidebar break the result apart: detection by operator, surviving bugs,
+          healed tests, the live log, and the agent trajectories.</li>
+        <li>Every result carries a <b>provenance line</b> saying whether you are looking at a
+          stored result from an earlier run or something measured in this session. A saved run is
+          never dressed up as a live one.</li>
+      </ul>
+    </section>
+
+    <!-- ==================== REPORT SETS ==================== -->
+    <section id="report-sets">
+      <h2>Report sets and reset</h2>
+      <p>Each project writes its own report set, selectable from the dropdown in the header.
+        Running a campaign against a new path adds a set; the dashboard switches to it when the run
+        finishes.</p>
+
+      <p><b>Reset</b> in the header offers two different things, because "reset" means two
+        different things:</p>
+
+      <ul class="body">
+        <li><b>Clear the view</b> blanks the tiles, panels and log so you can start from an empty
+          screen. Nothing on disk is touched, and the choice is remembered per report set: it
+          survives a reload and a trip to the landing page, and lifts when you restore it or run a
+          campaign. Other report sets are unaffected - clearing the demo view does not blank
+          humanize.</li>
+        <li><b>Delete saved reports</b> removes that report set's files along with the healed-test
+          file its campaign wrote. It lists every path before it will enable the button, and it
+          refuses while a run is in progress.</li>
+      </ul>
+
+      <div class="note warn">
+        <span class="label">Bundled sets are protected</span>
+        The demo and humanize report files are the committed evidence this documentation cites, so
+        Reset refuses to delete them. Only report sets from your own projects can be cleared. A set
+        whose origin cannot be established is protected too - refusing is the recoverable mistake.
+      </div>
+    </section>
+
+    <!-- ==================== DETERMINISM ==================== -->
+    <section id="determinism">
+      <h2>Determinism</h2>
+      <p>The engine is seeded and fully deterministic. Same seed means the identical bank and
+        identical scores, on any machine, at any parallelism, on any supported Python version.
+        Every verdict, mutant ID and healed test is reproducible.</p>
+
+      <p>Reports are byte-stable except for the single top-level <code>wall_time_s</code> field.
+        You can <code>diff</code> two runs yourself and see only that line move.</p>
+
+      <p>Both the baseline auditor and the campaign delete any previously generated
+        <code>test_healed_assertions.py</code> before measuring, so every run starts from the
+        original un-hardened suite. Without that, a second run would audit the first run's repairs
+        and report a flattering number.</p>
+
+      <h3>Runtime and cost</h3>
+      <div class="facts">
+        <div><span class="k">Demo campaign:</span> ~8-10s · <span class="k">baseline audit:</span> ~3s · <span class="k">both:</span> ~12-14s</div>
+        <div><span class="k">humanize:</span> 4.0s frozen bank · 24.2s exhaustive</div>
+        <div><span class="k">API cost:</span> $0.00 - local AST parsing and a deterministic mock LLM only</div>
+      </div>
+    </section>
+
+    <!-- ==================== THREATS ==================== -->
+    <section id="threats">
+      <h2>Threats to validity</h2>
+      <p>Stated up front, because a benchmark you cannot interrogate is a benchmark you cannot
+        trust.</p>
+
+      <h4>The demo target is self-authored, and the mock LLM's degradation rules are authored couplings</h4>
+      <p>The mock keys off the same contract lines the perturbator attacks - by design. It
+        simulates documented real-LLM failure modes (prose-wrapped JSON, dropped fields,
+        hallucinated keys) deterministically at $0, so the prompt-side numbers validate the harness
+        mechanics, not model behavior. The load-bearing, least-gameable numbers are the
+        <b>code-mutation rows: 18/38 → 37/38</b>, plain AST mutations against a plain pytest
+        suite.</p>
+
+      <h4>Post-heal detection is high by construction</h4>
+      <p>Covered in <a class="link" href="#healing">Differential healing</a>. The diagnosis number
+        is the pre-heal 48%.</p>
+
+      <h4>Loud breakage counts as detection</h4>
+      <p>Timeouts and collection errors map to detected. In the shipped run this channel is
+        unexercised - all 49 detections are genuine assertion failures, verifiable in the committed
+        report.</p>
+
+      <h4>Generality limits</h4>
+      <p>A target is declared by a one-file adapter, and the code half of the engine ran unchanged
+        on humanize. The prompt half requires the documented template contract in
+        <code>docs/ARCHITECTURE.md</code> §5.1.</p>
+    </section>
+
+    <!-- ==================== KNOWN LIMITS ==================== -->
+    <section id="known-limits">
+      <h2>Known limits</h2>
+      <ul class="body">
+        <li>The healer probes <b>top-level functions</b> with scalar, union or alias-resolvable
+          hints and refuses containers. A mutant reachable only through a <code>list[Any]</code>
+          signature will be reported as unhealable rather than guessed at.</li>
+        <li>The <b>equivalence provers</b> cover clamp swaps and <code>TYPE_CHECKING</code> guards
+          under documented assumptions. Everything else is judged empirically, which means genuine
+          equivalents can appear as survivors.</li>
+        <li>The <b>prompt half</b> needs a prompt module matching the documented template contract.
+          Point <code>prompt_templates</code> at <code>null</code> and you get a clean code-only
+          campaign instead.</li>
+        <li>Input pools are finite. At exhaustive depth on humanize, threshold and format
+          arithmetic in four functions could not be discriminated by the current pools; those are
+          listed as survivors with reasons rather than hidden.</li>
+        <li>Targets must be <b>Python with a pytest-runnable suite</b>. There is no support for
+          other languages or test runners.</li>
+      </ul>
+
+      <div class="note">
+        <span class="label">The position</span>
+        Line coverage is a vanity metric. A 90%-coverage suite that catches 48% of injected bugs is
+        not a safety net - it is a green dashboard over an open manhole. Mutation score, measured
+        adversarially and healed automatically, is the metric that should gate AI-application CI.
+      </div>
+    </section>
+
+    <!-- ==================== REPO MAP ==================== -->
+    <section id="repo-map">
+      <h2>Repository map</h2>
+<pre><code>main.py                  CLI hub (baseline | mutate | full)
+baseline/                coverage.py audit + bug-bank detection with the original suite
+advanced/                mutation engine:
+                           ast_mutator          7 operator families, equivalence provers
+                           prompt_perturbator   the 12 prompt rules
+                           sandbox_runner       isolated copies, parallel pytest, verdicts
+                           test_healer          differential probes, the honesty gate
+                           target_config        syntrace_target.json adapter
+                           run_mutation         campaign orchestrator
+                           report               JSON + self-contained HTML
+                           trajectory_logger    agent execution traces
+                           core_types           shared contract
+targets/sample_app/      demo AI triage pipeline + deliberately blind-spotted suite
+targets/humanize/        third-party validation target (humanize 4.16.0, vendored)
+dashboard/               FastAPI: landing page, Mission Control, these docs
+selftests/               the engine's own test suite (135 tests)
+docs/ARCHITECTURE.md     frozen module contract the engine is built against
+trajectories/            agent execution traces (real runs)
+reports/                 generated JSON/HTML reports (committed as evidence)
+.github/workflows/       CI: selftests + mutation-score gates on both targets</code></pre>
+
+      <p style="margin-top:26px"><a class="link" href="/app">Open Mission Control</a> and run a
+        campaign, or point it at a project of your own and see what your suite does not defend.</p>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // Scrollspy. The sidebar is the only orientation on a long single-page doc,
+  // so the active item tracks whichever section owns the top of the viewport.
+  const links = [...document.querySelectorAll('.navgroup a')];
+  const byId = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+  const sections = [...document.querySelectorAll('.doc > section')].filter(s => byId.has(s.id));
+
+  let current = null;
+  function setCurrent(id) {
+    if (id === current) return;
+    current = id;
+    for (const a of links) a.removeAttribute('aria-current');
+    byId.get(id)?.setAttribute('aria-current', 'true');
+  }
+
+  function sync() {
+    // Whichever section starts closest above the reading line wins; falling back
+    // to the first keeps something lit before the reader has scrolled at all.
+    const line = 96;
+    let active = sections[0];
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top <= line) active = s;
+    }
+    // At the very bottom the last section may never reach the line.
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 8) {
+      active = sections[sections.length - 1];
+    }
+    if (active) setCurrent(active.id);
+  }
+
+  let ticking = false;
+  addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { sync(); ticking = false; });
+  }, { passive: true });
+  addEventListener('resize', sync, { passive: true });
+  sync();
+
+  // Small screens: the contents rail is a disclosure, and picking an entry closes it.
+  const mob = document.getElementById('mobnav'), wrap = document.getElementById('navwrap');
+  const isMobile = () => getComputedStyle(mob).display !== 'none';
+  function setNav(open) {
+    wrap.hidden = !open;
+    mob.setAttribute('aria-expanded', String(open));
+  }
+  mob.addEventListener('click', () => setNav(wrap.hidden));
+  for (const a of links) a.addEventListener('click', () => { if (isMobile()) setNav(false); });
+  // Start collapsed on small screens, always open on large ones.
+  const applyViewport = () => setNav(!isMobile());
+  addEventListener('resize', applyViewport);
+  applyViewport();
+</script>
+</body>
+</html>

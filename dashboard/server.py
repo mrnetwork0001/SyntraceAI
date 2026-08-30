@@ -4,6 +4,7 @@ Serves the landing page, the dashboard SPA, and a small JSON API over the engine
 
     GET  /               landing page
     GET  /app            Mission Control dashboard UI
+    GET  /docs           documentation (Swagger API reference is at /api/docs)
     GET  /api/targets    report sets available (demo, humanize, humanize exhaustive)
     GET  /api/reports    latest baseline + mutation reports (?target=<id>)
     GET  /api/presets    runnable project presets bundled with the repo
@@ -39,7 +40,9 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, JSONResponse
 
-app = FastAPI(title="SyntraceAI Mission Control")
+# FastAPI serves its own Swagger UI at /docs by default, which would shadow the
+# documentation page. The generated API reference moves to /api/docs.
+app = FastAPI(title="SyntraceAI Mission Control", docs_url="/api/docs", redoc_url=None)
 
 VALID_KINDS = ("baseline", "mutate", "full")
 LOG_LINES = 400
@@ -100,6 +103,11 @@ def landing() -> FileResponse:
 @app.get("/app")
 def mission_control() -> FileResponse:
     return FileResponse(Path(__file__).parent / "index.html")
+
+
+@app.get("/docs")
+def docs() -> FileResponse:
+    return FileResponse(Path(__file__).parent / "docs.html")
 
 
 _TARGET_RE = re.compile(r"^[a-z0-9_]{0,40}$")
