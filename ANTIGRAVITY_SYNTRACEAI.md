@@ -16,6 +16,8 @@
 2. **Technical Architecture Guidelines:**
    - **Baseline Solution:** Simple `coverage.py` line coverage runner in `baseline/`.
    - **Advanced Solution:** Autonomous AST code mutation + prompt perturbation engine in `advanced/`.
+   - **Third-party validation:** `targets/humanize/` (vendored humanize 4.16.0, declared
+     via `syntrace_target.json`); CI gates in `.github/workflows/ci.yml`.
    - **Agent Trajectories:** Build-history trace in `trajectories/agent_trace_01.json`;
      campaign traces regenerated into `trajectories/agent_trace_02.json` by the engine.
 

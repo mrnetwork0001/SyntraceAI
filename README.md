@@ -65,6 +65,44 @@ what the suite looks like after SyntraceAI repairs it.
    exactly one such survivor, and manual analysis confirms it is a true equivalent
    mutant (a boundary guard whose fall-through computes the identical value).
 
+## Third-party validation: humanize 4.16.0
+
+A benchmark on a self-authored target proves the harness works; it doesn't prove the
+tool finds anything on code we didn't write. So the same engine, unchanged, runs against
+[humanize](https://github.com/python-humanize/humanize) 4.16.0 — a mature, MIT-licensed
+library vendored verbatim in `targets/humanize/` (with the dependency-free part of its
+own 311-test suite) and declared through a one-file target adapter
+(`syntrace_target.json`).
+
+| humanize 4.16.0 (measured) | Frozen 38-mutant bank | Exhaustive: all 253 sites |
+| :--- | :--- | :--- |
+| Line coverage (mutated modules) | **98.1%** | 98.1% |
+| Detected by humanize's own suite | **36/38 (94.7%)** | **218/253 (86.2%)** |
+| Auto-healed tests generated | 0 needed | **12** |
+| After healing | 94.7% — both survivors verified equivalent | **230/253 (90.9%)** |
+| Wall time | 4.0s | 24.2s |
+
+Two things this shows. First, SyntraceAI does **not manufacture findings** on a
+well-tested library: at the standard bank depth humanize catches 94.7%, and the two
+survivors are `value < 0` comparisons guarded by `math.isinf(value)` — provably
+unobservable. Second, at exhaustive depth its 98%-coverage suite still misses 35
+behavior changes, and the healer wrote 12 tests humanize's own suite lacks — pinning
+the unit-scaling thresholds nobody had asserted:
+
+```python
+assert humanize.number.intword(1e+27, '%.1f') == '1.0 octillion'
+assert humanize.number.intword(1e+18, '%.1f') == '1.0 quintillion'
+assert humanize.filesize.naturalsize(1e+33, False, False, '%.1f') == '1000.0 QB'
+assert humanize.number.metric(1e+33, '', 3) == '1.00 x 10³³'
+```
+
+Every one was found by differential probing (default-anchored parameter sweeps over
+orders-of-magnitude pools, module-level constants observed through the module's public
+API) and re-verified before being emitted. The 23 remaining survivors are reported, not
+hidden: the `isinf`-guarded family, mutants only reachable through `list[Any]`
+signatures the healer refuses, and threshold arithmetic inside `metric`/`intcomma` the
+current input pools cannot discriminate.
+
 ## The demo target
 
 `targets/sample_app` is a deterministic AI ticket-triage pipeline: prompt templates, a
@@ -86,9 +124,15 @@ together, deterministically, in seconds, for $0.
 
 ```bash
 pip install -r requirements.txt
-python main.py full          # baseline audit (~3s) + full campaign (~8s)
+python main.py full          # baseline audit (~3s) + full campaign (~8s) on the demo target
+python advanced/run_mutation.py --target targets/humanize \
+    --json reports/humanize_mutation_report.json      # third-party target (~4s)
 python dashboard/server.py   # Mission Control UI at http://127.0.0.1:8377
 ```
+
+`python advanced/run_mutation.py --fail-under 95` turns the campaign into a CI gate —
+see [.github/workflows/ci.yml](.github/workflows/ci.yml), which runs the selftests and
+both campaigns on every push.
 
 Outputs: rich terminal report, `reports/mutation_report.json`,
 self-contained `reports/mutation_report.html`, and an agent trajectory in
@@ -127,13 +171,14 @@ trust:
   "detected" (the suite failed loudly). In the shipped run this channel is unexercised:
   all 49 detections are genuine assertion failures (0 timeouts, 0 errors — check
   `reports/mutation_report.json`).
-- **Generality limits.** The engine currently assumes an `app/` package with a `tests/`
-  suite, mutates top-level functions, heals only scalar-hinted signatures
-  (`int/float/bool/str`), and the prompt perturbator requires the documented template
-  contract (`docs/ARCHITECTURE.md` §5.1). The equivalence prover covers one clamp
-  pattern under documented numeric assumptions. Pointing SyntraceAI at an arbitrary
-  third-party repo would need a target adapter layer — that is the roadmap, not the
-  demo.
+- **Generality limits.** A target is declared by a one-file adapter
+  (`syntrace_target.json`: source package, tests dir, optional prompt module, excludes)
+  and the code half of the engine ran unchanged on humanize. Remaining limits: the
+  healer probes top-level functions with scalar, union, or alias-resolvable hints
+  (`int/float/bool/str/None`, `float | str`, `NumberOrString`) and refuses containers;
+  the prompt half requires the documented template contract (`docs/ARCHITECTURE.md`
+  §5.1); the equivalence provers cover clamp swaps and `TYPE_CHECKING` guards under
+  documented assumptions. Everything else stays in the bank and is judged empirically.
 
 ## Hot take
 
@@ -149,10 +194,13 @@ main.py                  CLI hub (baseline | mutate | full)
 baseline/                coverage.py audit + bug-bank detection with the original suite
 advanced/                mutation engine: ast_mutator, prompt_perturbator,
                          sandbox_runner, test_healer, report, trajectory_logger,
-                         run_mutation (orchestrator), core_types (shared contract)
+                         target_config (adapter), run_mutation (orchestrator),
+                         core_types (shared contract)
 targets/sample_app/      demo AI triage pipeline + deliberately blind-spotted suite
+targets/humanize/        third-party validation target (humanize 4.16.0, vendored)
 dashboard/               FastAPI Mission Control (landing page + live dashboard)
-selftests/               the engine's own test suite (79 tests)
+.github/workflows/       CI: selftests + mutation-score gates on both targets
+selftests/               the engine's own test suite (102 tests)
 docs/ARCHITECTURE.md     frozen module contract the engine is built against
 trajectories/            agent execution traces (real runs)
 reports/                 generated JSON/HTML reports (committed as evidence)

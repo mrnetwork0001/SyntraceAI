@@ -45,19 +45,28 @@ likely-equivalent, and manual analysis confirms it: a boundary guard whose fall-
 computes the identical value. Reporting that survivor honestly matters more to me than
 a synthetic 100."
 
-**[3:30–4:20] Mission Control & the healed tests** *(screen: dashboard `/app`, then `tests/test_healed_assertions.py`)*
+**[3:30–4:05] Mission Control & the healed tests** *(screen: dashboard `/app`, then `tests/test_healed_assertions.py`)*
 
 "Everything streams into Mission Control — a FastAPI dashboard where you can launch
 campaigns, watch the engine log live, and inspect every survivor and every healed
-test. And here's the generated suite itself: each test names the mutant it kills, the
-operator, the location, and pins the original behavior on the verified discriminating
-input — including strict prompt-contract tests that catch hallucination paths like
-renamed schema keys and prose-wrapped JSON."
+test. Each generated test names the mutant it kills and pins the original behavior on
+the verified discriminating input — including strict prompt-contract tests that catch
+hallucination paths like renamed schema keys and prose-wrapped JSON."
 
-**[4:20–5:00] Close** *(screen: README results table)*
+**[4:05–4:40] Code we didn't write** *(screen: terminal — `python advanced/run_mutation.py --target targets/humanize --max-code-mutants 400`, then `targets/humanize/tests/test_healed_assertions.py`)*
 
-"Same code, same suite: coverage said 87 percent, adversarial measurement said 48 —
-and SyntraceAI healed it to 98, deterministically, in eight seconds, for zero API
-dollars. One command reproduces every number you've seen: `python main.py full`.
-Line coverage is a vanity metric — measure what your tests defend. Thanks for
-watching."
+"A benchmark on our own demo proves the harness. This proves the tool. Same engine,
+unchanged, pointed at humanize — a mature library with 98 percent coverage and 311
+tests. On the standard bank it catches 94.7 percent, and both survivors are provably
+unobservable — SyntraceAI doesn't manufacture findings. But at exhaustive depth, 35
+behavior changes slip through, and the healer writes 12 tests humanize never had:
+`intword(1e27)` is one octillion; `naturalsize(1e33)` is a thousand quettabytes.
+Nobody had ever asserted that. And it all runs as a CI gate — `--fail-under` fails the
+build when the score drops."
+
+**[4:40–5:00] Close** *(screen: README results table)*
+
+"Coverage said 87 percent, adversarial measurement said 48, SyntraceAI healed it to
+98 — deterministically, in eight seconds, for zero API dollars, and it holds up on
+third-party code. One command reproduces every number: `python main.py full`. Line
+coverage is a vanity metric — measure what your tests defend. Thanks for watching."

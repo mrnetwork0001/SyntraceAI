@@ -11,7 +11,7 @@ Requires Python 3.11+ (developed and verified on 3.14). No API keys, no network 
 $0 in model cost — the demo target uses a deterministic rule-based mock LLM.
 
 ```bash
-git clone https://github.com/mrnetwork/SyntraceAI.git   # or unzip the submission archive
+git clone https://github.com/mrnetwork0001/SyntraceAI.git   # or unzip the submission archive
 cd SyntraceAI
 python3 -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ```bash
 python -m pytest selftests/ -q
 ```
-*Expected:* `79 passed`
+*Expected:* `102 passed`
 
 ## 3. Baseline solution (standard line-coverage mindset)
 
@@ -55,6 +55,42 @@ Or run both in sequence with one command:
 python main.py full
 ```
 
+## 4b. Third-party validation target (humanize 4.16.0, vendored)
+
+```bash
+python baseline/run_baseline.py --target targets/humanize --json reports/humanize_baseline_report.json
+python advanced/run_mutation.py --target targets/humanize \
+    --json reports/humanize_mutation_report.json --html reports/humanize_mutation_report.html \
+    --trajectory trajectories/agent_trace_03.json
+```
+*Expected (key lines):*
+```
+suite is green: 311 tests passed, line coverage 98.1%
+Mutation Score: 94.7% | Injected Bugs Detected: 36/38 | Auto-Healed Assertion Tests Generated: 0
+```
+Both survivors (`M016`, `M036`) are `value < 0` comparisons guarded by
+`math.isinf(value)` — provably unobservable, reported as likely-equivalent.
+
+Exhaustive campaign over every mutation site (~25s):
+```bash
+python advanced/run_mutation.py --target targets/humanize --max-code-mutants 400 \
+    --json reports/humanize_full_mutation_report.json --html reports/humanize_full_mutation_report.html \
+    --trajectory trajectories/agent_trace_04.json
+```
+*Expected (key lines):*
+```
+AST mutation sites discovered: 253 → bank of 253 code mutants + 0 prompt perturbations
+Detected 218/253 (86.2%) with the original suite
+Synthesized 12 hardened assertion tests (23 survivor(s) classified likely-equivalent/unhealable)
+Mutation Score: 90.9% | Injected Bugs Detected: 230/253 | Auto-Healed Assertion Tests Generated: 12
+```
+
+## 4c. CI gate
+
+`python advanced/run_mutation.py --fail-under 95` exits 1 when the final score drops
+below the threshold. `.github/workflows/ci.yml` runs the selftests, the demo campaign
+(gate 95%) and the humanize campaign (gate 85%) on Python 3.11 and 3.12 for every push.
+
 ## 5. Mission Control dashboard (optional)
 
 ```bash
@@ -72,6 +108,9 @@ opens the dashboard at `/app` where you can trigger runs and watch the engine lo
 | `reports/mutation_report.html` | self-contained visual report |
 | `targets/sample_app/tests/test_healed_assertions.py` | the auto-generated hardened suite |
 | `trajectories/agent_trace_02.json` | the campaign's own execution trajectory |
+| `reports/humanize_*_report.json` / `.html` | third-party target: baseline, 38-bank campaign, exhaustive campaign |
+| `targets/humanize/tests/test_healed_assertions.py` | 12 tests SyntraceAI wrote for humanize |
+| `trajectories/agent_trace_03.json`, `agent_trace_04.json` | humanize campaign trajectories |
 
 ## 7. Runtime & cost
 
@@ -82,5 +121,6 @@ opens the dashboard at `/app` where you can trigger runs and watch the engine lo
   previously generated `test_healed_assertions.py` before measuring, so every run
   starts from the original un-hardened suite and reproduces the same numbers.
 - **What "identical" means:** across repeated runs (any `--jobs`, any supported Python
-  version) every verdict, score, mutant ID, and healed test is identical; only the
-  timing fields (`wall_time_s` and per-bug `duration_s`) vary in the JSON reports.
+  version) every verdict, score, mutant ID, and healed test is identical. The mutation
+  report JSON is byte-stable except for the single top-level `wall_time_s` field —
+  `diff` two runs yourself.

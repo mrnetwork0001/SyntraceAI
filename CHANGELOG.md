@@ -40,3 +40,27 @@ from actual runs on the frozen 50-bug bank (seed 1337).
   tests**, one surviving mutant reported as likely-equivalent (confirmed a true
   equivalent by manual analysis). Campaign wall time 7.9s. Determinism verified:
   repeated runs produce identical results.
+
+### Iteration 4 — Third-party validation, target adapter, CI gate
+- **Goal:** Answer the strongest critique from an adversarial review pass — "the demo
+  target is self-authored" — with evidence on code we did not write.
+- **Agent feedback acted on:**
+  - Replaced the hard-coded `app/` layout with a one-file target adapter
+    (`syntrace_target.json`) and vendored humanize 4.16.0 with its dependency-free
+    test modules as `targets/humanize`.
+  - First humanize run: 92.1% detection, **0 heals** — every survivor was either a
+    true equivalent or out of the healer's reach. Diagnosis showed 25 probed-without-
+    discriminator sites and 6 module-level sites (humanize's `intword` power table).
+  - Healer upgrades: union/alias type-hint resolution (`NumberOrString = float | str`),
+    default-anchored single-parameter sweeps before the diagonal product, module-level
+    mutants healed by observing them through the module's public API, and
+    orders-of-magnitude pools. Lesson learned the hard way: magnitudes must stay out of
+    `int` pools — `precision=10**33` fed to an f-string never returns; probes timed out
+    and the exhaustive run crawled past ten minutes until the pools were split by type.
+  - Mutator: `TYPE_CHECKING` guards and flags are recognized as unkillable no-ops.
+  - Reports are byte-stable across runs (per-bug timing fields stripped); CI workflow
+    gates both targets with `--fail-under`.
+- **Result:** humanize standard bank **36/38 (94.7%)**, both survivors verified
+  equivalent; exhaustive campaign **218/253 → 230/253 (86.2% → 90.9%)** with **12
+  auto-healed tests** humanize's own suite lacks. Demo target unchanged at 98.0%.
+  Selftests: 102.

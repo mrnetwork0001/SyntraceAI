@@ -35,8 +35,13 @@ SyntraceAI/
 │   ├── test_healer.py               # differential auto-healing of surviving mutants
 │   ├── report.py                    # terminal (rich) + JSON + self-contained HTML reports
 │   ├── trajectory_logger.py         # agent trajectory JSON logging
+│   ├── target_config.py             # target adapter (syntrace_target.json)
 │   └── run_mutation.py              # campaign orchestrator (written by integrator)
+├── .github/workflows/ci.yml         # selftests + --fail-under gates on both targets
 ├── targets/
+│   ├── humanize/                    # third-party validation target (vendored, MIT)
+│   │   ├── syntrace_target.json     # adapter: package humanize, no prompts, excludes
+│   │   ├── humanize/ · tests/ · LICENSE-humanize
 │   └── sample_app/                  # demo target: AI ticket-triage pipeline
 │       ├── pytest.ini               # [pytest] testpaths = tests
 │       ├── app/
@@ -82,6 +87,12 @@ if str(REPO_ROOT) not in sys.path:
 ```
 
 - Absolute imports only: `from advanced.core_types import Mutant`.
+- Target adapter: a target directory may carry `syntrace_target.json`
+  (`source_package`, `tests_dir`, `prompt_templates` or `null`, `exclude` list). Missing
+  file ⇒ the demo layout below. Targets without a prompt module run code-only
+  campaigns (38-mutant bank, no perturbations). Coverage is measured with
+  `--source=<package>` and `--omit=<excludes>` so line coverage and mutation scope
+  describe the same code. See `advanced/target_config.py`.
 - Every module gets a selftest in `selftests/test_<module>.py` that runs standalone
   (create tiny fixture projects/sources inline or in tmp dirs — do NOT depend on
   `targets/sample_app` except where the contract says so).
@@ -224,10 +235,12 @@ def select_bank(mutants: list[Mutant], size: int = 38, seed: int = 1337) -> list
   AFTER selection, in selection order.
 - Every mutant MUST pass `compile(mutated_source, path, "exec")` — discard ones that
   don't (AST validation sandboxing).
-- Equivalent-mutant proof: an ordering-equality comparison swap inside a clamp pattern
-  (`if x > C: x = C` with no else, plain name, same constant) is provably a semantic
-  no-op and MUST be excluded from enumeration — an unkillable bug in the bank would
-  misstate every downstream score.
+- Equivalent-mutant exclusions: an ordering-equality comparison swap inside a clamp
+  pattern (`if x > C: x = C` with no else, plain name, same non-zero constant, standard
+  numeric semantics) is a semantic no-op and MUST be excluded from enumeration — an
+  unkillable bug in the bank would misstate every downstream score. Likewise the
+  `TYPE_CHECKING` idiom: `if TYPE_CHECKING:` guards are never negated and the constant
+  in `TYPE_CHECKING = False` is never mutated (import-only blocks at runtime).
 - `select_bank`: seeded round-robin stratified across (file, operator) so the bank
   spans all files and operator types; deterministic for a given seed.
 - Record `function_name` (enclosing function qualname or `""`).
@@ -308,7 +321,21 @@ def write_healed_test_file(target_dir: Path, healed: list[HealedTest]) -> Path
   inputs feed both probe sides identically; synthesis failure degrades to no
   enrichment, never to an error.
 - Raises-mode healing may reference exceptions defined in the probed module itself
-  (emitted as `<module>.<ExcName>`) in addition to builtins.
+  (emitted as `<module>.<ExcName>`, only when the name is a real module attribute) in
+  addition to builtins.
+- Type hints are resolved to scalar member sets: plain names, string annotations,
+  PEP 604 unions (`int | None`), and module-level aliases (`NumberOrString: TypeAlias
+  = float | str`, including inside `TYPE_CHECKING` blocks). Containers/generics are
+  refused honestly.
+- Float pools additionally carry non-integral values and orders of magnitude (10⁶…10³³,
+  2¹⁰…2⁴⁰); int pools deliberately do NOT (an int parameter may be a precision or
+  repeat count — `f"{x:.{10**33}f}"` never returns).
+- Candidate order: the all-defaults anchor tuple, then each parameter swept through its
+  whole pool with the others held at their defaults, then the diagonal product — so far
+  boundaries are reached even when the full product dwarfs `max_inputs`.
+- Module-level mutants (constant tables, flags) are healed by probing every top-level
+  function of the module in definition order; the first re-verified discriminator wins
+  and the emitted test calls that observing function.
 - Probe protocol: write pristine copy and mutated copy of the target to two tmp dirs;
   in each, run a generated probe script that imports the function, applies the JSON
   list of candidate inputs, and prints JSON results (exceptions encoded
