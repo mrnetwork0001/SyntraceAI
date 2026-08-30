@@ -246,8 +246,16 @@ def healing_run(tmp_path_factory: pytest.TempPathFactory) -> SimpleNamespace:
 
 
 def test_healed_and_unhealable_partition(healing_run: SimpleNamespace) -> None:
-    assert [t.mutant_id for t in healing_run.healed] == ["M001", "M003"]
-    assert healing_run.unhealable == ["M002", "M004", "M005", "M006"]
+    # M005 carries no enclosing function: it is healed by sweeping the module's
+    # top-level API and observing the mutation through bulk_discount.
+    assert [t.mutant_id for t in healing_run.healed] == ["M001", "M003", "M005"]
+    assert healing_run.unhealable == ["M002", "M004", "M006"]
+
+
+def test_module_level_mutant_healed_via_module_api(healing_run: SimpleNamespace) -> None:
+    healed = {t.mutant_id: t for t in healing_run.healed}["M005"]
+    assert healed.function_name == "bulk_discount"
+    assert healed.module == "app.mathy"
 
 
 def test_value_heal_is_genuinely_discriminating(healing_run: SimpleNamespace) -> None:
@@ -347,9 +355,11 @@ def test_end_to_end_written_file_kills_mutants(
     # Healed suite is collected cleanly and passes against the ORIGINAL target.
     green = _run_pytest(healing_run.target)
     assert green.returncode == 0, green.stdout + green.stderr
-    assert "9 passed" in green.stdout  # 2 trivial + 2 healed + 5 contract tests
+    assert "10 passed" in green.stdout  # 2 trivial + 3 healed + 5 contract tests
 
-    # Against each healed mutant, exactly its healed test fails.
+    # Against each healed mutant, its own healed test fails and nothing but
+    # healed tests fail. (M005 is the same bug as M001 observed module-level,
+    # so its test legitimately fails against the M001 mutant too.)
     for mutant_id, function_name in (("M001", "bulk_discount"), ("M003", "strict_pos")):
         mutant_copy = tmp_path / f"copy_{mutant_id}"
         shutil.copytree(
@@ -365,8 +375,9 @@ def test_end_to_end_written_file_kills_mutants(
         failed_lines = [
             line for line in kill.stdout.splitlines() if line.startswith("FAILED")
         ]
-        assert len(failed_lines) == 1
-        assert f"test_healed_{mutant_id}_{function_name}" in failed_lines[0]
+        assert failed_lines, kill.stdout
+        assert all("test_healed_assertions.py::test_healed_" in line for line in failed_lines)
+        assert any(f"test_healed_{mutant_id}_{function_name}" in line for line in failed_lines)
 
 
 def test_write_healed_file_overwrites_and_handles_empty(

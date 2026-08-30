@@ -60,10 +60,17 @@ INT_POOL: tuple[int, ...] = (
     1000, 2500, 5000, 10000,
 )
 BOOL_POOL: tuple[bool, ...] = (True, False)
-#: Non-integral float values for ``float`` parameter pools: rounding-precision
-#: and rate arithmetic mutants are invisible to integral inputs whose products
-#: happen to carry too few decimal places.
-FLOAT_EXTRAS: tuple[float, ...] = (0.07, 0.1, 0.5, 2.5, 19.99)
+#: Extra values for ``float`` parameter pools only. Non-integral values expose
+#: rounding-precision and rate mutants that integral products hide; the orders
+#: of magnitude (decimal and binary) reach the unit-scaling thresholds that
+#: number-formatting code branches on. They are deliberately kept out of
+#: ``int`` pools: an int parameter is as likely to be a precision, a repeat
+#: count, or a size as a quantity, and ``f"{x:.{10**33}f}"`` never returns.
+FLOAT_EXTRAS: tuple[float, ...] = (
+    0.07, 0.1, 0.5, 2.5, 19.99,
+    1e6, 1e9, 1e12, 1e15, 1e18, 1e21, 1e24, 1e27, 1e30, 1e33,
+    2.0**10, 2.0**20, 2.0**30, 2.0**40,
+)
 #: A ten-word sentence so word-boundary logic (truncation, summarization)
 #: has a long-enough input to discriminate off-by-one word counts.
 LONG_SENTENCE: str = "the quick brown fox jumps over the lazy dog today"
@@ -322,8 +329,10 @@ def build_prompt_contract_tests(
     return healed
 
 
-def write_healed_test_file(target_dir: Path, healed: list[HealedTest]) -> Path:
-    """Write all healed tests to ``<target>/tests/test_healed_assertions.py``.
+def write_healed_test_file(
+    target_dir: Path, healed: list[HealedTest], *, tests_dir: str = "tests"
+) -> Path:
+    """Write all healed tests to ``<target>/<tests_dir>/test_healed_assertions.py``.
 
     Produces a single standalone pytest file: generated-by banner docstring,
     all imports at the top (``pytest`` only when used, plus every referenced
@@ -332,9 +341,9 @@ def write_healed_test_file(target_dir: Path, healed: list[HealedTest]) -> Path:
     emitted file always collects cleanly. Returns the written path.
     """
     target_dir = Path(target_dir)
-    tests_dir = target_dir / "tests"
-    tests_dir.mkdir(parents=True, exist_ok=True)
-    path = tests_dir / _HEALED_TEST_BASENAME
+    tests_path = target_dir / tests_dir
+    tests_path.mkdir(parents=True, exist_ok=True)
+    path = tests_path / _HEALED_TEST_BASENAME
 
     unique: list[HealedTest] = []
     seen_names: set[str] = set()
@@ -380,11 +389,15 @@ def _heal_one(
     max_inputs: int,
     synth_cache: dict[str, list[str]] | None = None,
 ) -> HealedTest:
-    """Heal a single mutant or raise ``_Unhealable`` with the reason."""
+    """Heal a single mutant or raise ``_Unhealable`` with the reason.
+
+    A mutant inside a top-level function is probed through that function. A
+    module-level mutant (a constant table, a flag) has no enclosing function,
+    so it is probed through every top-level function of its module in
+    definition order — a constant is observable through whichever API reads
+    it — and the first verified discriminator wins.
+    """
     module_name = _module_name_for(mutant.file_path)
-    func_name = mutant.function_name
-    if not func_name or not func_name.isidentifier():
-        raise _Unhealable("mutant does not target a named top-level function")
     source_path = target_dir / mutant.file_path
     if not source_path.is_file():
         raise _Unhealable(f"source file missing: {mutant.file_path}")
@@ -392,12 +405,56 @@ def _heal_one(
         orig_tree = ast.parse(source_path.read_text(encoding="utf-8"))
     except SyntaxError as exc:  # pragma: no cover - target must parse to survive
         raise _Unhealable(f"original source does not parse: {exc}") from exc
-    fn_orig = _find_top_level_function(orig_tree, func_name)
-    if fn_orig is None:
-        raise _Unhealable(f"{func_name!r} is not a top-level function of {module_name}")
+
+    if mutant.function_name:
+        func_name = mutant.function_name
+        if not func_name.isidentifier():
+            raise _Unhealable("mutant does not target a named top-level function")
+        fn_orig = _find_top_level_function(orig_tree, func_name)
+        if fn_orig is None:
+            raise _Unhealable(f"{func_name!r} is not a top-level function of {module_name}")
+        observers = [fn_orig]
+    else:
+        observers = [node for node in orig_tree.body if isinstance(node, ast.FunctionDef)]
+        if not observers:
+            raise _Unhealable("module-level mutant with no top-level function to observe it")
 
     if synth_cache is None:
         synth_cache = {}
+    mutated_dir = scratch / f"mutated_{mutant.mutant_id}"
+    reasons: list[str] = []
+    try:
+        _copy_project(target_dir, mutated_dir)
+        (mutated_dir / mutant.file_path).write_text(
+            mutant.mutated_source, encoding="utf-8"
+        )
+        for fn_orig in observers:
+            try:
+                return _probe_function(
+                    pristine, mutated_dir, mutant, module_name, fn_orig, orig_tree,
+                    seed=seed, max_inputs=max_inputs, synth_cache=synth_cache,
+                )
+            except _Unhealable as exc:
+                reasons.append(f"{fn_orig.name}: {exc}")
+    finally:
+        shutil.rmtree(mutated_dir, ignore_errors=True)
+    raise _Unhealable("; ".join(reasons))
+
+
+def _probe_function(
+    pristine: Path,
+    mutated_dir: Path,
+    mutant: Mutant,
+    module_name: str,
+    fn_orig: ast.FunctionDef,
+    orig_tree: ast.Module,
+    *,
+    seed: int,
+    max_inputs: int,
+    synth_cache: dict[str, list[str]],
+) -> HealedTest:
+    """Differentially probe one function; return a healed test or raise."""
+    func_name = fn_orig.name
     synth_key = f"{module_name}::{func_name}"  # exclusion differs per probed function
     if synth_key not in synth_cache:
         synth_cache[synth_key] = _synthesized_strings(
@@ -406,48 +463,70 @@ def _heal_one(
     pools = _candidate_pools(
         fn_orig, mutant, orig_tree, extra_strings=synth_cache[synth_key]
     )
-    candidates = _interleaved_product(pools, max_inputs, seed)
+    anchors = _anchor_values(fn_orig, pools)
+    candidates = _interleaved_product(pools, max_inputs, seed, anchors=anchors)
     if not candidates:
         raise _Unhealable("no candidate inputs could be generated")
 
-    mutated_dir = scratch / f"mutated_{mutant.mutant_id}"
-    try:
-        _copy_project(target_dir, mutated_dir)
-        (mutated_dir / mutant.file_path).write_text(
-            mutant.mutated_source, encoding="utf-8"
-        )
-        probe_source = _PROBE_TEMPLATE.replace("__MODULE__", module_name).replace(
-            "__FUNC__", func_name
-        )
-        for project in (pristine, mutated_dir):
-            (project / _PROBE_FILENAME).write_text(probe_source, encoding="utf-8")
+    probe_source = _PROBE_TEMPLATE.replace("__MODULE__", module_name).replace(
+        "__FUNC__", func_name
+    )
+    for project in (pristine, mutated_dir):
+        (project / _PROBE_FILENAME).write_text(probe_source, encoding="utf-8")
 
-        orig_results = _run_probe(pristine, candidates)
-        mut_results = _run_probe(mutated_dir, candidates)
-        if orig_results is None or mut_results is None:
-            raise _Unhealable("probe subprocess failed or timed out")
+    orig_results = _run_probe(pristine, candidates)
+    mut_results = _run_probe(mutated_dir, candidates)
+    if orig_results is None or mut_results is None:
+        raise _Unhealable("probe subprocess failed or timed out")
 
-        mode, index = _first_discriminating(orig_results, mut_results, module_name)
-        if mode is None:
-            raise _Unhealable("no discriminating input found (likely equivalent mutant)")
+    mode, index = _first_discriminating(orig_results, mut_results, module_name)
+    if mode is None:
+        raise _Unhealable("no discriminating input found (likely equivalent mutant)")
 
-        # Honesty gate: re-verify the single chosen input in both copies.
-        args = candidates[index]
-        v_orig = _run_probe(pristine, [args])
-        v_mut = _run_probe(mutated_dir, [args])
-        if v_orig is None or v_mut is None:
-            raise _Unhealable("verification probe failed or timed out")
-        if v_orig[0] != orig_results[index]:
-            raise _Unhealable("original behavior unstable across runs")
-        if mode == "value":
-            verified = _is_value(v_orig[0]) and _value_assertion_kills(v_orig[0], v_mut[0])
-        else:
-            verified = _raises_assertion_kills(v_orig[0], v_mut[0], module_name)
-        if not verified:
-            raise _Unhealable("discriminating input failed re-verification")
-        return _build_healed_test(mutant, module_name, func_name, args, mode, v_orig[0])
-    finally:
-        shutil.rmtree(mutated_dir, ignore_errors=True)
+    # Honesty gate: re-verify the single chosen input in both copies.
+    args = candidates[index]
+    v_orig = _run_probe(pristine, [args])
+    v_mut = _run_probe(mutated_dir, [args])
+    if v_orig is None or v_mut is None:
+        raise _Unhealable("verification probe failed or timed out")
+    if v_orig[0] != orig_results[index]:
+        raise _Unhealable("original behavior unstable across runs")
+    if mode == "value":
+        verified = _is_value(v_orig[0]) and _value_assertion_kills(v_orig[0], v_mut[0])
+    else:
+        verified = _raises_assertion_kills(v_orig[0], v_mut[0], module_name)
+    if not verified:
+        raise _Unhealable("discriminating input failed re-verification")
+    return _build_healed_test(mutant, module_name, func_name, args, mode, v_orig[0])
+
+
+def _anchor_values(fn_orig: ast.FunctionDef, pools: list[list[Any]]) -> list[Any]:
+    """One realistic anchor value per parameter for single-parameter sweeps.
+
+    A parameter's own default (when it is a scalar or ``None`` literal) is
+    the most realistic anchor — ``metric(value, unit="", precision=3)`` is
+    how callers actually invoke it; otherwise the first pool value is used.
+    """
+    arguments = fn_orig.args
+    params = list(arguments.posonlyargs) + list(arguments.args)
+    defaults: list[ast.expr | None] = [None] * (len(params) - len(arguments.defaults))
+    defaults += list(arguments.defaults)
+    anchors: list[Any] = []
+    for pool, default in zip(pools, defaults):
+        value: Any = pool[0]
+        if isinstance(default, ast.Constant) and (
+            default.value is None or type(default.value) in (bool, int, float, str)
+        ):
+            value = default.value
+        elif (
+            isinstance(default, ast.UnaryOp)
+            and isinstance(default.op, ast.USub)
+            and isinstance(default.operand, ast.Constant)
+            and type(default.operand.value) in (int, float)
+        ):
+            value = -default.operand.value
+        anchors.append(value)
+    return anchors
 
 
 def _build_healed_test(
@@ -537,22 +616,31 @@ def _candidate_pools(
         if synthesized not in str_pool:
             str_pool.append(synthesized)
 
+    type_pools: dict[str, list[Any]] = {
+        "int": _merge_numeric(list(INT_POOL), int_extras),
+        "float": _merge_numeric(
+            [float(v) for v in INT_POOL] + list(FLOAT_EXTRAS), float_extras
+        ),
+        "bool": list(BOOL_POOL),
+        "str": list(str_pool),
+        "None": [None],
+    }
     pools: list[list[Any]] = []
     for param in params:
-        hint = _hint_name(param.annotation)
-        if hint == "int":
-            pools.append(_merge_numeric(list(INT_POOL), int_extras))
-        elif hint == "float":
-            base_floats = [float(v) for v in INT_POOL] + list(FLOAT_EXTRAS)
-            pools.append(_merge_numeric(base_floats, float_extras))
-        elif hint == "bool":
-            pools.append(list(BOOL_POOL))
-        elif hint == "str":
-            pools.append(list(str_pool))
-        else:
+        names = _resolve_hint(param.annotation, module_tree)
+        if not names or names == ["None"]:
             raise _Unhealable(
                 f"parameter {param.arg!r} lacks a supported scalar type hint"
             )
+        pool: list[Any] = []
+        seen: set[tuple[str, str]] = set()
+        for name in names:  # union members in declaration order
+            for value in type_pools[name]:
+                key = (type(value).__name__, repr(value))
+                if key not in seen:
+                    seen.add(key)
+                    pool.append(value)
+        pools.append(pool)
     return pools
 
 
@@ -752,30 +840,59 @@ def _merge_numeric(base: list[Any], extras: list[Any]) -> list[Any]:
     return pool
 
 
-def _interleaved_product(
-    pools: list[list[Any]], max_inputs: int, seed: int
-) -> list[tuple[Any, ...]]:
-    """Cartesian product in a deterministic interleaved order, capped.
+def _candidate_key(args: tuple[Any, ...]) -> tuple[tuple[str, str], ...]:
+    """Identity key distinguishing ``1``, ``1.0`` and ``True`` (all ``==``)."""
+    return tuple((type(a).__name__, repr(a)) for a in args)
 
-    Tuples are enumerated by increasing total pool-index sum (diagonal order),
-    with a seeded shuffle inside each diagonal level, so *every* parameter
-    varies within the cap — a truncation never degenerates into a prefix of
-    the first parameter's pool. Boundary-rich values (early pool entries) are
-    explored first.
+
+def _interleaved_product(
+    pools: list[list[Any]],
+    max_inputs: int,
+    seed: int,
+    anchors: list[Any] | None = None,
+) -> list[tuple[Any, ...]]:
+    """Candidate inputs in a deterministic, boundary-first order, capped.
+
+    Two phases: (1) **anchored sweeps** — the all-anchors tuple, then every
+    parameter swept through its whole pool while the others hold their
+    anchors (defaults), so each parameter's far boundaries are reached even
+    when the product is enormous; (2) the Cartesian product enumerated by
+    increasing total pool-index sum (diagonal order) with a seeded shuffle
+    inside each level, so combinations vary *every* parameter within the
+    cap. Duplicates are dropped by exact type-and-value identity.
     """
     if max_inputs <= 0 or any(len(pool) == 0 for pool in pools):
         return []
     if not pools:
         return [()]
+    out: list[tuple[Any, ...]] = []
+    seen: set[tuple[tuple[str, str], ...]] = set()
+
+    def add(args: tuple[Any, ...]) -> bool:
+        key = _candidate_key(args)
+        if key in seen:
+            return len(out) >= max_inputs
+        seen.add(key)
+        out.append(args)
+        return len(out) >= max_inputs
+
+    if anchors is not None and len(anchors) == len(pools):
+        base = tuple(anchors)
+        if add(base):
+            return out
+        for position, pool in enumerate(pools):
+            for value in pool:
+                swept = base[:position] + (value,) + base[position + 1:]
+                if add(swept):
+                    return out
+
     rng = random.Random(seed)
     sizes = [len(pool) for pool in pools]
-    out: list[tuple[Any, ...]] = []
     for level in range(sum(size - 1 for size in sizes) + 1):
         level_indices = list(_index_tuples_with_sum(sizes, level))
         rng.shuffle(level_indices)
         for indices in level_indices:
-            out.append(tuple(pool[i] for pool, i in zip(pools, indices)))
-            if len(out) >= max_inputs:
+            if add(tuple(pool[i] for pool, i in zip(pools, indices))):
                 return out
     return out
 
@@ -973,6 +1090,67 @@ def _hint_name(annotation: ast.expr | None) -> str | None:
         return annotation.id
     if isinstance(annotation, ast.Constant) and isinstance(annotation.value, str):
         return annotation.value.strip()
+    return None
+
+
+_MAX_ALIAS_DEPTH = 4
+
+
+def _resolve_hint(
+    annotation: ast.expr | None, module_tree: ast.Module, _depth: int = 0
+) -> list[str] | None:
+    """Resolve an annotation to the ordered scalar type names it accepts.
+
+    Supports plain names (``int``), string annotations (``"float | None"``),
+    PEP 604 unions (``int | str``), ``None``/``Optional``-style members, and
+    module-level aliases such as ``NumberOrString: TypeAlias = float | str``
+    (looked up anywhere in the module AST, including ``TYPE_CHECKING``
+    blocks, and resolved recursively). Returns ``None`` for anything else
+    (generics, containers, unknown names) so the caller can refuse honestly.
+    """
+    if annotation is None or _depth > _MAX_ALIAS_DEPTH:
+        return None
+    if isinstance(annotation, ast.Constant):
+        if annotation.value is None:
+            return ["None"]
+        if isinstance(annotation.value, str):
+            try:
+                parsed = ast.parse(annotation.value.strip(), mode="eval").body
+            except SyntaxError:
+                return None
+            return _resolve_hint(parsed, module_tree, _depth + 1)
+        return None
+    if isinstance(annotation, ast.Name):
+        if annotation.id in _SCALAR_HINTS:
+            return [annotation.id]
+        if annotation.id == "None":
+            return ["None"]
+        alias_value = _module_alias_value(module_tree, annotation.id)
+        if alias_value is None:
+            return None
+        return _resolve_hint(alias_value, module_tree, _depth + 1)
+    if isinstance(annotation, ast.BinOp) and isinstance(annotation.op, ast.BitOr):
+        left = _resolve_hint(annotation.left, module_tree, _depth + 1)
+        right = _resolve_hint(annotation.right, module_tree, _depth + 1)
+        if left is None or right is None:
+            return None
+        merged: list[str] = []
+        for name in left + right:
+            if name not in merged:
+                merged.append(name)
+        return merged
+    return None
+
+
+def _module_alias_value(module_tree: ast.Module, name: str) -> ast.expr | None:
+    """Value expression of a module-level ``name = ...`` / ``name: T = ...``."""
+    for node in ast.walk(module_tree):
+        if isinstance(node, ast.AnnAssign):
+            if isinstance(node.target, ast.Name) and node.target.id == name:
+                return node.value
+        elif isinstance(node, ast.Assign):
+            if any(isinstance(t, ast.Name) and t.id == name for t in node.targets):
+                return node.value
     return None
 
 
