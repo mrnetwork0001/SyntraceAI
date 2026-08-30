@@ -231,6 +231,10 @@
     flex-wrap: wrap; margin-bottom: 10px; }
   .mut .meta .id { font: 500 12px var(--mono); color: var(--info-d); }
   .mut .meta .loc { font: 400 11px var(--mono); color: var(--on-dark-faint); }
+  /* The card steps through the real survivors from the committed report, so the
+     motion is the product's own loop rather than decoration. */
+  .mut.swap { animation: tick .5s ease; }
+  #mutIdx { color: var(--on-dark-faint); opacity: .62; margin-right: 9px; }
   .diff { font: 400 12.5px/1.75 var(--mono); min-width: 0; overflow-wrap: anywhere; }
   .diff .del { color: var(--bad-d); } .diff .add { color: var(--good-d); }
   .diff .k { color: var(--on-dark-faint); }
@@ -539,7 +543,7 @@
           <div class="mut">
             <div class="meta">
               <span class="id" id="mutId">M017 · ComparisonOperatorSwap</span>
-              <span class="loc" id="mutLoc">app/pricing.py:41</span>
+              <span class="loc"><span id="mutIdx"></span><span id="mutLoc">app/pricing.py:41</span></span>
             </div>
             <div class="diff" id="mutDiff">
               <div><span class="k">- </span><span class="del">if subtotal >= 500.0:</span></div>
@@ -946,13 +950,44 @@
     $('actionMeta').textContent = `${m.detected_final ?? '-'}/${m.total_bugs ?? '-'} detected · ${eq} equivalent`;
     if (num(m.wall_time_s) !== null) $('termWall').textContent = `wall ${m.wall_time_s}s`;
 
-    const survivor = (m.original_results || []).find(x => x.detected === false && x.kind === 'code');
-    if (survivor) {
-      $('mutId').textContent = `${survivor.mutant_id} · ${survivor.operator_name}`;
-      $('mutLoc').textContent = survivor.location;
-      $('mutDiff').innerHTML = `<div><span class="k">${survivor.description || 'behavior change'}</span></div>` +
-        `<div><span class="k">→ </span><span class="${(m.final_results || []).find(f => f.mutant_id === survivor.mutant_id && f.detected) ? 'add' : 'del'}">` +
-        `${(m.final_results || []).find(f => f.mutant_id === survivor.mutant_id && f.detected) ? 'killed by healed suite' : 'still surviving (equivalent)'}</span></div>`;
+    // Step through every code mutant the original suite missed. Each frame is a
+    // real row from the committed report - id, operator, file:line, what was
+    // changed, and what the healed suite did about it.
+    const healedById = new Map((m.final_results || []).map(f => [f.mutant_id, f.detected]));
+    const survivors = (m.original_results || [])
+      .filter(x => x.kind === 'code' && x.detected === false)
+      .map(x => ({
+        id: `${x.mutant_id} · ${x.operator_name}`,
+        loc: x.location,
+        desc: x.description || 'behavior change',
+        killed: !!healedById.get(x.mutant_id),
+      }));
+
+    if (survivors.length) {
+      const mut = document.querySelector('.term .mut');
+      const paint = i => {
+        const s = survivors[i];
+        $('mutId').textContent = s.id;
+        $('mutLoc').textContent = s.loc;
+        $('mutIdx').textContent = `survivor ${i + 1}/${survivors.length}`;
+        $('mutDiff').innerHTML =
+          `<div><span class="k">${s.desc}</span></div>` +
+          `<div><span class="k">→ </span><span class="${s.killed ? 'add' : 'del'}">` +
+          `${s.killed ? 'killed by healed suite' : 'still surviving (equivalent)'}</span></div>`;
+      };
+      paint(0);
+
+      const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!still && survivors.length > 1) {
+        let i = 0;
+        setInterval(() => {
+          // Nothing to animate for a tab nobody is looking at.
+          if (document.hidden) return;
+          i = (i + 1) % survivors.length;
+          mut.classList.remove('swap'); void mut.offsetWidth; mut.classList.add('swap');
+          paint(i);
+        }, 2600);
+      }
     }
 
     $('resCov').textContent = pct(cov);
