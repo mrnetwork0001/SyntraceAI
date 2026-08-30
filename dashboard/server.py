@@ -16,7 +16,15 @@ Serves the landing page, the dashboard SPA, and a small JSON API over the engine
                          optionally against ?target=<path> (any local project)
     GET  /api/status     run state + live log tail
 
-Usage: python dashboard/server.py [--port 8377]
+Two modes:
+
+  local (default)  everything, including launching campaigns
+  public           read-only. Set SYNTRACE_PUBLIC=1 (or pass --public) to serve a
+                   world-reachable instance: no run, no reset, no filesystem paths.
+                   The run endpoints execute the test suite of any directory they
+                   are given and delete files, so they must never face the internet.
+
+Usage: python dashboard/server.py [--port 8377] [--host 0.0.0.0] [--public]
 """
 
 from __future__ import annotations
@@ -52,6 +60,24 @@ from fastapi.staticfiles import StaticFiles
 # FastAPI serves its own Swagger UI at /docs by default, which would shadow the
 # documentation page. The generated API reference moves to /api/docs.
 app = FastAPI(title="SyntraceAI Mission Control", docs_url="/api/docs", redoc_url=None)
+
+#: Read-only mode for a publicly reachable instance. The campaign endpoints copy a
+#: named directory and run the test suite inside it, and the reset endpoint deletes
+#: files; neither is safe to expose, and neither is needed to show a saved result.
+PUBLIC_MODE = os.environ.get("SYNTRACE_PUBLIC") == "1"
+
+
+def _public_refusal() -> JSONResponse:
+    return JSONResponse(
+        {
+            "error": (
+                "This is a read-only public instance: it can show saved reports but "
+                "cannot run campaigns or delete anything. Clone the repository and run "
+                "`python dashboard/server.py` locally for the full tool."
+            )
+        },
+        status_code=403,
+    )
 
 VALID_KINDS = ("baseline", "mutate", "full")
 LOG_LINES = 400
@@ -316,6 +342,8 @@ def _reset_plan(target: str) -> dict:
 @app.get("/api/reset")
 def reset_plan(target: str = "") -> JSONResponse:
     """What deleting this report set would remove - nothing is touched here."""
+    if PUBLIC_MODE:  # the plan lists absolute paths on the host
+        return _public_refusal()
     if not _TARGET_RE.match(target):
         return JSONResponse({"error": "invalid target"}, status_code=400)
     if target not in _report_prefixes():
@@ -326,6 +354,8 @@ def reset_plan(target: str = "") -> JSONResponse:
 @app.post("/api/reset")
 def reset(target: str = "") -> JSONResponse:
     """Delete one report set's saved artifacts."""
+    if PUBLIC_MODE:
+        return _public_refusal()
     if not _TARGET_RE.match(target):
         return JSONResponse({"error": "invalid target"}, status_code=400)
     if target not in _report_prefixes():
@@ -373,6 +403,8 @@ def run(kind: str, target: str = "") -> JSONResponse:
     the report set it will write is returned as ``report_id`` so the UI can
     select it when the run finishes.
     """
+    if PUBLIC_MODE:
+        return _public_refusal()
     if kind not in VALID_KINDS:
         return JSONResponse({"started": False, "error": f"unknown kind {kind!r}"}, status_code=400)
 
@@ -428,6 +460,12 @@ def run(kind: str, target: str = "") -> JSONResponse:
     return JSONResponse({"started": True, "kind": kind, "report_id": report_id})
 
 
+@app.get("/api/config")
+def config() -> JSONResponse:
+    """What this instance allows, so the UI can present itself honestly."""
+    return JSONResponse({"public": PUBLIC_MODE})
+
+
 @app.get("/api/status")
 def status() -> JSONResponse:
     with _lock:
@@ -443,7 +481,23 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="SyntraceAI Mission Control dashboard")
     parser.add_argument("--port", type=int, default=8377)
     parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument(
+        "--public",
+        action="store_true",
+        help="read-only mode: serve saved reports but refuse to run or delete anything",
+    )
     args = parser.parse_args()
+
+    global PUBLIC_MODE
+    PUBLIC_MODE = PUBLIC_MODE or args.public
+    if args.host not in ("127.0.0.1", "localhost", "::1") and not PUBLIC_MODE:
+        # Binding outside the loopback puts the run and reset endpoints on the
+        # network. Refuse rather than let it happen by accident.
+        parser.error(
+            f"refusing to bind {args.host} without --public: the run endpoint executes "
+            "the test suite of any directory it is given and reset deletes files. "
+            "Use --public for a world-reachable instance."
+        )
     uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
     return 0
 

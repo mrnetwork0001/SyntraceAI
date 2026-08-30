@@ -380,6 +380,17 @@
     background: linear-gradient(120deg, var(--g-mint), var(--g-sky) 30%, var(--g-lilac) 55%, var(--g-blush) 78%, var(--g-peach)); }
   .modal > * { position: relative; z-index: 1; }
 
+  /* ---------- read-only public instance ----------
+     A button that cannot work is worse than no button, so the run and reset
+     controls are removed rather than disabled, and the sidebar says why. */
+  body.readonly #runControls, body.readonly #resetBtn,
+  body.readonly #localHint { display: none !important; }
+  .ro-note { margin: 0; padding: 12px 14px; border-radius: var(--radius-sm);
+    border: 1px solid var(--line); background: var(--paper-3);
+    font-size: 12.5px; line-height: 1.6; color: var(--text-muted); }
+  .ro-note b { color: var(--text); }
+  .ro-note code { font-size: 11.5px; }
+
   /* ---------- run progress and completion ----------
      A spinner would say "wait". The engine already announces five named steps,
      so the bar says where it actually is - which is also the argument for the
@@ -666,19 +677,27 @@
     </div>
     <div class="side-group">
       <div class="side-label"><label for="targetPath">Run against</label></div>
-      <input id="targetPath" value="targets/sample_app" spellcheck="false"
-             placeholder="path to a Python project, e.g. ~/code/my-app"
-             aria-label="target project directory">
-      <div id="presets"></div>
-      <button id="btnMutate" class="primary" onclick="launch('mutate')" title="Run Mutation Campaign">
-        <svg class="bolt" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
-          <path d="M18.4 7.6 10.8 17.6h4.6L13.6 24.4l7.6-10h-4.6z"/></svg>
-        <span class="btnlabel">Run Mutation Campaign</span></button>
-      <div class="btn-row">
-        <button id="btnBaseline" onclick="launch('baseline')">Baseline</button>
-        <button id="btnFull" onclick="launch('full')">Full</button>
+      <div id="runControls">
+        <input id="targetPath" value="targets/sample_app" spellcheck="false"
+               placeholder="path to a Python project, e.g. ~/code/my-app"
+               aria-label="target project directory">
+        <div id="presets"></div>
+        <button id="btnMutate" class="primary" onclick="launch('mutate')" title="Run Mutation Campaign">
+          <svg class="bolt" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+            <path d="M18.4 7.6 10.8 17.6h4.6L13.6 24.4l7.6-10h-4.6z"/></svg>
+          <span class="btnlabel">Run Mutation Campaign</span></button>
+        <div class="btn-row">
+          <button id="btnBaseline" onclick="launch('baseline')">Baseline</button>
+          <button id="btnFull" onclick="launch('full')">Full</button>
+        </div>
       </div>
-      <p class="hint">Your code never leaves this machine. Layout other than <code>app/</code> + <code>tests/</code>?
+      <p class="ro-note" id="readonlyNote" hidden>
+        <b>Read-only demo.</b> This public instance shows the committed results of real
+        seeded runs; it cannot start a campaign, because doing so would mean executing
+        code on the host. Clone the repo and run <code>python main.py full</code> to
+        reproduce every number here in about ten seconds.
+      </p>
+      <p class="hint" id="localHint">Your code never leaves this machine. Layout other than <code>app/</code> + <code>tests/</code>?
         Drop a <code>syntrace_target.json</code> in the project naming your
         <code>source_package</code> and <code>tests_dir</code>.</p>
     </div>
@@ -841,7 +860,7 @@ function renderProvenance(m) {
     `<span>Results for <span class="what">${esc(target)}</span>` +
     `${m.seed !== undefined ? ` · seed ${esc(m.seed)}` : ''}` +
     `${age ? ` · ${esc(age)}` : ''} - ${provenance}</span>` +
-    `<span class="rerun"><button onclick="rerunShown()">Run this again</button></span>`;
+    (readOnly ? '' : `<span class="rerun"><button onclick="rerunShown()">Run this again</button></span>`);
   host.dataset.target = target;
   host.hidden = false;
 }
@@ -1086,6 +1105,23 @@ function showIntro() {
   $('introCard').hidden = false;
   $('introCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
   try { localStorage.removeItem('syntrace.intro'); } catch (e) { /* private mode */ }
+}
+
+// A public instance cannot run or delete anything. Ask before rendering
+// controls, so the UI never offers an action the server will refuse.
+let readOnly = false;
+
+async function loadConfig() {
+  try {
+    const c = await (await fetch('/api/config')).json();
+    readOnly = !!c.public;
+  } catch (e) { readOnly = false; }   // a server too old to answer is a local one
+  if (readOnly) {
+    document.body.classList.add('readonly');
+    $('readonlyNote').hidden = false;
+    const rerun = document.querySelector('.provenance .rerun');
+    if (rerun) rerun.remove();
+  }
 }
 
 // ---------------------------------------------------------------- run feedback
@@ -1469,9 +1505,11 @@ catch (e) { /* private mode: keep the intro visible */ }
 try { if (localStorage.getItem('syntrace.sidebar') === 'collapsed') setSidebar(true); }
 catch (e) { /* private mode: start expanded */ }
 syncChrome();
-loadPresets();
-loadTargets().then(refreshReports);
-poll();
+loadConfig().then(() => {
+  loadPresets();
+  loadTargets().then(refreshReports);
+  poll();
+});
 </script>
 </body>
 </html>
