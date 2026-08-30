@@ -46,8 +46,29 @@ from advanced.target_config import load_target_config
 from advanced.trajectory_logger import TrajectoryLogger
 
 HEALED_TEST_BASENAME = "test_healed_assertions.py"
+DEFAULT_JSON = "reports/mutation_report.json"
+DEFAULT_TRAJECTORY = "trajectories/agent_trace_02.json"
 
 console = Console()
+
+
+def sibling_output_paths(json_arg: str, html_arg: str | None, trajectory_arg: str | None) -> tuple[str, str]:
+    """Derive the HTML report and trajectory paths from ``--json`` when not given.
+
+    A custom ``--json`` (e.g. a second target's report) must never silently
+    overwrite the default target's committed HTML report or trajectory, so the
+    siblings follow the JSON path's stem unless set explicitly.
+    """
+    json_path = Path(json_arg)
+    html = html_arg or str(json_path.with_suffix(".html"))
+    if trajectory_arg:
+        trajectory = trajectory_arg
+    elif json_arg == DEFAULT_JSON:
+        trajectory = DEFAULT_TRAJECTORY
+    else:
+        stem = json_path.stem.removesuffix("_mutation_report").removesuffix("_report")
+        trajectory = f"trajectories/{stem}_trace.json"
+    return html, trajectory
 
 
 def coverage_run_command(source_package: str, omit: tuple[str, ...] = ()) -> list[str]:
@@ -167,12 +188,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--max-code-mutants", type=int, default=CODE_BANK_SIZE)
     parser.add_argument("--no-heal", action="store_true", help="skip auto-healing phase")
-    parser.add_argument("--json", default="reports/mutation_report.json")
-    parser.add_argument("--html", default="reports/mutation_report.html")
-    parser.add_argument("--trajectory", default="trajectories/agent_trace_02.json")
+    parser.add_argument("--json", default=DEFAULT_JSON)
+    parser.add_argument("--html", default=None,
+                        help="default: the --json path with an .html suffix")
+    parser.add_argument("--trajectory", default=None,
+                        help="default: trajectories/agent_trace_02.json for the default "
+                             "report path, otherwise trajectories/<json stem>_trace.json")
     parser.add_argument("--fail-under", type=float, default=None,
                         help="exit 1 if final mutation score falls below this percent")
     args = parser.parse_args(argv)
+    args.html, args.trajectory = sibling_output_paths(args.json, args.html, args.trajectory)
 
     started = time.monotonic()
     target_dir = (REPO_ROOT / args.target).resolve()

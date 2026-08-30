@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ```bash
 python -m pytest selftests/ -q
 ```
-*Expected:* `102 passed`
+*Expected:* `106 passed`
 
 ## 3. Baseline solution (standard line-coverage mindset)
 
@@ -95,7 +95,9 @@ Mutation Score: 90.9% | Injected Bugs Detected: 230/253 | Auto-Healed Assertion 
 
 `python advanced/run_mutation.py --fail-under 95` exits 1 when the final score drops
 below the threshold. `.github/workflows/ci.yml` runs the selftests, the demo campaign
-(gate 95%) and the humanize campaign (gate 85%) on Python 3.11 and 3.12 for every push.
+(gate 95%), the humanize frozen-bank campaign (gate 85%) and the humanize exhaustive
+campaign (gate 88%) on Python 3.11 and 3.12 for every push to `main` and every pull
+request.
 
 ## 5. Mission Control dashboard (optional)
 

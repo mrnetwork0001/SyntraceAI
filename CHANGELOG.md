@@ -1,7 +1,8 @@
 # 📜 SyntraceAI — Agentic Improvement Changelog
 
 Real iterations from the build, each guided by measured agent feedback. All numbers are
-from actual runs on the frozen 50-bug bank (seed 1337).
+from actual seeded runs (seed 1337): the frozen 50-bug bank for the demo target, and
+the 38-mutant code bank plus an exhaustive 253-site campaign for humanize.
 
 ### Iteration 1 — Baseline implementation & the false-confidence measurement
 - **Goal:** Quantify what standard line coverage hides.
@@ -59,9 +60,11 @@ from actual runs on the frozen 50-bug bank (seed 1337).
     `int` pools — `precision=10**33` fed to an f-string never returns; probes timed out
     and the exhaustive run crawled past ten minutes until the pools were split by type.
   - Mutator: `TYPE_CHECKING` guards and flags are recognized as unkillable no-ops.
-  - Reports are byte-stable across runs (per-bug timing fields stripped); CI workflow
-    gates both targets with `--fail-under`.
+  - Mutation and baseline reports are byte-stable across runs (per-bug timing fields
+    stripped); CI workflow gates both targets with `--fail-under`; sibling HTML and
+    trajectory paths follow `--json` so a second target never overwrites the demo's
+    committed artifacts.
 - **Result:** humanize standard bank **36/38 (94.7%)**, both survivors verified
   equivalent; exhaustive campaign **218/253 → 230/253 (86.2% → 90.9%)** with **12
   auto-healed tests** humanize's own suite lacks. Demo target unchanged at 98.0%.
-  Selftests: 102.
+  Selftests: 106.

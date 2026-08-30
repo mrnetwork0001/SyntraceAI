@@ -263,7 +263,6 @@ def _summarize(
                 "location": location,
                 "outcome": run.outcome.value,
                 "detected": detected,
-                "duration_s": round(run.duration_s, 2),
             }
         )
 

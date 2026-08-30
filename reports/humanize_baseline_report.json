@@ -56,8 +56,7 @@
       "operator": "ArithmeticOperatorSwap",
       "location": "humanize/filesize.py:96",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.31
+      "detected": true
     },
     {
       "id": "M002",
@@ -65,8 +64,7 @@
       "operator": "BooleanOperatorSwap",
       "location": "humanize/filesize.py:91",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.29
+      "detected": true
     },
     {
       "id": "M003",
@@ -74,8 +72,7 @@
       "operator": "BoundaryValueMutation",
       "location": "humanize/filesize.py:95",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.31
+      "detected": true
     },
     {
       "id": "M004",
@@ -83,8 +80,7 @@
       "operator": "ComparisonOperatorSwap",
       "location": "humanize/filesize.py:106",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.31
+      "detected": true
     },
     {
       "id": "M005",
@@ -92,8 +88,7 @@
       "operator": "ConditionNegation",
       "location": "humanize/filesize.py:106",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.3
+      "detected": true
     },
     {
       "id": "M006",
@@ -101,8 +96,7 @@
       "operator": "ConstantMutation",
       "location": "humanize/filesize.py:43",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.29
+      "detected": true
     },
     {
       "id": "M007",
@@ -110,8 +104,7 @@
       "operator": "ReturnValueMutation",
       "location": "humanize/filesize.py:110",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.29
+      "detected": true
     },
     {
       "id": "M008",
@@ -119,8 +112,7 @@
       "operator": "ArithmeticOperatorSwap",
       "location": "humanize/lists.py:38",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.31
+      "detected": true
     },
     {
       "id": "M009",
@@ -128,8 +120,7 @@
       "operator": "BoundaryValueMutation",
       "location": "humanize/lists.py:33",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.34
+      "detected": true
     },
     {
       "id": "M010",
@@ -137,8 +128,7 @@
       "operator": "ComparisonOperatorSwap",
       "location": "humanize/lists.py:33",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.34
+      "detected": true
     },
     {
       "id": "M011",
@@ -146,8 +136,7 @@
       "operator": "ConditionNegation",
       "location": "humanize/lists.py:31",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.33
+      "detected": true
     },
     {
       "id": "M012",
@@ -155,8 +144,7 @@
       "operator": "ConstantMutation",
       "location": "humanize/lists.py:36",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.34
+      "detected": true
     },
     {
       "id": "M013",
@@ -164,8 +152,7 @@
       "operator": "ReturnValueMutation",
       "location": "humanize/lists.py:36",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.34
+      "detected": true
     },
     {
       "id": "M014",
@@ -173,8 +160,7 @@
       "operator": "ArithmeticOperatorSwap",
       "location": "humanize/number.py:553",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.4
+      "detected": true
     },
     {
       "id": "M015",
@@ -182,8 +168,7 @@
       "operator": "BooleanOperatorSwap",
       "location": "humanize/number.py:258",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.36
+      "detected": true
     },
     {
       "id": "M016",
@@ -191,8 +176,7 @@
       "operator": "BoundaryValueMutation",
       "location": "humanize/number.py:61",
       "outcome": "survived",
-      "detected": false,
-      "duration_s": 0.39
+      "detected": false
     },
     {
       "id": "M017",
@@ -200,8 +184,7 @@
       "operator": "ComparisonOperatorSwap",
       "location": "humanize/number.py:240",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.32
+      "detected": true
     },
     {
       "id": "M018",
@@ -209,8 +192,7 @@
       "operator": "ConditionNegation",
       "location": "humanize/number.py:301",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.34
+      "detected": true
     },
     {
       "id": "M019",
@@ -218,8 +200,7 @@
       "operator": "ConstantMutation",
       "location": "humanize/number.py:241",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.34
+      "detected": true
     },
     {
       "id": "M020",
@@ -227,8 +208,7 @@
       "operator": "ReturnValueMutation",
       "location": "humanize/number.py:158",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.33
+      "detected": true
     },
     {
       "id": "M021",
@@ -236,8 +216,7 @@
       "operator": "ArithmeticOperatorSwap",
       "location": "humanize/filesize.py:106",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.28
+      "detected": true
     },
     {
       "id": "M022",
@@ -245,8 +224,7 @@
       "operator": "BooleanOperatorSwap",
       "location": "humanize/filesize.py:106",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.28
+      "detected": true
     },
     {
       "id": "M023",
@@ -254,8 +232,7 @@
       "operator": "BoundaryValueMutation",
       "location": "humanize/filesize.py:95",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.29
+      "detected": true
     },
     {
       "id": "M024",
@@ -263,8 +240,7 @@
       "operator": "ComparisonOperatorSwap",
       "location": "humanize/filesize.py:98",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.28
+      "detected": true
     },
     {
       "id": "M025",
@@ -272,8 +248,7 @@
       "operator": "ConditionNegation",
       "location": "humanize/filesize.py:86",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.25
+      "detected": true
     },
     {
       "id": "M026",
@@ -281,8 +256,7 @@
       "operator": "ConstantMutation",
       "location": "humanize/filesize.py:42",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.25
+      "detected": true
     },
     {
       "id": "M027",
@@ -290,8 +264,7 @@
       "operator": "ReturnValueMutation",
       "location": "humanize/filesize.py:96",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.28
+      "detected": true
     },
     {
       "id": "M028",
@@ -299,8 +272,7 @@
       "operator": "BoundaryValueMutation",
       "location": "humanize/lists.py:35",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.29
+      "detected": true
     },
     {
       "id": "M029",
@@ -308,8 +280,7 @@
       "operator": "ComparisonOperatorSwap",
       "location": "humanize/lists.py:35",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.29
+      "detected": true
     },
     {
       "id": "M030",
@@ -317,8 +288,7 @@
       "operator": "ConditionNegation",
       "location": "humanize/lists.py:33",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.29
+      "detected": true
     },
     {
       "id": "M031",
@@ -326,8 +296,7 @@
       "operator": "ConstantMutation",
       "location": "humanize/lists.py:38",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.29
+      "detected": true
     },
     {
       "id": "M032",
@@ -335,8 +304,7 @@
       "operator": "ReturnValueMutation",
       "location": "humanize/lists.py:34",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.29
+      "detected": true
     },
     {
       "id": "M033",
@@ -344,8 +312,7 @@
       "operator": "ArithmeticOperatorSwap",
       "location": "humanize/number.py:548",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.32
+      "detected": true
     },
     {
       "id": "M034",
@@ -353,8 +320,7 @@
       "operator": "BooleanOperatorSwap",
       "location": "humanize/number.py:564",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.3
+      "detected": true
     },
     {
       "id": "M035",
@@ -362,8 +328,7 @@
       "operator": "BoundaryValueMutation",
       "location": "humanize/number.py:559",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.28
+      "detected": true
     },
     {
       "id": "M036",
@@ -371,8 +336,7 @@
       "operator": "ComparisonOperatorSwap",
       "location": "humanize/number.py:59",
       "outcome": "survived",
-      "detected": false,
-      "duration_s": 0.28
+      "detected": false
     },
     {
       "id": "M037",
@@ -380,8 +344,7 @@
       "operator": "ConditionNegation",
       "location": "humanize/number.py:479",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.27
+      "detected": true
     },
     {
       "id": "M038",
@@ -389,9 +352,8 @@
       "operator": "ConstantMutation",
       "location": "humanize/number.py:550",
       "outcome": "killed",
-      "detected": true,
-      "duration_s": 0.28
+      "detected": true
     }
   ],
-  "wall_time_s": 3.57
+  "wall_time_s": 3.22
 }

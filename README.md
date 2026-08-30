@@ -70,9 +70,10 @@ what the suite looks like after SyntraceAI repairs it.
 A benchmark on a self-authored target proves the harness works; it doesn't prove the
 tool finds anything on code we didn't write. So the same engine, unchanged, runs against
 [humanize](https://github.com/python-humanize/humanize) 4.16.0 — a mature, MIT-licensed
-library vendored verbatim in `targets/humanize/` (with the dependency-free part of its
-own 311-test suite) and declared through a one-file target adapter
-(`syntrace_target.json`).
+library vendored verbatim in `targets/humanize/` together with the dependency-free part
+of its own test suite (311 of its 784 tests — the `freezegun`/`pytest-benchmark`
+modules are omitted and the code they cover is excluded from mutation) and declared
+through a one-file target adapter (`syntrace_target.json`).
 
 | humanize 4.16.0 (measured) | Frozen 38-mutant bank | Exhaustive: all 253 sites |
 | :--- | :--- | :--- |
@@ -100,9 +101,11 @@ assert humanize.number.metric(1e+33, '', 3) == '1.00 x 10³³'
 Every one was found by differential probing (default-anchored parameter sweeps over
 orders-of-magnitude pools, module-level constants observed through the module's public
 API) and re-verified before being emitted. The 23 remaining survivors are reported, not
-hidden: the `isinf`-guarded family, mutants only reachable through `list[Any]`
-signatures the healer refuses, and threshold arithmetic inside `metric`/`intcomma` the
-current input pools cannot discriminate.
+hidden: the `isinf`-guarded family, a mutant only reachable through a `list[Any]`
+signature the healer refuses, one `intword` power-table entry no probed magnitude
+reaches, and threshold/format arithmetic inside `metric`, `intcomma`, `intword`,
+`ordinal` (gettext context) and `fractional` (`limit_denominator`) that the current
+input pools cannot discriminate.
 
 ## The demo target
 
@@ -127,15 +130,19 @@ together, deterministically, in seconds, for $0.
 pip install -r requirements.txt
 python main.py full          # baseline audit (~3s) + full campaign (~8s) on the demo target
 python advanced/run_mutation.py --target targets/humanize \
-    --json reports/humanize_mutation_report.json      # third-party target, frozen bank (~4s)
+    --json reports/humanize_mutation_report.json \
+    --trajectory trajectories/agent_trace_03.json     # third-party target, frozen bank (~4s)
 python advanced/run_mutation.py --target targets/humanize --max-code-mutants 400 \
-    --json reports/humanize_full_mutation_report.json # exhaustive: writes the 12 healed tests (~25s)
+    --json reports/humanize_full_mutation_report.json \
+    --trajectory trajectories/agent_trace_04.json     # exhaustive: writes the 12 healed tests (~25s)
 python dashboard/server.py   # Mission Control UI at http://127.0.0.1:8377
 ```
 
 `python advanced/run_mutation.py --fail-under 95` turns the campaign into a CI gate —
 see [.github/workflows/ci.yml](.github/workflows/ci.yml), which runs the selftests and
-both campaigns on every push.
+all three campaigns on every push to `main` and every pull request. The HTML report and
+trajectory paths follow `--json` unless set explicitly, so a second target's run never
+overwrites the demo's committed artifacts.
 
 Outputs: rich terminal report, `reports/mutation_report.json`,
 self-contained `reports/mutation_report.html`, and an agent trajectory in
@@ -203,7 +210,7 @@ targets/sample_app/      demo AI triage pipeline + deliberately blind-spotted su
 targets/humanize/        third-party validation target (humanize 4.16.0, vendored)
 dashboard/               FastAPI Mission Control (landing page + live dashboard)
 .github/workflows/       CI: selftests + mutation-score gates on both targets
-selftests/               the engine's own test suite (102 tests)
+selftests/               the engine's own test suite (106 tests)
 docs/ARCHITECTURE.md     frozen module contract the engine is built against
 trajectories/            agent execution traces (real runs)
 reports/                 generated JSON/HTML reports (committed as evidence)

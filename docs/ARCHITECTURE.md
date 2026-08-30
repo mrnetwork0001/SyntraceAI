@@ -227,10 +227,11 @@ via `ast.NodeTransformer` + `ast.unparse`:
 
 API:
 ```python
-def enumerate_mutants(target_dir: Path, *, exclude: tuple[str, ...] = ("app/prompt_templates.py",)) -> list[Mutant]
+def enumerate_mutants(target_dir: Path, *, exclude: tuple[str, ...] | None = None) -> list[Mutant]  # None ⇒ adapter excludes
 def select_bank(mutants: list[Mutant], size: int = 38, seed: int = 1337) -> list[Mutant]
 ```
-- Scan `app/*.py` under target_dir (skip excluded, skip `__init__.py`, skip `tests/`).
+- Scan the adapter's source package (default `app/`) under target_dir, recursively
+  (skip the adapter excludes and prompt module, `__init__.py`, and the tests dir).
 - Deterministic ordering: (file path, line, col, operator name). IDs `M001…` assigned
   AFTER selection, in selection order.
 - Every mutant MUST pass `compile(mutated_source, path, "exec")` — discard ones that
@@ -253,7 +254,8 @@ def replace_constant(module_source: str, name: str, new_value: str) -> str  # AS
 ```
 
 The 12 perturbations (IDs `P001…P012` in this order), each producing a full mutated
-`app/prompt_templates.py` source via `replace_constant`:
+prompt-module source (the adapter's `prompt_templates`, default
+`app/prompt_templates.py`; code-only targets return `[]`) via `replace_constant`:
 1. `RoleStripping` — remove the `You are TriageBot…` line from SYSTEM_PROMPT.
 2. `JsonOnlyDirectiveRemoval` — remove the `Respond ONLY…` line from SYSTEM_PROMPT.
 3. `InstructionNegation` — replace `Respond ONLY with a single valid JSON object and
@@ -353,7 +355,8 @@ def write_healed_test_file(target_dir: Path, healed: list[HealedTest], *, tests_
   `triage_ticket(t, strict=True)` and assert exact key set, types, and ranges per §5.3.
   These kill prompt survivors on re-run. Name them `test_healed_prompt_contract_<n>`.
 - `write_healed_test_file`: write all healed tests into
-  `<target>/tests/test_healed_assertions.py` with a generated-by header (overwrites).
+  `<target>/<tests_dir>/test_healed_assertions.py` (adapter tests dir, default `tests/`)
+  with a generated-by header (overwrites).
 
 ## 10. `advanced/report.py` (owner: sandbox agent)
 
