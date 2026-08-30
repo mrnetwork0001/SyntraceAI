@@ -20,6 +20,11 @@ import pytest
 from dashboard import server
 
 
+# The one invariant that matters here: no fixture may ever write into the real
+# repository. Captured at import, before any test monkeypatches server.REPO_ROOT.
+_REAL_REPO = Path(__file__).resolve().parents[1]
+
+
 def _payload(response) -> dict | list:
     return json.loads(response.body)
 
@@ -52,6 +57,12 @@ def _project(root: Path, name: str) -> Path:
 
 
 def _write_set(repo: Path, prefix: str, target: Path | str, *, healed: bool = True) -> None:
+    # A relative target resolves against the FAKE repo root, never the working
+    # directory. Getting this wrong let the bundled-target case write into the
+    # real targets/sample_app/tests and clobber a committed evidence file.
+    target_dir = Path(target)
+    if not target_dir.is_absolute():
+        target_dir = repo / target_dir
     pre = f"{prefix}_" if prefix else ""
     reports = repo / "reports"
     (reports / f"{pre}mutation_report.json").write_text(json.dumps({"target": str(target)}))
@@ -62,7 +73,10 @@ def _write_set(repo: Path, prefix: str, target: Path | str, *, healed: bool = Tr
     )
     trajectory.write_text("{}")
     if healed:
-        tests_dir = Path(target) / "tests"
+        tests_dir = target_dir / "tests"
+        # Resolve first: a relative path's .parents are relative too, and would
+        # never match the absolute repo root - which is how this escaped before.
+        assert _REAL_REPO not in tests_dir.resolve().parents, "fixture escaped into the real repo"
         if tests_dir.is_dir():
             (tests_dir / "test_healed_assertions.py").write_text("def test_x(): pass\n")
 
