@@ -10,11 +10,19 @@ an orchestrator plus six parallel implementation subagents against a frozen
 module contract. This is the file that answers the challenge's agent-trajectory
 requirement.
 
-It records, per step, the instruction the agent was given, the action it took,
-the command it ran, how the tools responded, and the **human checkpoints** where
-the owner reviewed and redirected the work - including step 3, where the first
-end-to-end campaign came back at 78% and every miss was root-caused at its code
-site before anything was changed.
+**What it is, plainly: a curated, post-hoc summary - not a raw captured
+transcript.** It was written from the build sessions and records, per step, the
+instruction the agent was given, the action it took, the outcome, and the **human
+checkpoints** where the owner reviewed and redirected the work - including step 3,
+where the first end-to-end campaign came back at 78% and every miss was root-caused
+at its code site before anything was changed. Its `tool_output` fields are one-line
+summaries of what the tools returned, not verbatim captures.
+
+**What is not traced:** the later sessions - the adversarial review fleets of
+iterations 5 and 7, and the dashboard, documentation and deployment work of
+iteration 8 - have no committed trajectories. Their outcomes are documented per
+iteration in `CHANGELOG.md`, and every measured claim they produced is verifiable
+from the committed reports and CI rather than from a trace.
 
 ## `campaign_trace_*.json` - engine output
 

@@ -349,7 +349,7 @@ python dashboard/server.py   <span class="c-dim"># Mission Control at http://127
       <h3>Engine selftests</h3>
       <p>The engine has its own suite, separate from any target's:</p>
 <pre><code>python -m pytest selftests/ -q
-<span class="c-dim">135 passed</span></code></pre>
+<span class="c-dim">144 passed</span></code></pre>
     </section>
 
     <!-- ==================== DEMO TARGET ==================== -->
@@ -408,7 +408,7 @@ python dashboard/server.py   <span class="c-dim"># Mission Control at http://127
           <tr><td>Detected by humanize's own suite</td><td class="num">36/38 (94.7%)</td><td class="num">218/253 (86.2%)</td></tr>
           <tr><td>Auto-healed tests generated</td><td class="num">0 needed</td><td class="num">12</td></tr>
           <tr><td>After healing</td><td class="num">94.7%</td><td class="num c-good">230/253 (90.9%)</td></tr>
-          <tr><td>Wall time</td><td class="num">4.0s</td><td class="num">24.2s</td></tr>
+          <tr><td>Wall time</td><td class="num">5.0s</td><td class="num">24.1s</td></tr>
         </tbody>
       </table>
       </div>
@@ -659,8 +659,8 @@ assert humanize.number.metric(1e+33, '', 3) == '1.00 x 10³³'</code></pre>
         <thead><tr><th>Run</th><th>Bank</th><th>Coverage</th><th>Pre-heal</th><th>Healed</th><th>Post-heal</th><th>Time</th></tr></thead>
         <tbody>
           <tr><td>Demo campaign</td><td class="num">50</td><td class="num">87.1%</td><td class="num c-bad">24/50 · 48.0%</td><td class="num">24</td><td class="num c-good">49/50 · 98.0%</td><td class="num">~10s</td></tr>
-          <tr><td>humanize, frozen bank</td><td class="num">38</td><td class="num">98.1%</td><td class="num">36/38 · 94.7%</td><td class="num">0</td><td class="num">36/38 · 94.7%</td><td class="num">4.0s</td></tr>
-          <tr><td>humanize, exhaustive</td><td class="num">253</td><td class="num">98.1%</td><td class="num">218/253 · 86.2%</td><td class="num">12</td><td class="num c-good">230/253 · 90.9%</td><td class="num">24.2s</td></tr>
+          <tr><td>humanize, frozen bank</td><td class="num">38</td><td class="num">98.1%</td><td class="num">36/38 · 94.7%</td><td class="num">0</td><td class="num">36/38 · 94.7%</td><td class="num">5.0s</td></tr>
+          <tr><td>humanize, exhaustive</td><td class="num">253</td><td class="num">98.1%</td><td class="num">218/253 · 86.2%</td><td class="num">12</td><td class="num c-good">230/253 · 90.9%</td><td class="num">24.1s</td></tr>
         </tbody>
       </table>
       </div>
@@ -768,7 +768,7 @@ python advanced/run_mutation.py --target targets/humanize --max-code-mutants 400
       <h3>Runtime and cost</h3>
       <div class="facts">
         <div><span class="k">Demo campaign:</span> ~8-10s · <span class="k">baseline audit:</span> ~3s · <span class="k">both:</span> ~12-14s</div>
-        <div><span class="k">humanize:</span> 4.0s frozen bank · 24.2s exhaustive</div>
+        <div><span class="k">humanize:</span> 5.0s frozen bank · 24.1s exhaustive</div>
         <div><span class="k">API cost:</span> $0.00 - local AST parsing and a deterministic mock LLM only</div>
       </div>
     </section>
@@ -848,7 +848,7 @@ advanced/                mutation engine:
 targets/sample_app/      demo AI triage pipeline + deliberately blind-spotted suite
 targets/humanize/        third-party validation target (humanize 4.16.0, vendored)
 dashboard/               FastAPI: landing page, Mission Control, these docs
-selftests/               the engine's own test suite (135 tests)
+selftests/               the engine's own test suite (144 tests)
 docs/ARCHITECTURE.md     frozen module contract the engine is built against
 trajectories/            agent_trace_01 (coding-agent trace) + campaign_trace_*
                          (engine output, regenerated per run) - see its README

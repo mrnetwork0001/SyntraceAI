@@ -39,7 +39,7 @@ the 38-mutant code bank plus an exhaustive 253-site campaign for humanize.
     identical to the campaign's basis.
 - **Result:** **49/50 (98.0%)** final mutation score, **24 auto-healed assertion
   tests**, one surviving mutant reported as likely-equivalent (confirmed a true
-  equivalent by manual analysis). Campaign wall time ~8–10s (7.9s idle, 10.2s in the
+  equivalent by manual analysis). Campaign wall time ~8-10s (7.9s idle, 9.5s in the
   committed report). Determinism verified: repeated runs produce identical results.
 
 ### Iteration 4 - Third-party validation, target adapter, CI gate
@@ -131,3 +131,44 @@ the 38-mutant code bank plus an exhaustive 253-site campaign for humanize.
     failing fast.
 - **Result:** all measured numbers unchanged; selftests 125, including regressions for
   every case above.
+
+### Iteration 8 - Ship it: run feedback, a safe public instance, and the submission audit
+- **Goal:** Make the dashboard tell the truth while it works, make an instance safe to
+  put on a public URL, and close every gap a judging panel could find.
+- **Agent feedback acted on (each verified against the live app before and after):**
+  - Clicking Run left the previous campaign's tiles on screen labelled "just ran -
+    measured in this session" while a new campaign was executing - the one place this
+    dashboard lied about provenance. Running results are now marked superseded and
+    dimmed, a progress bar reports the engine's own five named steps parsed from the
+    streaming log, and a completion banner states what the run changed, with the delta
+    against the previous result for that report set.
+  - The app as built could never face the internet: `/api/run` executes the test suite
+    of any directory it is given and `/api/reset` deletes files, with no auth. A
+    read-only public mode now refuses all three acting endpoints with 403, the CLI
+    refuses to bind a non-loopback host without `--public`, and the Vercel entrypoint
+    forces the flag in code rather than trusting an environment variable. Deployed
+    read-only at https://syntraceai-app.vercel.app, with selftests asserting the
+    refusals directly.
+  - The deployed instance reported the committed results as "2872 days ago": the build
+    packer stamps bundled files with a fixed 2018 mtime, which the dashboard was
+    rendering as a measurement time. Public mode now claims no measurement age at all,
+    because none is honestly available - pinned by tests in both modes.
+  - Mobile was broken three ways: the sidebar stacked above the results and pushed
+    them below the fold (now an overlay drawer behind a hamburger); the landing
+    header was squashed to 31px on every viewport by a class collision (`.bar` is the
+    progress-bar component - height 6px, overflow hidden - and the header markup used
+    it); and opening the survivors or healed-tests views stretched the page to 922px
+    in a 390px viewport because a grid track's automatic minimum is its content.
+  - A new reset selftest built a fixture path from a relative string, resolved it
+    against the working directory, and overwrote 241 lines of committed evidence with
+    a one-line stub. Fixed, and the fixture now asserts it can never write inside the
+    real repository - verified by reverting the fix and watching the guard fail.
+  - Submission hygiene from the audit: engine-written campaign traces renamed
+    `campaign_trace_*` so only the coding-agent trace carries the `agent_trace_` name;
+    the README gained the coding-agent disclosure, a prior-art section naming
+    mutmut/cosmic-ray/PIT/Stryker, a pre-existing-vs-added section, and a plain
+    disclosure that the commit history was reorganized from real snapshots; a full
+    documentation page shipped at `/docs`.
+- **Result:** all measured campaign numbers unchanged (the committed reports are the
+  same evidence); selftests 125 -> 144; CI green on Python 3.11 and 3.12 for every
+  push in the iteration.

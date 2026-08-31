@@ -115,7 +115,7 @@ through a one-file target adapter (`syntrace_target.json`).
 | Detected by humanize's own suite | **36/38 (94.7%)** | **218/253 (86.2%)** |
 | Auto-healed tests generated | 0 needed | **12** |
 | After healing | 94.7% - both survivors verified equivalent | **230/253 (90.9%)** |
-| Wall time | 4.0s | 24.2s |
+| Wall time | 5.0s | 24.1s |
 
 Two things this shows. First, SyntraceAI does **not manufacture findings** on a
 well-tested library: at the standard bank depth humanize catches 94.7%, and the two
@@ -169,7 +169,7 @@ integration, adversarial review and repair passes ran as further agent sessions.
 | :--- | :--- |
 | **Coding agent** | [Claude Code](https://claude.com/claude-code) - an orchestrator session plus parallel implementation subagents |
 | **Agent instructions** | `ANTIGRAVITY_SYNTRACEAI.md` (master project directive), `CLAUDE_SYNTRACEAI.md` (redirect to it), `.agents/skills/syntraceai-micro1/SKILL.md` (architecture and rules loaded into every session), and `docs/ARCHITECTURE.md` (the frozen module contract each implementation agent built against) |
-| **Coding-agent trajectory** | `trajectories/agent_trace_01.json` - instructions, actions, tool responses and the human checkpoints that redirected the work. See `trajectories/README.md`. |
+| **Coding-agent trajectory** | `trajectories/agent_trace_01.json` - a curated post-hoc summary of the build sessions (instructions, actions, outcomes, and the human checkpoints that redirected the work), not a raw captured transcript. `trajectories/README.md` states plainly what it is and is not. |
 | **Engine output, not agent traces** | `trajectories/campaign_trace_*.json` are written by the tool itself during a campaign and regenerated on every run |
 
 Human checkpoints are recorded in the trajectory rather than implied. The
@@ -177,6 +177,17 @@ load-bearing one is step 3: the first end-to-end campaign came back at 78%, and
 every miss was root-caused at its code site before a line was changed - which is
 how the clamp-equivalence proof and the healer's cross-function input synthesis
 came to exist instead of a bank that had been quietly trimmed.
+
+### A note on the commit history
+
+Partway through the build, the git history was reorganized from real intermediate
+snapshots into granular commits so the work reads step by step. A side effect is
+visible to anyone who looks: a run of commits with committer timestamps at exactly
+:00 seconds, and one out-of-order parent/child pair. Those timestamps are an artifact
+of the reorganization, not a contemporaneous record. The evidence chain for this
+submission is deliberately not the git log - it is the committed reports, the
+selftests, and CI re-running all three campaigns on every push, all of which
+reproduce from a clean clone.
 
 ### What existed before, and what was added
 
@@ -203,7 +214,7 @@ pip install -r requirements.txt
 python main.py full          # baseline audit (~3s) + full campaign (~8s) on the demo target
 python advanced/run_mutation.py --target targets/humanize \
     --json reports/humanize_mutation_report.json \
-    --trajectory trajectories/campaign_trace_humanize.json     # third-party target, frozen bank (~4s)
+    --trajectory trajectories/campaign_trace_humanize.json     # third-party target, frozen bank (~5s)
 python advanced/run_mutation.py --target targets/humanize --max-code-mutants 400 \
     --json reports/humanize_full_mutation_report.json \
     --trajectory trajectories/campaign_trace_humanize_full.json     # exhaustive: writes the 12 healed tests (~25s)
@@ -327,7 +338,7 @@ targets/sample_app/      demo AI triage pipeline + deliberately blind-spotted su
 targets/humanize/        third-party validation target (humanize 4.16.0, vendored)
 dashboard/               FastAPI Mission Control (landing page + live dashboard)
 .github/workflows/       CI: selftests + mutation-score gates on both targets
-selftests/               the engine's own test suite (135 tests)
+selftests/               the engine's own test suite (144 tests)
 docs/ARCHITECTURE.md     frozen module contract the engine is built against
 trajectories/            agent_trace_01 (coding-agent trace) + campaign_trace_*
                          (engine output, regenerated per run) - see its README
